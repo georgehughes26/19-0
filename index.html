@@ -3916,6 +3916,9 @@
 
     // ── SPIN ───────────────────────────────────────────────────────────────────────
     function doSpin() {
+      gtag('event', 'Spin_Completed', {
+        league: 'T20 Blast'
+      });
       const limit = RESPIN_LIMITS[SETTINGS.diff];
       const isFirstSpin = !S.spunTeam;
       if (!isFirstSpin) S.respinsUsed = (S.respinsUsed || 0) + 1;
