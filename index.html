@@ -3,14 +3,14 @@
 
 <head>
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KZJJ63KTD7"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KZJJ63KTD7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
-  gtag('config', 'G-KZJJ63KTD7');
-</script>
+    gtag('config', 'G-KZJJ63KTD7');
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>19-0 | T20 Blast Draft</title>
@@ -3788,6 +3788,9 @@
     function go(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("on")); document.getElementById(id).classList.add("on"); window.scrollTo(0, 0); }
 
     function startDraft() {
+      gtag('event', 'Sim_Started', {
+        league: 'T20 Blast'
+      });
       S = { slot: 0, squad: [], counts: {}, roleCounts: { bat: 0, bowl: 0, all: 0, wk: 0 }, respinsUsed: 0 };
       DEV_MODE = false;
       go("s-spin"); updatePickUI(); renderSquadTracker(); doSpin();
@@ -5440,8 +5443,8 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      const COLORS = ["#f9c846","#f97316","#4ade80","#60a5fa","#c084fc","#f87171","#fff","#ffd700"];
-      const pieces = Array.from({length: 160}, () => ({
+      const COLORS = ["#f9c846", "#f97316", "#4ade80", "#60a5fa", "#c084fc", "#f87171", "#fff", "#ffd700"];
+      const pieces = Array.from({ length: 160 }, () => ({
         x: Math.random() * canvas.width,
         y: -10 - Math.random() * 200,
         w: 6 + Math.random() * 8,
@@ -5467,7 +5470,7 @@
           ctx.translate(p.x, p.y);
           ctx.rotate(p.rot);
           ctx.fillStyle = p.color;
-          ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
           ctx.restore();
         });
         frame++;
@@ -5478,4 +5481,5 @@
     }
   </script>
 </body>
+
 </html>
