@@ -5439,6 +5439,9 @@
     function ordinal(n) { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 
     function launchConfetti() {
+      gtag('event', 'Finals_Won', {
+        league: 'T20 Blast'
+      });
       const canvas = document.createElement("canvas");
       canvas.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999";
       document.body.appendChild(canvas);
