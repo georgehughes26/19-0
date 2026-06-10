@@ -163,7 +163,7 @@
       background: #16161f;
       border: 1px solid #252535;
       border-radius: 16px;
-      padding: 28px 20px 22px;
+      padding: 16px 20px 14px;
       margin-bottom: 14px;
       position: relative;
       overflow: hidden
@@ -180,43 +180,55 @@
       pointer-events: none
     }
 
-    .drum-county {
-      font-size: 40px;
-      font-weight: 800;
-      color: #fff;
-      min-height: 52px;
+    .drum-inner {
       display: flex;
       align-items: center;
       justify-content: center;
-      letter-spacing: -1px
+      gap: 0;
+    }
+
+    .drum-county {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      letter-spacing: -0.5px;
+      flex: 1;
+      text-align: right;
     }
 
     .drum-divider {
-      width: 36px;
-      height: 1px;
+      width: 1px;
+      height: 28px;
       background: #252535;
-      margin: 10px auto
+      margin: 0 14px;
+      flex-shrink: 0;
     }
 
     .drum-year {
-      font-size: 58px;
+      font-size: 28px;
       font-weight: 800;
-      min-height: 70px;
+      min-height: 36px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      letter-spacing: -3px;
-      transition: color .15s
+      justify-content: flex-start;
+      letter-spacing: -1px;
+      transition: color .15s;
+      flex: 1;
     }
 
     .drum-group {
       font-size: 11px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      min-height: 20px;
-      margin-top: 4px;
+      min-height: 18px;
+      margin-top: 6px;
       transition: color .15s;
-      font-weight: 600
+      font-weight: 600;
+      text-align: center;
     }
 
     .btn-spin {
@@ -229,7 +241,7 @@
       font-weight: 800;
       border-radius: 8px;
       cursor: pointer;
-      margin-bottom: 20px
+      margin-bottom: 8px
     }
 
     .btn-spin:hover {
@@ -840,7 +852,8 @@
       background: #111118;
       border: 1px solid #161620;
       opacity: 0;
-      transition: opacity .22s
+      transition: opacity .22s;
+      min-width: 0;
     }
 
     .match-row.vis {
@@ -882,7 +895,10 @@
 
     .match-left {
       display: flex;
-      align-items: center
+      align-items: center;
+      min-width: 0;
+      flex: 1;
+      overflow: hidden
     }
 
     .mscore {
@@ -899,24 +915,37 @@
     .tbl {
       width: 100%;
       border-collapse: collapse;
-      font-size: 12px
+      font-size: 12px;
+      table-layout: fixed
     }
 
     .tbl th {
       color: #8080a0;
       font-weight: 700;
-      padding: 5px 8px 8px;
+      padding: 5px 4px 8px;
       border-bottom: 1px solid #1a1a22;
       letter-spacing: 1px;
       font-size: 10px;
       text-transform: uppercase;
+      text-align: center
+    }
+
+    .tbl th:nth-child(2) {
       text-align: left
     }
 
     .tbl td {
-      padding: 7px 8px;
+      padding: 7px 4px;
       border-bottom: 1px solid #111118;
-      color: #8888a0
+      color: #8888a0;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .tbl td:nth-child(2) {
+      text-align: left
     }
 
     .tbl .myrow td {
@@ -1633,9 +1662,9 @@
     }
 
     .sc-batter-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 90px 36px 36px;
       align-items: center;
-      justify-content: space-between;
       padding: 7px 14px;
       border-bottom: 1px solid #111118
     }
@@ -1648,21 +1677,24 @@
       font-size: 12px;
       font-weight: 600;
       color: #c0c0d8;
-      flex: 1
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
     }
 
     .sc-batter-how {
       font-size: 11px;
       color: #606070;
-      flex: 1;
-      text-align: center
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
     }
 
     .sc-batter-runs {
       font-size: 13px;
       font-weight: 800;
       color: #fff;
-      min-width: 32px;
       text-align: right
     }
 
@@ -1677,13 +1709,12 @@
     .sc-batter-balls {
       font-size: 11px;
       color: #8080a0;
-      min-width: 28px;
       text-align: right
     }
 
     .sc-bowling-header {
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr 28px 28px 36px 28px;
       padding: 6px 14px;
       background: #0a0a0f;
       border-top: 1px solid #1a1a24
@@ -1694,13 +1725,18 @@
       color: #606070;
       letter-spacing: 1px;
       text-transform: uppercase;
-      font-weight: 700
+      font-weight: 700;
+      text-align: right
+    }
+
+    .sc-bowl-th:first-child {
+      text-align: left
     }
 
     .sc-bowler-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 28px 28px 36px 28px;
       align-items: center;
-      justify-content: space-between;
       padding: 6px 14px;
       border-bottom: 1px solid #0f0f14
     }
@@ -1713,20 +1749,20 @@
       font-size: 12px;
       font-weight: 600;
       color: #c0c0d8;
-      flex: 1
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
     }
 
     .sc-bowler-stat {
       font-size: 12px;
       color: #9090a8;
-      min-width: 28px;
       text-align: right
     }
 
     .sc-bowler-wkts {
       font-size: 13px;
       font-weight: 800;
-      min-width: 28px;
       text-align: right
     }
 
@@ -2092,17 +2128,16 @@
     </div>
     <div class="drum-card">
       <div class="drum-glow"></div>
-      <div class="drum-county" id="d-county">—</div>
-      <div class="drum-divider"></div>
-      <div class="drum-year" id="d-year" style="color:#606070">—</div>
-      <div class="drum-group" id="d-grp" style="color:#606070">—</div>
+      <div class="drum-inner">
+        <div class="drum-county" id="d-county">—</div>
+        <div class="drum-divider"></div>
+        <div class="drum-year" id="d-year" style="color:#606070">—</div>
+      </div>
     </div>
     <button class="btn-spin" id="spin-btn" onclick="doSpin()">Spin</button>
-    <div id="spin-meta"
-      style="font-size:11px;color:#444;text-align:center;margin-top:-12px;margin-bottom:8px;min-height:16px"></div>
 
     <!-- Squad tracker — always visible -->
-    <div class="squad-tracker" id="squad-tracker"></div>
+    <div class="squad-tracker" id="squad-tracker" style="margin-top:6px"></div>
 
     <!-- Roster picks appear below after spin -->
     <div id="roster-area" style="width:100%;margin-top:14px"></div>
@@ -2142,10 +2177,10 @@
   <!-- GROUP STAGE SIM -->
   <div id="s-sim" class="screen">
     <div class="sim-topbar">
-      <div>
+      <div style="text-align:left">
         <div class="sim-title" id="sim-title">North Group</div>
         <div id="sim-group-sub"
-          style="font-size:11px;color:#8080a0;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-top:1px">
+          style="font-size:11px;color:#8080a0;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-top:1px;text-align:left">
         </div>
       </div>
       <div class="sim-prog" id="sim-prog"></div>
@@ -3417,8 +3452,8 @@
       const btn = document.getElementById("spin-btn");
       btn.disabled = true; btn.textContent = "Spinning…";
       document.getElementById("roster-area").innerHTML = "";
-      const dc = document.getElementById("d-county"), dy = document.getElementById("d-year"), dg = document.getElementById("d-grp");
-      dc.textContent = "—"; dy.textContent = "—"; dy.style.color = "#252535"; dg.textContent = "—"; dg.style.color = "#252535";
+      const dc = document.getElementById("d-county"), dy = document.getElementById("d-year");
+      dc.textContent = "—"; dy.textContent = "—"; dy.style.color = "#252535";
 
       let tick = 0; const cm = 18 + Math.floor(Math.random() * 10);
       function tickCounty() {
@@ -3438,8 +3473,6 @@
           else {
             const y = YEARS[Math.floor(Math.random() * YEARS.length)];
             dy.textContent = y; dy.style.color = "#fff"; S.spunYear = y;
-            const grp = S.spunGroup === "north" ? "North Group" : "South Group";
-            dg.textContent = grp; dg.style.color = S.spunGroup === "north" ? "#60a5fa" : "#fb923c";
 
             // Check if any players available for any role we still need
             const hasPlayers = checkHasPlayers(S.spunTeam, y);
@@ -3448,21 +3481,17 @@
             // Allow spin if: no players available (override) OR limit not reached
             const canSpin = !limitReached || !hasPlayers;
             btn.disabled = !canSpin;
-            btn.textContent = "Spin again";
 
-            // Update spin meta
-            const meta = document.getElementById("spin-meta");
-            if (meta) {
-              if (SETTINGS.diff === 'easy') { meta.textContent = ""; }
-              else if (SETTINGS.diff === 'medium') {
-                const left = Math.max(0, limit - used);
-                meta.textContent = left > 0 ? `${left} re-spin${left !== 1 ? "s" : ""} remaining` : "No re-spins left";
-                meta.style.color = left === 0 ? "#f87171" : "#606070";
-              } else {
-                meta.textContent = (!hasPlayers && !canSpin === false) ? "No players — re-spin allowed" : "Hard mode · no re-spins";
-                meta.style.color = "#606070";
-              }
+            // Button text with respin info
+            if (SETTINGS.diff === 'easy') {
+              btn.textContent = "Spin again";
+            } else if (SETTINGS.diff === 'medium') {
+              const left = Math.max(0, limit - used);
+              btn.textContent = left > 0 ? `Spin again · ${left} left` : "No re-spins left";
+            } else {
+              btn.textContent = hasPlayers ? "No re-spins (Hard)" : "Spin again (no players)";
             }
+
             showRoster();
           }
         }
@@ -3586,14 +3615,14 @@
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
         <div style="flex:1;text-align:center">
           <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px">Predicted finish</div>
-          <div style="font-size:36px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px">${predPos}</div>
-          <div style="font-size:13px;color:#8080a0;margin-bottom:6px">${predKO}</div>
+          <div style="font-size:32px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px">${predPos}</div>
+          <div style="font-size:12px;color:#8080a0;margin-bottom:6px">${predKO}</div>
         </div>
         <div style="width:1px;background:#252535;margin:4px 0"></div>
         <div style="flex:1;text-align:center">
-          <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px">Bookie Odds</div>
-          <div style="font-size:36px;font-weight:900;color:#ffd700;line-height:1;margin-bottom:4px">${odds.win}</div>
-          <div style="font-size:13px;color:#8080a0">to win the Blast</div>
+          <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px">Bookies Odds</div>
+          <div style="font-size:32px;font-weight:900;color:#ffd700;line-height:1;margin-bottom:4px">${odds.win}</div>
+          <div style="font-size:12px;color:#8080a0">to win the Blast</div>
         </div>
       </div>
     </div>
@@ -3781,7 +3810,12 @@
       if (DEV_MODE && (a === MY || b === MY)) {
         aW = a === MY;
       } else {
-        aW = Math.random() < rA / (rA + rB);
+        // Exponential scaling so rating gaps matter much more.
+        // A 20-point gap (e.g. 85 vs 65) gives ~82% win chance rather than 57%.
+        // A 10-point gap gives ~73%. Equal teams give 50%.
+        const pA = Math.pow(rA, 4);
+        const pB = Math.pow(rB, 4);
+        aW = Math.random() < pA / (pA + pB);
       }
       const w = aW ? a : b, l = aW ? b : a;
       const batFirst = Math.random() < 0.5;
@@ -3860,6 +3894,8 @@
       if (isMe) {
         const won = r.w === MY;
         const opp = r.a === MY ? r.b : r.a;
+        const isHome = r.a === MY; // user bats as team A = home
+        const homeAwayLabel = isHome ? "(H)" : "(A)";
         const myScore = won ? r.ws : r.ls;
         const oppScore = won ? r.ls : r.ws;
 
@@ -3876,13 +3912,13 @@
         div.className = `match-row ${won ? "mine-win" : "mine-loss"}`;
         div.innerHTML = `
       <div class="match-left">
-        <div class="wl-badge ${won ? "wl-w" : "wl-l"}">${won ? "W" : "L"}</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:${won ? "#d0eed0" : "#eed0d0"}">vs ${opp}</div>
-          <div style="font-size:11px;color:#8080a0;margin-top:2px">${myScore} vs ${oppScore}</div>
+        <div class="wl-badge ${won ? "wl-w" : "wl-l"}" style="flex-shrink:0">${won ? "W" : "L"}</div>
+        <div style="min-width:0;overflow:hidden">
+          <div style="font-size:13px;font-weight:700;color:${won ? "#d0eed0" : "#eed0d0"};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${opp} <span style="font-size:11px;color:#606070;font-weight:600">${homeAwayLabel}</span></div>
+          <div style="font-size:11px;color:#8080a0;margin-top:2px;text-align:left">${myScore} vs ${oppScore}</div>
         </div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:${won ? "#4ade80" : "#f87171"};flex-shrink:0;text-align:right;max-width:110px">${marginText}</div>`;
+      <div style="font-size:11px;font-weight:700;color:${won ? "#4ade80" : "#f87171"};flex-shrink:0;text-align:right;padding-left:8px;white-space:nowrap">${marginText}</div>`;
         feed.appendChild(div);
         requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add("vis")));
       }
@@ -3899,6 +3935,15 @@
       const table = buildTable(S.groupTeams, partial);
       const myPos = table.findIndex(r => r.team === MY) + 1;
       document.getElementById("tbl-wrap").innerHTML = `<table class="tbl">
+    <colgroup>
+      <col style="width:24px">
+      <col style="width:auto">
+      <col style="width:26px">
+      <col style="width:26px">
+      <col style="width:26px">
+      <col style="width:32px">
+      <col style="width:52px">
+    </colgroup>
     <thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead>
     <tbody>${table.map((r, i) => `<tr class="${r.team === MY ? "myrow" : ""}">
       <td style="color:${i < 4 ? "#4ade80" : "#606070"};font-weight:700">${i + 1}</td>
@@ -3965,7 +4010,8 @@
 
     function simulateFullMatch(teamA, teamB, ratings, forceWinner) {
       const rA = ratings[teamA] || 65, rB = ratings[teamB] || 65;
-      const winnerTeam = forceWinner || (Math.random() < rA / (rA + rB) ? teamA : teamB);
+      const pA = Math.pow(rA, 4), pB = Math.pow(rB, 4);
+      const winnerTeam = forceWinner || (Math.random() < pA / (pA + pB) ? teamA : teamB);
       const loserTeam = winnerTeam === teamA ? teamB : teamA;
       const winnerBatsFirst = Math.random() < 0.5;
       const firstBatTeam = winnerBatsFirst ? winnerTeam : loserTeam;
@@ -4004,8 +4050,6 @@
       const batters = batPlayers.map(p => ({ name: p.name, role: p.role, runs: 0, balls: 0, out: false, how: "", fours: 0, sixes: 0, batting: false, batted: false }));
       batters[0].batting = true; batters[1].batting = true;
 
-      // Bowler rotation: prefer bowl+all, max 4 overs each
-      // Sort by role so bowlers come first
       const bowlPool = [
         ...fieldPlayers.filter(p => p.role === "bowl"),
         ...fieldPlayers.filter(p => p.role === "all"),
@@ -4016,24 +4060,22 @@
       let runs = 0, wickets = 0, oversPlayed = 0;
       const overScores = [];
       let batting1 = 0, batting2 = 1;
-      // Track which bowler bowled last over (can't bowl consecutive overs)
       let lastBowlerIdx = -1;
 
+      // For a losing chaser: cap scoring so they never reach target
+      // We'll track a soft ceiling to prevent accidental wins
+      const runCap = (!isFirst && !chaseWin && target) ? target - 1 : Infinity;
+
       function pickBowler() {
-        // Find best available bowler: prefer fewer overs, not last over's bowler, max 4 overs
-        // "Best" = lower overs first, prefer dedicated bowlers
-        let best = -1, bestOvers = 99;
+        let best = -1, bestScore = 99999;
         for (let i = 0; i < bowlers.length; i++) {
           const b = bowlers[i];
-          if (b.overs >= 4) continue;   // maxed out
-          if (i === lastBowlerIdx) continue; // can't bowl consecutive
-          // Prefer bowlers/allrounders over batters
+          if (b.overs >= 4) continue;
+          if (i === lastBowlerIdx) continue;
           const rolePrio = b.role === "bowl" ? 0 : b.role === "all" ? 1 : 2;
-          if (b.overs < bestOvers || (b.overs === bestOvers && rolePrio < (bowlers[best] ? ['bowl', 'all'].indexOf(bowlers[best].role) : -1))) {
-            best = i; bestOvers = b.overs;
-          }
+          const score = b.overs * 10 + rolePrio;
+          if (score < bestScore) { best = i; bestScore = score; }
         }
-        // If no one available (all maxed), reset max constraint
         if (best === -1) {
           for (let i = 0; i < bowlers.length; i++) {
             if (i !== lastBowlerIdx) { best = i; break; }
@@ -4043,9 +4085,10 @@
       }
 
       for (let ov = 0; ov < 20; ov++) {
-        // Check if innings over BEFORE starting this over
-        if (!isFirst && target && runs >= target) { oversPlayed = ov; break; }
-        if (wickets >= (chaseWin ? 9 : 10)) { oversPlayed = ov; break; }
+        // Winning chaser: stop as soon as target reached
+        if (!isFirst && chaseWin && runs >= target) { oversPlayed = ov; break; }
+        // All out
+        if (wickets >= 10) { oversPlayed = ov; break; }
 
         const bowlerIdx = pickBowler();
         const activeBowler = bowlers[bowlerIdx];
@@ -4057,10 +4100,12 @@
         let inningsComplete = false;
 
         for (let b = 0; b < 6; b++) {
-          if (wickets >= (chaseWin ? 9 : 10)) { inningsComplete = true; break; }
-          if (!isFirst && target && runs >= target) { inningsComplete = true; break; }
+          if (wickets >= 10) { inningsComplete = true; break; }
+          if (!isFirst && chaseWin && runs >= target) { inningsComplete = true; break; }
 
-          const wktChance = 0.072 + (wickets * 0.008) + (ov > 15 ? 0.025 : 0);
+          const wktChance = 0.048 + (wickets * 0.006) + (ov > 16 ? 0.012 : 0);
+          const currentBatterRole = batPlayers[batting1] ? batPlayers[batting1].role : "bat";
+
           if (Math.random() < wktChance) {
             wickets++; overWkts++;
             batters[batting1].out = true;
@@ -4073,13 +4118,17 @@
             const nextIn = wickets + 1;
             if (nextIn < 11) { batting1 = nextIn; batters[nextIn].batting = true; batters[nextIn].batted = true; }
           } else {
-            const r = weightedRun(quality, ov);
+            let r = weightedRun(quality, ov, currentBatterRole);
+            // Losing chaser: never let runs reach target
+            if (!isFirst && !chaseWin && target) {
+              r = Math.min(r, runCap - runs);
+              if (r < 0) r = 0;
+            }
             batters[batting1].runs += r;
             batters[batting1].balls++;
             batters[batting1].batted = true;
             if (r === 4) batters[batting1].fours++;
             if (r === 6) batters[batting1].sixes++;
-            if (r === 0 && r !== 0) { }  // dotball tracking
             if (r > 0) maiden = false;
             if (r % 2 === 1) { const t = batting1; batting1 = batting2; batting2 = t; }
             runs += r; overRuns += r;
@@ -4090,11 +4139,9 @@
         if (maiden) activeBowler.maidens++;
         activeBowler.overs++;
 
-        // Rotate strike end of over
         const t = batting1; batting1 = batting2; batting2 = t;
         oversPlayed = ov + 1;
 
-        // Snapshot batter and bowler state for this over
         const batterSnap = batters.map(b => ({ ...b }));
         const bowlerSnap = bowlers.map(b => ({ ...b }));
 
@@ -4107,35 +4154,26 @@
         if (inningsComplete) break;
       }
 
-      // Chase win bump — spread remaining runs realistically
-      if (!isFirst && target && chaseWin && runs < target) {
+      // Winning chaser: if they should win but still fell short (all out before reaching target),
+      // add the needed runs to the last over's snapshot only — don't extend the innings
+      if (!isFirst && chaseWin && runs < target) {
         let diff = target - runs;
         const nb = batters.find(b => b.batting && !b.out) || batters.find(b => !b.out && b.batted) || batters[0];
         const nb2 = batters.find(b => b.batting && !b.out && b !== nb) || batters.find(b => !b.out && b.batted && b !== nb);
         let striker = nb;
-        const extraBalls = [];
         while (diff > 0) {
           const r = Math.min(diff, Math.random() < 0.3 ? 6 : Math.random() < 0.45 ? 4 : Math.random() < 0.5 ? 2 : 1);
           if (striker) { striker.runs += r; striker.balls++; striker.batted = true; if (r === 4) striker.fours++; if (r === 6) striker.sixes++; if (r % 2 === 1 && nb2) striker = (striker === nb) ? nb2 : nb; }
-          extraBalls.push(r); diff -= r; runs += r;
+          diff -= r; runs += r;
         }
         if (overScores.length > 0) {
           const last = overScores[overScores.length - 1];
           last.total = runs;
-          extraBalls.forEach(r => last.balls.push(r));
-          last.runs += extraBalls.reduce((s, r) => s + r, 0);
           last.batterSnap = batters.map(b => ({ ...b }));
           last.bowlerSnap = bowlers.map(b => ({ ...b }));
         }
       }
 
-      // Chase loss — cap at target-1
-      if (!isFirst && target && !chaseWin && runs >= target) {
-        runs = target - 1;
-        if (overScores.length > 0) overScores[overScores.length - 1].total = runs;
-      }
-
-      // Final status labels
       batters.forEach(b => { if (!b.out && b.batted) b.how = "not out"; });
       batters.forEach(b => { if (!b.batted && !b.out) b.how = "did not bat"; });
 
@@ -4145,16 +4183,19 @@
       return { runs, wickets, oversPlayed, overScores, batters, bowlers: usedBowlers, extras };
     }
 
-    function weightedRun(quality, over) {
-      const boost = over > 15 ? 1.35 : over > 10 ? 1.12 : 1;
+    function weightedRun(quality, over, role) {
+      const boost = over > 15 ? 1.3 : over > 10 ? 1.1 : 1;
       const q = Math.min(1.3, quality / 72);
+      // Role modifier: bowlers score ~40% less, allrounders ~15% less
+      const roleMod = role === "bowl" ? 0.58 : role === "wk" ? 0.88 : role === "all" ? 0.85 : 1.0;
       const r = Math.random();
-      if (r < 0.30 * boost * q) return 1;
-      if (r < 0.48 * boost * q) return 2;
-      if (r < 0.57 * boost * q) return 0;
-      if (r < 0.70 * boost * q) return 4;
-      if (r < 0.76 * boost * q) return 3;
-      if (r < 0.85 * boost * q) return 6;
+      const adj = boost * q * roleMod;
+      if (r < 0.30 * adj) return 1;
+      if (r < 0.47 * adj) return 2;
+      if (r < 0.56 * adj) return 0;
+      if (r < 0.68 * adj) return 4;
+      if (r < 0.74 * adj) return 3;
+      if (r < 0.83 * adj) return 6;
       return 0;
     }
 
@@ -4237,11 +4278,12 @@
       function nextOver2() {
         if (ovIdx2 >= matchData.inns2.overScores.length) {
           // Innings 2 complete
-          document.getElementById("sc-live-runs2").textContent = `${matchData.inns2.runs}/${matchData.inns2.wickets}`;
-          document.getElementById("sc-live-overs2").textContent = `${matchData.inns2.oversPlayed} overs · Complete`;
+          const inns2 = matchData.inns2;
+          document.getElementById("sc-live-runs2").textContent = inns2.wickets >= 10 ? `${inns2.runs}` : `${inns2.runs}/${inns2.wickets}`;
+          document.getElementById("sc-live-overs2").textContent = inns2.wickets >= 10 ? `All out · ${inns2.oversPlayed} overs` : `${inns2.oversPlayed} overs · Complete`;
           if (matchData.target) {
-            const made = matchData.inns2.runs >= matchData.target;
-            document.getElementById("sc-target-line2").textContent = made ? `Target reached!` : `Fell short by ${matchData.target - matchData.inns2.runs} runs`;
+            const made = inns2.runs >= matchData.target;
+            document.getElementById("sc-target-line2").textContent = made ? `Target reached!` : `Fell short by ${matchData.target - inns2.runs} runs`;
           }
           renderLiveBattingSnap(matchData.inns2.batters, "sc-bat-table2");
 
@@ -4254,12 +4296,18 @@
         const lrEl = document.getElementById("sc-live-runs2");
         const loEl = document.getElementById("sc-live-overs2");
         const tgEl = document.getElementById("sc-target-line2");
-        if (lrEl) lrEl.textContent = `${ov.total}/${ov.wkts}`;
+        if (lrEl) lrEl.textContent = ov.wkts >= 10 ? `${ov.total}` : `${ov.total}/${ov.wkts}`;
         if (loEl) loEl.textContent = `${ov.over}.0 overs`;
         if (tgEl && matchData.target) {
           const rem = matchData.target - ov.total;
-          const bl = (matchData.inns2.oversPlayed - ov.over) * 6;
-          tgEl.textContent = rem <= 0 ? "Target reached!" : `Need ${rem} more · ${bl} balls left`;
+          const ballsLeft = (20 - ov.over) * 6;
+          if (rem <= 0) {
+            tgEl.textContent = "Target reached!";
+          } else if (ballsLeft === 0) {
+            tgEl.textContent = `Fell short by ${rem} run${rem !== 1 ? "s" : ""}`;
+          } else {
+            tgEl.textContent = `Need ${rem} more · ${ballsLeft} balls left`;
+          }
         }
 
         const bar2 = document.getElementById("sc-overs-bar2");
@@ -4331,13 +4379,12 @@
         if (ovIdx >= inns.overScores.length) {
           const lrEl = document.getElementById("sc-live-runs");
           const loEl = document.getElementById("sc-live-overs");
-          if (lrEl) lrEl.textContent = `${inns.runs}/${inns.wickets}`;
-          if (loEl) loEl.textContent = `${inns.oversPlayed} overs · Complete`;
+          if (lrEl) lrEl.textContent = inns.wickets >= 10 ? `${inns.runs}` : `${inns.runs}/${inns.wickets}`;
+          if (loEl) loEl.textContent = inns.wickets >= 10 ? `All out · ${inns.oversPlayed} overs` : `${inns.oversPlayed} overs · Complete`;
           if (isSecond && target) {
             const tgEl = document.getElementById("sc-target-line");
             if (tgEl) tgEl.textContent = inns.runs >= target ? "Target reached!" : `Fell short by ${target - inns.runs} run${target - inns.runs !== 1 ? "s" : ""}`;
           }
-          // Final batting state — no need to re-render bowling, it's already live in sc-bowl-table
           renderLiveBattingSnap(inns.batters, "sc-bat-table");
           onDone(); return;
         }
@@ -4347,14 +4394,22 @@
 
         const lrEl = document.getElementById("sc-live-runs");
         const loEl = document.getElementById("sc-live-overs");
-        if (lrEl) lrEl.textContent = `${ov.total}/${ov.wkts}`;
+        if (lrEl) lrEl.textContent = ov.wkts >= 10 ? `${ov.total}` : `${ov.total}/${ov.wkts}`;
         if (loEl) loEl.textContent = `${ov.over}.0 overs`;
         if (isSecond && target) {
           const tgEl = document.getElementById("sc-target-line");
           if (tgEl) {
             const rem = target - ov.total;
-            const bl = Math.max(0, (inns.oversPlayed - ov.over) * 6);
-            tgEl.textContent = rem <= 0 ? "Target reached!" : `Need ${rem} more · ${bl} balls left`;
+            // Balls remaining = balls left in the full 20 overs from THIS point
+            // ov.over is the over just completed (1=first over done, 20=last over done)
+            const ballsLeft = (20 - ov.over) * 6;
+            if (rem <= 0) {
+              tgEl.textContent = "Target reached!";
+            } else if (ballsLeft === 0) {
+              tgEl.textContent = `Fell short by ${rem} run${rem !== 1 ? "s" : ""}`;
+            } else {
+              tgEl.textContent = `Need ${rem} more · ${ballsLeft} balls left`;
+            }
           }
         }
 
@@ -4401,11 +4456,11 @@
       }).join("");
 
       el.innerHTML = `<div class="sc-innings" style="margin-bottom:4px">
-    <div style="display:flex;padding:5px 14px 4px;background:#0a0a0f;border-bottom:1px solid #111">
-      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;flex:1;font-weight:700">Batter</span>
-      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;min-width:80px;text-align:center;font-weight:700">Status</span>
-      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;min-width:32px;text-align:right;font-weight:700">R</span>
-      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;min-width:28px;text-align:right;font-weight:700">B</span>
+    <div style="display:grid;grid-template-columns:1fr 90px 36px 36px;padding:5px 14px 4px;background:#0a0a0f;border-bottom:1px solid #111">
+      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700">Batter</span>
+      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:center;font-weight:700">Status</span>
+      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:right;font-weight:700">R</span>
+      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:right;font-weight:700">B</span>
     </div>
     ${rows}
   </div>`;
@@ -4464,11 +4519,11 @@
 
       const extras = Math.floor(Math.random() * 8 + 2);
       el.innerHTML = `<div class="sc-innings" style="margin-bottom:6px">
-    <div style="display:flex;padding:5px 14px 4px;background:#0a0a0f;border-bottom:1px solid #111">
-      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;flex:1;font-weight:700">Batter</span>
-      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;min-width:80px;text-align:center;font-weight:700">Dismissal</span>
-      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;min-width:32px;text-align:right;font-weight:700">R</span>
-      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;min-width:28px;text-align:right;font-weight:700">B</span>
+    <div style="display:grid;grid-template-columns:1fr 90px 36px 36px;padding:5px 14px 4px;background:#0a0a0f;border-bottom:1px solid #111">
+      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700">Batter</span>
+      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:center;font-weight:700">Dismissal</span>
+      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:right;font-weight:700">R</span>
+      <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:right;font-weight:700">B</span>
     </div>
     ${rows}
     <div class="sc-extras">Extras: ${extras}</div>
@@ -4511,6 +4566,60 @@
     function scNextCallback() { if (scMatchData && scMatchData._next) scMatchData._next(); }
 
     // ── KNOCKOUTS ──────────────────────────────────────────────────────────────────
+
+    function buildMyQFCard(pair, ratings, MY) {
+      const opp = pair[0] === MY ? pair[1] : pair[0];
+      const myR = ratings[MY] || 65;
+      const oppR = ratings[opp] || 65;
+
+      // Squad comparison rows
+      const mySquad = S.countySquads && S.countySquads[MY] ? S.countySquads[MY] : S.squad;
+      const oppSquad = S.countySquads && S.countySquads[opp] ? S.countySquads[opp] : [];
+      const ORDER = ["bat", "wk", "all", "bowl"];
+      const mySorted = [...mySquad].sort((a, b) => ORDER.indexOf(a.role) - ORDER.indexOf(b.role));
+      const oppSorted = [...oppSquad].sort((a, b) => ORDER.indexOf(a.role) - ORDER.indexOf(b.role));
+
+      const squadRows = mySorted.map((p, i) => {
+        const op = oppSorted[i];
+        const myColor = ratingColor(p.rating);
+        const opColor = op ? ratingColor(op.rating) : "#444";
+        return `<div style="display:grid;grid-template-columns:1fr 34px 34px 1fr;align-items:center;padding:5px 0;border-bottom:1px solid #0f0f14;gap:0">
+  <div style="min-width:0;overflow:hidden">
+    <span style="font-size:11px;font-weight:700;color:#c0c0d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${p.name} <span style="font-size:9px;color:#555">${p.year}</span></span>
+    <span style="font-size:12px;font-weight:900;color:${myColor}">${p.rating}</span>
+  </div>
+  <div style="font-size:9px;color:#333;text-align:center;font-weight:700;text-transform:uppercase">${RL[p.role]}</div>
+  <div style="font-size:12px;font-weight:900;color:${opColor};text-align:right;padding-right:4px">${op ? op.rating : "—"}</div>
+  <div style="min-width:0;overflow:hidden;text-align:right">
+    ${op ? `<span style="font-size:11px;font-weight:700;color:#787890;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;direction:rtl;text-align:right">${op.name}</span>` : ""}
+  </div>
+</div>`;
+      }).join("");
+
+      return `<div style="background:#111118;border:1px solid #3a3a60;border-radius:14px;padding:18px;margin-bottom:8px">
+  <div style="display:flex;align-items:stretch;justify-content:space-between;gap:12px;margin-bottom:16px">
+    <div style="flex:1;text-align:center;background:#0d0d14;border-radius:10px;padding:14px 10px">
+      <div style="font-size:12px;color:#f9c846;font-weight:800;margin-bottom:6px">⭐ Your XI</div>
+      <div style="font-size:28px;font-weight:900;color:#f9c846;letter-spacing:-1px;text-align:center">${myR}</div>
+      <div style="font-size:10px;color:#8080a0;margin-top:3px;letter-spacing:1px;text-transform:uppercase;text-align:center">Rating</div>
+    </div>
+    <div style="display:flex;align-items:center;color:#444;font-size:13px;font-weight:700">vs</div>
+    <div style="flex:1;text-align:center;background:#0d0d14;border-radius:10px;padding:14px 10px">
+      <div style="font-size:12px;color:#c0c0d8;font-weight:800;margin-bottom:6px">${opp}</div>
+      <div style="font-size:28px;font-weight:900;color:#c0c0d8;letter-spacing:-1px;text-align:center">${oppR}</div>
+      <div style="font-size:10px;color:#8080a0;margin-top:3px;letter-spacing:1px;text-transform:uppercase;text-align:center">Rating</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 34px 34px 1fr;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#444;font-weight:800;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #1a1a24">
+    <span>Your XI</span>
+    <span style="text-align:center">Role</span>
+    <span style="text-align:right;padding-right:4px">Rtg</span>
+    <span style="text-align:right">${opp}</span>
+  </div>
+  ${squadRows}
+</div>`;
+    }
+
     function doKO(phase) {
       const MY = S.myTeam;
       const bod = document.getElementById("ko-body");
@@ -4541,8 +4650,8 @@
         const otherRes = otherPairs.map(([a, b]) => simMatch(a, b, allR));
         S.qfRes = [...otherRes];
         S._myQFPair = myPair; S._allQFR = allR;
-        bod.innerHTML = `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:10px;text-align:left">Other quarter-finals</div><div class="ko-matches">` + otherRes.map(r => koCard(r, MY)).join("") + `</div><div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin:14px 0 10px;text-align:left">Your quarter-final</div><div style="font-size:13px;color:#9090a8;margin-bottom:14px">${myPair[0]} vs ${myPair[1]}</div>`;
-        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('qf')">Watch your match →</button>`;
+        bod.innerHTML = `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:10px;text-align:left">Other quarter-finals</div><div class="ko-matches">` + otherRes.map(r => koCard(r, MY)).join("") + `</div><div style="height:1px;background:#1a1a24;margin:18px 0 14px"></div><div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin-bottom:12px;text-align:left">⭐ Your quarter-final</div>` + buildMyQFCard(myPair, allR, MY) + `</div>`;
+        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('qf')">Simulate Quarter-Final →</button>`;
         go("s-ko");
 
       } else if (phase === "fd") {
@@ -4570,8 +4679,8 @@
           S._otherSFRes = otherRes;
           bod.innerHTML += `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:8px;text-align:left">Other semi-final</div><div class="ko-matches">` + koCard(otherRes, MY) + `</div>`;
         }
-        bod.innerHTML += `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin:14px 0 10px;text-align:left">Your semi-final</div><div style="font-size:13px;color:#9090a8;margin-bottom:14px">${myPair[0]} vs ${myPair[1]}</div>`;
-        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('sf')">Watch your match →</button>`;
+        bod.innerHTML += `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin:14px 0 10px;text-align:left">Your semi-final</div>` + buildMyQFCard(myPair, r2, MY);
+        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('sf')">Simulate Semi-Final →</button>`;
         go("s-ko");
 
       } else {
@@ -4582,7 +4691,7 @@
         const f = S.sfRes ? S.sfRes.map(r => r.w) : [MY, "Opponent"];
         const r2 = { ...S.ratings }; f.forEach(t => { if (!r2[t]) r2[t] = 60 + Math.random() * 12; });
         S._finalPair = f; S._allFR = r2;
-        bod.innerHTML = `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin-bottom:10px;text-align:left">T20 Blast Final · Edgbaston</div><div style="font-size:13px;color:#9090a8;margin-bottom:14px">${f[0]} vs ${f[1]}</div>`;
+        bod.innerHTML = `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin-bottom:10px;text-align:left">T20 Blast Final · Edgbaston</div>` + buildMyQFCard(f, r2, MY);
         nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('f')">Watch the final →</button>`;
         go("s-ko");
       }
@@ -4601,7 +4710,8 @@
       else { pair = S._finalPair; ratings = S._allFR; }
 
       const rMY = ratings[MY] || 65, rOpp = ratings[pair[0] === MY ? pair[1] : pair[0]] || 65;
-      const forceWinner = DEV_MODE ? MY : (Math.random() < rMY / (rMY + rOpp) ? MY : (pair[0] === MY ? pair[1] : pair[0]));
+      const pMY = Math.pow(rMY, 4), pOpp = Math.pow(rOpp, 4);
+      const forceWinner = DEV_MODE ? MY : (Math.random() < pMY / (pMY + pOpp) ? MY : (pair[0] === MY ? pair[1] : pair[0]));
       const matchData = simulateFullMatch(pair[0], pair[1], ratings, forceWinner);
 
       if (phase === "qf") {
@@ -4627,7 +4737,23 @@
     function koCard(r, MY) {
       const wMe = r.w === MY, lMe = r.l === MY;
       const cls = wMe ? "won" : lMe ? "lost" : r.a === MY || r.b === MY ? "mine" : "";
-      return `<div class="ko-card ${cls}"><div class="ko-teams-row"><span class="ko-team ${wMe ? "my-win" : "winner"}">${r.w}</span><span class="ko-vs">DEF</span><span class="ko-team ${lMe ? "my-loss" : "loser"}">${r.l}</span></div><div class="ko-score-line${r.a === MY || r.b === MY ? " mine" : ""}">${r.ws || "—"}/${10 - (r.wk || 5)} · ${r.ls || "—"}</div></div>`;
+      const wScore = r.ws || "—";
+      const lScore = r.ls || "—";
+      return `<div class="ko-card ${cls}" style="padding:14px 16px">
+  <div style="display:grid;grid-template-columns:1fr 28px 1fr;align-items:center;gap:0">
+    <div style="text-align:center">
+      <div style="font-size:13px;font-weight:700;color:${wMe ? "#f9c846" : "#d0d0e8"};margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.w}</div>
+      <div style="font-size:22px;font-weight:900;color:${wMe ? "#f9c846" : "#d0d0e8"};line-height:1">${wScore}</div>
+      <div style="font-size:9px;color:#4ade80;margin-top:3px;letter-spacing:1px;text-transform:uppercase;font-weight:700">WON</div>
+    </div>
+    <div style="text-align:center;font-size:10px;color:#444;font-weight:700">vs</div>
+    <div style="text-align:center">
+      <div style="font-size:13px;font-weight:700;color:#606070;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.l}</div>
+      <div style="font-size:22px;font-weight:900;color:#606070;line-height:1">${lScore}</div>
+      <div style="font-size:9px;color:#f87171;margin-top:3px;letter-spacing:1px;text-transform:uppercase;font-weight:700">LOST</div>
+    </div>
+  </div>
+</div>`;
     }
 
     function myResultBanner(match, MY, winText, lossText) {
@@ -4698,10 +4824,18 @@
 
       document.getElementById("ov-q").textContent = `"${genQuote(S.myPos, groupWins, S.qualified, S.qfWon, S.sfWon, S.finalWon)}"`;
 
+      // Total wins = group wins + knockout wins
+      const koWins = (S.qfWon ? 1 : 0) + (S.sfWon ? 1 : 0) + (S.finalWon ? 1 : 0);
+      const totalWins = (groupWins || 0) + koWins;
+      const totalLosses = (16 - (groupWins || 0)) + (S.qualified && !S.qfWon ? 1 : 0) + (S.qfWon && !S.sfWon ? 1 : 0) + (S.sfWon && !S.finalWon ? 1 : 0);
+
       document.getElementById("ov-stats").innerHTML = `
-    <div class="ov-box"><div class="ov-n" style="color:#4ade80">${groupWins || 0}</div><div class="ov-l">Group wins</div></div>
-    <div class="ov-box"><div class="ov-n" style="color:#f87171">${16 - groupWins || 0}</div><div class="ov-l">Group losses</div></div>
-    <div class="ov-box"><div class="ov-n" style="color:#fbbf24">${(groupWins || 0) * 2}</div><div class="ov-l">Points</div></div>`;
+    <div class="ov-box"><div class="ov-n" style="color:#4ade80">${totalWins}</div><div class="ov-l">Total wins</div></div>
+    <div class="ov-box"><div class="ov-n" style="color:#f87171">${totalLosses}</div><div class="ov-l">Total losses</div></div>
+    <div class="ov-box"><div class="ov-n" style="color:#fbbf24">${(groupWins || 0) * 2}</div><div class="ov-l">Group pts</div></div>`;
+
+      // Confetti if they won the final
+      if (S.finalWon) launchConfetti();
 
       const predKO = S.preview ? S.preview.predKO : "—";
       const perfDiffArrow = diff > 0 ? "↑ " + Math.abs(diff) + " tier" + (Math.abs(diff) > 1 ? "s" : "") + " above" : diff < 0 ? "↓ " + Math.abs(diff) + " tier" + (Math.abs(diff) > 1 ? "s" : "") + " below" : "= Matched prediction";
@@ -4749,6 +4883,51 @@
       return "A tough campaign. The drafting table awaits.";
     }
     function ordinal(n) { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+
+    function launchConfetti() {
+      const canvas = document.createElement("canvas");
+      canvas.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999";
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const COLORS = ["#f9c846","#f97316","#4ade80","#60a5fa","#c084fc","#f87171","#fff","#ffd700"];
+      const pieces = Array.from({length: 160}, () => ({
+        x: Math.random() * canvas.width,
+        y: -10 - Math.random() * 200,
+        w: 6 + Math.random() * 8,
+        h: 3 + Math.random() * 5,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        rot: Math.random() * Math.PI * 2,
+        rotV: (Math.random() - 0.5) * 0.18,
+        vx: (Math.random() - 0.5) * 2.5,
+        vy: 2.5 + Math.random() * 3.5,
+        opacity: 1
+      }));
+
+      let frame = 0;
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = false;
+        pieces.forEach(p => {
+          p.x += p.vx; p.y += p.vy; p.rot += p.rotV;
+          if (frame > 180) p.opacity = Math.max(0, p.opacity - 0.012);
+          if (p.y < canvas.height + 20 && p.opacity > 0) alive = true;
+          ctx.save();
+          ctx.globalAlpha = p.opacity;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+          ctx.restore();
+        });
+        frame++;
+        if (alive) requestAnimationFrame(draw);
+        else canvas.remove();
+      }
+      draw();
+    }
   </script>
 </body>
 </html>
