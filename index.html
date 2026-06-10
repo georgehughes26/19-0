@@ -2304,7 +2304,7 @@
         ],
         Surrey: [
           { n: "Jason Roy", y: { 2014: 86, 2015: 88, 2016: 90, 2017: 92, 2018: 93, 2019: 92, 2020: 91, 2021: 91, 2022: 90, 2023: 89, 2024: 88, 2025: 87, 2026: 86 } },
-          { n: "Will Jacks", y: { 2018: 74, 2019: 78, 2020: 82, 2021: 84, 2022: 86, 2023: 86, 2024: 87, 2025: 87, 2026: 87 } },
+          { n: "Will Jacks", y: { 2018: 74, 2019: 78, 2020: 82, 2021: 84, 2022: 86, 2023: 86, 2024: 92, 2025: 92, 2026: 91 } },
           { n: "Laurie Evans", y: { 2020: 82, 2021: 83, 2022: 84, 2023: 84, 2024: 83, 2025: 82, 2026: 81 } },
           { n: "Ollie Pope", y: { 2017: 72, 2018: 75, 2019: 77, 2020: 79, 2021: 81, 2022: 82, 2023: 83, 2024: 84, 2025: 84, 2026: 84 } },
           { n: "Rory Burns", y: { 2014: 71, 2015: 72, 2016: 73, 2017: 74, 2018: 75, 2019: 75, 2020: 74, 2021: 74, 2022: 73, 2023: 72, 2024: 71 } },
@@ -2320,7 +2320,7 @@
           { n: "Tillakaratne Dilshan", y: { 2014: 89 } },
           { n: "Ben Geddes", y: { 2021: 65, 2022: 67, 2023: 69, 2024: 71 } },
           { n: "Arthur Thomas", y: { 2026: 69 } },
-          { n: "Tim David", y: { 2021: 88 } },
+          { n: "Tim David", y: { 2021: 90 } },
           { n: "Graeme Smith", y: { 2014: 77 } },
           { n: "Dean Elgar", y: { 2015: 74 } },
           { n: "Vikram Solanki", y: { 2014: 72, 2015: 71 } },
@@ -3845,6 +3845,17 @@
       });
 
       // Jump straight to preview screen (skips spin & squad review)
+      // Draft all county squads now so preview has real ratings
+      S.countySquads = {};
+      S.allRatings = {};
+      const MY_DEV = "Your XI";
+      S.countySquads[MY_DEV] = S.squad;
+      S.allRatings[MY_DEV] = Math.round(S.squad.reduce((s, p) => s + p.rating, 0) / S.squad.length);
+      ALL_C.forEach(county => {
+        const xi = draftCountyXI(county);
+        S.countySquads[county] = xi;
+        S.allRatings[county] = getCountyRating(xi);
+      });
       showPreview();
     }
 
@@ -4012,40 +4023,78 @@
       const ovr = avg(S.squad.map(p => p.rating));
       const bat = avg(S.squad.filter(p => p.role === "bat" || p.role === "all").map(p => p.rating));
       const bowl = avg(S.squad.filter(p => p.role === "bowl" || p.role === "all").map(p => p.rating));
-      const cls = v => v >= 82 ? "elite" : v >= 74 ? "good" : "avg";
       const colorEl = (id, val) => { const el = document.getElementById(id); el.textContent = val; el.style.color = ratingColor(val); };
       colorEl("sq-ovr", ovr); colorEl("sq-bat", bat); colorEl("sq-bowl", bowl);
-      // Display in order: bat, wk, all, bowl
       const ORDER = ["bat", "wk", "all", "bowl"];
       const sortedSquad = [...S.squad].sort((a, b) => ORDER.indexOf(a.role) - ORDER.indexOf(b.role));
-      // Always show real ratings in squad review — hidden mode only hides during draft
       document.getElementById("squad-list").innerHTML = sortedSquad.map(p => `<div class="squad-item si-${p.role}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.county} · ${p.year}</div></div><div class="si-right"><span class="rp-badge rpb-${p.role}">${RL[p.role]}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`).join("");
+
+      // Draft all 18 county XIs now so predictions and odds use real ratings
+      S.countySquads = {};
+      S.allRatings = {};
+      const MY = "Your XI";
+      S.countySquads[MY] = S.squad;
+      S.allRatings[MY] = ovr;
+      ALL_C.forEach(county => {
+        const xi = draftCountyXI(county);
+        S.countySquads[county] = xi;
+        S.allRatings[county] = getCountyRating(xi);
+      });
+
       go("s-squad");
     }
 
     // ── SEASON PREVIEW ─────────────────────────────────────────────────────────────
     function showPreview() {
+      const MY = "Your XI";
       const ovr = Math.round(S.squad.reduce((s, p) => s + p.rating, 0) / S.squad.length);
       const bat = Math.round(S.squad.filter(p => p.role === "bat" || p.role === "all").reduce((s, p) => s + p.rating, 0) / 6);
       const bowl = Math.round(S.squad.filter(p => p.role === "bowl" || p.role === "all").reduce((s, p) => s + p.rating, 0) / 6);
       const grpName = S.repGroup === "north" ? "North Group" : "South Group";
       const grpCls = S.repGroup === "north" ? "ph-north" : "ph-south";
 
-      // Exact predicted finish + knockout stage — deterministic from rating
-      let predPos, predKO, predLabel, predCls, predTier;
-      if (ovr >= 87) { predPos = "1st"; predKO = "Winners"; predLabel = "Title favourites"; predCls = "pp-qual"; predTier = 6; }
-      else if (ovr >= 82) { predPos = "1st"; predKO = "Finalists"; predLabel = "Strong title contenders"; predCls = "pp-qual"; predTier = 5; }
-      else if (ovr >= 77) { predPos = "2nd"; predKO = "Semi-finalists"; predLabel = "Likely qualifiers"; predCls = "pp-qual"; predTier = 4; }
-      else if (ovr >= 73) { predPos = "3rd"; predKO = "Quarter-finalists"; predLabel = "Quarter-final candidates"; predCls = "pp-qual"; predTier = 3; }
-      else if (ovr >= 68) { predPos = "5th"; predKO = "Group stage exit"; predLabel = "Fringe qualifiers"; predCls = "pp-mid"; predTier = 2; }
-      else if (ovr >= 63) { predPos = "6th"; predKO = "Group stage exit"; predLabel = "Mid-table"; predCls = "pp-mid"; predTier = 2; }
-      else { predPos = "8th"; predKO = "Group stage exit"; predLabel = "Battling to stay afloat"; predCls = "pp-low"; predTier = 1; }
+      // Build group with real county ratings — replace repTeam with My XI
+      const groupCounties = [...(S.repGroup === "north" ? NORTH : SOUTH)];
+      const groupTeamsForPred = groupCounties.map(c => c === S.repTeam ? MY : c);
+      const groupRatings = {};
+      groupTeamsForPred.forEach(t => {
+        groupRatings[t] = t === MY ? ovr : (S.allRatings[t] || S.allRatings[groupCounties[groupTeamsForPred.indexOf(t)]] || 68);
+      });
 
-      // Bookies odds based on rating
-      const odds = getBookiesOdds(ovr);
+      // Rank group by rating to get predicted finish
+      const groupRanked = [...groupTeamsForPred].sort((a, b) => groupRatings[b] - groupRatings[a]);
+      const predGroupPos = groupRanked.indexOf(MY) + 1;
+      const qualifies = predGroupPos <= 4;
+
+      // For knockout prediction: rank all 18 teams to estimate how far we go
+      const allRatings = S.allRatings || {};
+      const allRanked = [...Object.entries(allRatings)].sort((a, b) => b[1] - a[1]);
+      const myOverallRank = allRanked.findIndex(([t]) => t === MY) + 1;
+      const totalTeams = allRanked.length;
+
+      // Predicted knockout stage based on how we rank overall
+      let predKO, predTier;
+      if (!qualifies) {
+        predKO = "Group stage exit"; predTier = 1;
+      } else if (myOverallRank <= 2) {
+        predKO = "Winners"; predTier = 6;
+      } else if (myOverallRank <= 4) {
+        predKO = "Finalists"; predTier = 5;
+      } else if (myOverallRank <= 7) {
+        predKO = "Semi-finalists"; predTier = 4;
+      } else {
+        predKO = "Quarter-finalists"; predTier = 3;
+      }
+
+      const predPos = ordinal(predGroupPos);
+      const predLabel = predGroupPos === 1 ? "Group favourites" : predGroupPos <= 4 ? "Expected to qualify" : predGroupPos <= 6 ? "Fringe contenders" : "Underdogs";
+
+      // Bookies odds based on real relative strength vs all 18 teams
+      const odds = getBookiesOddsRelative(ovr, allRatings);
 
       // Store for overview comparison
-      S.preview = { ovr, bat, bowl, predPos, predKO, predLabel, predCls, predTier, grpName };
+      S.preview = { ovr, bat, bowl, predPos, predKO, predLabel, predTier, grpName };
+      S.groupRatings = groupRatings;
 
       const star = [...S.squad].sort((a, b) => b.rating - a.rating)[0];
       const weakLink = [...S.squad].sort((a, b) => a.rating - b.rating)[0];
@@ -4053,6 +4102,19 @@
       S.preview.starRating = star.rating;
 
       const quotes = generateMediaQuotes(ovr, bat, bowl, star, weakLink, S.repTeam, grpName, predPos, predKO);
+
+      // Show group strength table
+      const grpTableRows = groupRanked.map((t, i) => {
+        const r = groupRatings[t];
+        const isMe = t === MY;
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #111118">
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:10px;color:${i < 4 ? "#4ade80" : "#444"};font-weight:700;width:16px">${i + 1}</span>
+    <span style="font-size:12px;font-weight:${isMe ? "800" : "600"};color:${isMe ? "#f9c846" : "#c0c0d8"}">${isMe ? "⭐ " + t : t}</span>
+  </div>
+  <span style="font-size:12px;font-weight:900;color:${ratingColor(r)}">${r}</span>
+</div>`;
+      }).join("");
 
       const html = `
     <div class="preview-header">
@@ -4082,6 +4144,12 @@
     </div>
 
     <div style="width:100%;background:#0d0d12;border:1px solid #1e1e2a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:left">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:800;margin-bottom:10px">Group strength · ${grpName}</div>
+      ${grpTableRows}
+      <div style="font-size:10px;color:#3a9a50;margin-top:8px;letter-spacing:.5px">● Top 4 qualify for quarter-finals</div>
+    </div>
+
+    <div style="width:100%;background:#0d0d12;border:1px solid #1e1e2a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:left">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:800;margin-bottom:8px">Key players</div>
       <div style="display:flex;justify-content:space-between;gap:8px">
         <div style="flex:1">
@@ -4104,6 +4172,25 @@
 
       document.getElementById("preview-content").innerHTML = html;
       go("s-preview");
+    }
+
+    function getBookiesOddsRelative(myOvr, allRatings) {
+      // Rank my team among all 18 teams
+      const sorted = Object.values(allRatings).sort((a, b) => b - a);
+      const rank = sorted.findIndex(r => r <= myOvr) + 1 || sorted.length;
+      const total = sorted.length || 18;
+      // Convert rank to realistic fractional odds
+      if (rank === 1) return { win: "9/2", qf: "4/7", fd: "11/8" };
+      if (rank === 2) return { win: "6/1", qf: "8/13", fd: "2/1" };
+      if (rank === 3) return { win: "8/1", qf: "Evens", fd: "5/2" };
+      if (rank === 4) return { win: "10/1", qf: "11/8", fd: "3/1" };
+      if (rank === 5) return { win: "14/1", qf: "6/4", fd: "9/2" };
+      if (rank === 6) return { win: "18/1", qf: "2/1", fd: "6/1" };
+      if (rank === 7) return { win: "22/1", qf: "5/2", fd: "8/1" };
+      if (rank === 8) return { win: "28/1", qf: "3/1", fd: "10/1" };
+      if (rank <= 10) return { win: "33/1", qf: "4/1", fd: "14/1" };
+      if (rank <= 13) return { win: "50/1", qf: "6/1", fd: "20/1" };
+      return { win: "66/1", qf: "9/1", fd: "28/1" };
     }
 
     function getBookiesOdds(ovr) {
@@ -4285,18 +4372,18 @@
       const idx = groupTeams.indexOf(S.repTeam); if (idx > -1) groupTeams[idx] = MY;
       S.myTeam = MY; S.groupTeams = groupTeams;
 
-      // Draft a real XI for every county in the group — use their rating to drive results
-      S.countySquads = {};
-      S.countySquads[MY] = S.squad; // user's own squad
-      const myR = Math.round(S.squad.reduce((s, p) => s + p.rating, 0) / S.squad.length);
-
+      // County squads and ratings already drafted in showSquad — just map them
       const ratings = {};
       groupTeams.forEach(t => {
-        if (t === MY) { ratings[MY] = myR; }
-        else {
-          const xi = draftCountyXI(t);
-          S.countySquads[t] = xi;
-          ratings[t] = getCountyRating(xi);
+        if (t === MY) {
+          ratings[MY] = S.allRatings[MY];
+        } else {
+          // squads already drafted — ensure they're in countySquads
+          if (!S.countySquads[t]) {
+            S.countySquads[t] = draftCountyXI(t);
+            S.allRatings[t] = getCountyRating(S.countySquads[t]);
+          }
+          ratings[t] = S.allRatings[t];
         }
       });
       S.ratings = ratings;
@@ -5017,8 +5104,8 @@
 
     function buildMyQFCard(pair, ratings, MY) {
       const opp = pair[0] === MY ? pair[1] : pair[0];
-      const myR = ratings[MY] || 65;
-      const oppR = ratings[opp] || 65;
+      const myR = Math.round(ratings[MY] || 65);
+      const oppR = Math.round(ratings[opp] || 65);
 
       // Squad comparison rows
       const mySquad = S.countySquads && S.countySquads[MY] ? S.countySquads[MY] : S.squad;
@@ -5031,16 +5118,21 @@
         const op = oppSorted[i];
         const myColor = ratingColor(p.rating);
         const opColor = op ? ratingColor(op.rating) : "#444";
-        return `<div style="display:grid;grid-template-columns:1fr 34px 34px 1fr;align-items:center;padding:5px 0;border-bottom:1px solid #0f0f14;gap:0">
-  <div style="min-width:0;overflow:hidden">
-    <span style="font-size:11px;font-weight:700;color:#c0c0d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${p.name} <span style="font-size:9px;color:#555">${p.year}</span></span>
-    <span style="font-size:12px;font-weight:900;color:${myColor}">${p.rating}</span>
-  </div>
-  <div style="font-size:9px;color:#333;text-align:center;font-weight:700;text-transform:uppercase">${RL[p.role]}</div>
-  <div style="font-size:12px;font-weight:900;color:${opColor};text-align:right;padding-right:4px">${op ? op.rating : "—"}</div>
-  <div style="min-width:0;overflow:hidden;text-align:right">
-    ${op ? `<span style="font-size:11px;font-weight:700;color:#787890;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;direction:rtl;text-align:right">${op.name}</span>` : ""}
-  </div>
+        // Both sides: Name · Year · Rating, centred
+        const myCell = `<div style="text-align:center;min-width:0">
+    <div style="font-size:11px;font-weight:700;color:#c0c0d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+    <div style="font-size:10px;color:#555;margin-top:1px">${p.year} · <span style="font-weight:900;color:${myColor}">${p.rating}</span></div>
+  </div>`;
+        const opCell = op
+          ? `<div style="text-align:center;min-width:0">
+    <div style="font-size:11px;font-weight:700;color:#c0c0d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${op.name}</div>
+    <div style="font-size:10px;color:#555;margin-top:1px">${op.year} · <span style="font-weight:900;color:${opColor}">${op.rating}</span></div>
+  </div>`
+          : `<div style="text-align:center;font-size:11px;color:#444">—</div>`;
+        return `<div style="display:grid;grid-template-columns:1fr 36px 1fr;align-items:center;padding:6px 0;border-bottom:1px solid #0f0f14;gap:4px">
+  ${myCell}
+  <div style="text-align:center;font-size:9px;color:#444;font-weight:800;text-transform:uppercase">${RL[p.role]}</div>
+  ${opCell}
 </div>`;
       }).join("");
 
@@ -5048,21 +5140,20 @@
   <div style="display:flex;align-items:stretch;justify-content:space-between;gap:12px;margin-bottom:16px">
     <div style="flex:1;text-align:center;background:#0d0d14;border-radius:10px;padding:14px 10px">
       <div style="font-size:12px;color:#f9c846;font-weight:800;margin-bottom:6px">⭐ Your XI</div>
-      <div style="font-size:28px;font-weight:900;color:#f9c846;letter-spacing:-1px;text-align:center">${myR}</div>
-      <div style="font-size:10px;color:#8080a0;margin-top:3px;letter-spacing:1px;text-transform:uppercase;text-align:center">Rating</div>
+      <div style="font-size:28px;font-weight:900;color:#f9c846;letter-spacing:-1px">${myR}</div>
+      <div style="font-size:10px;color:#8080a0;margin-top:3px;letter-spacing:1px;text-transform:uppercase">Rating</div>
     </div>
     <div style="display:flex;align-items:center;color:#444;font-size:13px;font-weight:700">vs</div>
     <div style="flex:1;text-align:center;background:#0d0d14;border-radius:10px;padding:14px 10px">
       <div style="font-size:12px;color:#c0c0d8;font-weight:800;margin-bottom:6px">${opp}</div>
-      <div style="font-size:28px;font-weight:900;color:#c0c0d8;letter-spacing:-1px;text-align:center">${oppR}</div>
-      <div style="font-size:10px;color:#8080a0;margin-top:3px;letter-spacing:1px;text-transform:uppercase;text-align:center">Rating</div>
+      <div style="font-size:28px;font-weight:900;color:#c0c0d8;letter-spacing:-1px">${oppR}</div>
+      <div style="font-size:10px;color:#8080a0;margin-top:3px;letter-spacing:1px;text-transform:uppercase">Rating</div>
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 34px 34px 1fr;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#444;font-weight:800;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #1a1a24">
-    <span>Your XI</span>
-    <span style="text-align:center">Role</span>
-    <span style="text-align:right;padding-right:4px">Rtg</span>
-    <span style="text-align:right">${opp}</span>
+  <div style="display:grid;grid-template-columns:1fr 36px 1fr;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:800;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #252535;text-align:center">
+    <span style="color:#f9c846;text-align:center">Your XI</span>
+    <span style="text-align:center;color:#444">Role</span>
+    <span style="text-align:center;color:#9090a8">${opp}</span>
   </div>
   ${squadRows}
 </div>`;
@@ -5079,12 +5170,12 @@
         document.getElementById("ko-title").textContent = "Quarter-Finals";
         document.getElementById("ko-sub").textContent = "Top 4 from each group · 8 teams remain";
         const og = S.repGroup === "north" ? [...SOUTH] : [...NORTH];
-        // Draft real XIs for other group and derive ratings
+        // Use pre-drafted squads for other group ratings
         const oR = {};
         og.forEach(t => {
           if (!S.countySquads) S.countySquads = {};
-          if (!S.countySquads[t]) { S.countySquads[t] = draftCountyXI(t); }
-          oR[t] = getCountyRating(S.countySquads[t]);
+          if (!S.countySquads[t]) { S.countySquads[t] = draftCountyXI(t); S.allRatings[t] = getCountyRating(S.countySquads[t]); }
+          oR[t] = S.allRatings[t] || getCountyRating(S.countySquads[t]);
         });
         const oMs = []; for (let i = 0; i < og.length; i++)for (let j = i + 1; j < og.length; j++)oMs.push([og[i], og[j]]);
         const oT = buildTable(og, oMs.map(([a, b]) => simMatch(a, b, oR))).slice(0, 4);
@@ -5111,7 +5202,7 @@
         if (!w.includes(MY)) w.push(MY); // ensure MY is in after QF win
         const allSFTeams = w.length >= 4 ? w : w.concat(Array.from({ length: 4 - w.length }, (_, i) => SOUTH[i]));
         const sp = [[allSFTeams[0], allSFTeams[3]], [allSFTeams[1], allSFTeams[2]]];
-        const r2 = { ...S.ratings }; allSFTeams.forEach(t => { if (!r2[t]) r2[t] = 57 + Math.random() * 14; });
+        const r2 = { ...S.ratings }; allSFTeams.forEach(t => { if (!r2[t]) r2[t] = Math.round(57 + Math.random() * 14); });
         const myPair = sp.find(([a, b]) => a === MY || b === MY) || sp[0];
         const otherPair = sp.find(([a, b]) => a !== MY && b !== MY);
         S._mySFPair = myPair; S._allSFR = r2;
@@ -5137,7 +5228,7 @@
         document.getElementById("ko-title").textContent = "The Final";
         document.getElementById("ko-sub").textContent = "Edgbaston · One match for the trophy";
         const f = S.sfRes ? S.sfRes.map(r => r.w) : [MY, "Opponent"];
-        const r2 = { ...S.ratings }; f.forEach(t => { if (!r2[t]) r2[t] = 60 + Math.random() * 12; });
+        const r2 = { ...S.ratings }; f.forEach(t => { if (!r2[t]) r2[t] = Math.round(60 + Math.random() * 12); });
         S._finalPair = f; S._allFR = r2;
         bod.innerHTML = `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin-bottom:10px;text-align:left">T20 Blast Final · Edgbaston</div>` + buildMyQFCard(f, r2, MY);
         nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('f')">Watch the final →</button>`;
@@ -5340,8 +5431,8 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      const COLORS = ["#f9c846", "#f97316", "#4ade80", "#60a5fa", "#c084fc", "#f87171", "#fff", "#ffd700"];
-      const pieces = Array.from({ length: 160 }, () => ({
+      const COLORS = ["#f9c846","#f97316","#4ade80","#60a5fa","#c084fc","#f87171","#fff","#ffd700"];
+      const pieces = Array.from({length: 160}, () => ({
         x: Math.random() * canvas.width,
         y: -10 - Math.random() * 200,
         w: 6 + Math.random() * 8,
@@ -5367,7 +5458,7 @@
           ctx.translate(p.x, p.y);
           ctx.rotate(p.rot);
           ctx.fillStyle = p.color;
-          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
           ctx.restore();
         });
         frame++;
@@ -5378,5 +5469,4 @@
     }
   </script>
 </body>
-
 </html>
