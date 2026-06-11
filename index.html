@@ -2,14 +2,37 @@
 <html>
 
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KZJJ63KTD7"></script>
+  <!-- Google Analytics — loads only after cookie consent -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
+    gtag('consent', 'default', { analytics_storage: 'denied' });
 
-    gtag('config', 'G-KZJJ63KTD7');
+    function loadAnalytics() {
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-KZJJ63KTD7';
+      document.head.appendChild(s);
+      gtag('js', new Date());
+      gtag('config', 'G-KZJJ63KTD7');
+    }
+
+    if (localStorage.getItem('cookie_consent') === 'accepted') {
+      gtag('consent', 'update', { analytics_storage: 'granted' });
+      loadAnalytics();
+    }
+
+    // Cookieless event ping — works regardless of consent
+    // Uses GA4 Measurement Protocol with client_id derived from a random session token
+    // No cookies set, no PII sent.
+    var _cid = localStorage.getItem('_cid');
+    if (!_cid) { _cid = Math.random().toString(36).slice(2) + '.' + Date.now(); localStorage.setItem('_cid', _cid); }
+    function pingEvent(name, params) {
+      try {
+        var body = JSON.stringify({ client_id: _cid, events: [{ name: name, params: Object.assign({ engagement_time_msec: 1 }, params || {}) }] });
+        navigator.sendBeacon('https://www.google-analytics.com/mp/collect?measurement_id=G-KZJJ63KTD7&api_secret=REPLACE_WITH_SECRET', body);
+      } catch(e) {}
+    }
   </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -20,6 +43,103 @@
       margin: 0;
       padding: 0
     }
+
+    /* COOKIE BANNER */
+    #cookie-banner {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #111118;
+      border-top: 1px solid #252535;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 10000;
+      flex-wrap: wrap
+    }
+    #cookie-banner p {
+      font-size: 12px;
+      color: #9090a8;
+      flex: 1;
+      min-width: 220px;
+      line-height: 1.5
+    }
+    #cookie-banner p a {
+      color: #f9c846;
+      text-decoration: underline;
+      cursor: pointer
+    }
+    .cookie-btns { display: flex; gap: 8px; flex-shrink: 0 }
+    .btn-cookie-accept {
+      background: linear-gradient(135deg, #f9c846, #f97316);
+      color: #0f0f13;
+      border: none;
+      padding: 9px 20px;
+      font-size: 13px;
+      font-weight: 800;
+      border-radius: 6px;
+      cursor: pointer
+    }
+    .btn-cookie-decline {
+      background: transparent;
+      color: #6060a0;
+      border: 1px solid #252535;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer
+    }
+    .btn-cookie-decline:hover { color: #9090a8; border-color: #363650 }
+
+    /* PRIVACY MODAL */
+    #privacy-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      z-index: 20000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px
+    }
+    #privacy-modal.open { display: flex }
+    .priv-box {
+      background: #16161f;
+      border: 1px solid #252535;
+      border-radius: 16px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 24px 22px
+    }
+    .priv-box h2 { font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 14px }
+    .priv-box h3 {
+      font-size: 12px; font-weight: 800; letter-spacing: 1.5px;
+      text-transform: uppercase; color: #f9c846; margin: 16px 0 6px
+    }
+    .priv-box p, .priv-box li { font-size: 13px; color: #9090a8; line-height: 1.7 }
+    .priv-box ul { padding-left: 18px; margin-top: 4px }
+    .priv-box a { color: #f9c846 }
+    .btn-priv-close {
+      width: 100%; background: #1e1e2a; color: #c0c0d8;
+      border: 1px solid #252535; padding: 12px;
+      font-size: 14px; font-weight: 700; border-radius: 8px;
+      cursor: pointer; margin-top: 20px
+    }
+    .btn-priv-close:hover { background: #252535 }
+
+    /* FOOTER */
+    .site-footer {
+      width: 100%; max-width: 480px;
+      text-align: center; padding: 28px 0 80px;
+      border-top: 1px solid #1a1a22; margin-top: 40px
+    }
+    .site-footer p { font-size: 11px; color: #4a4a60; line-height: 1.8 }
+    .site-footer a { color: #606080; text-decoration: underline; cursor: pointer }
+    .site-footer a:hover { color: #9090a8 }
 
     body {
       background: #0f0f13;
@@ -1560,6 +1680,96 @@
       margin-bottom: 16px
     }
 
+    /* Season stats panel — sits alongside perf card */
+    .ov-lower {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      align-items: stretch
+    }
+    .ov-lower-full {
+      display: block
+    }
+    .ov-lower-full .ov-reached {
+      display: block
+    }
+    .ov-lower-full .ov-reached .perf-card {
+      margin-bottom: 14px
+    }
+    .ov-lower .ov-reached {
+      flex: 1 1 0;
+      min-width: 0;
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column
+    }
+    .ov-lower .ov-reached .perf-card {
+      flex: 1;
+      margin-bottom: 0
+    }
+    .ov-season-stats {
+      flex: 0 0 152px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+    .ov-season-stats .stat-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center
+    }
+    .stat-card {
+      background: #13131f;
+      border: 1px solid #252535;
+      border-radius: 12px;
+      padding: 11px 13px
+    }
+    .stat-card-label {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: #5858a8;
+      margin-bottom: 5px
+    }
+    .stat-card-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+    .stat-card-val {
+      font-size: 26px;
+      font-weight: 900;
+      color: #f9c846;
+      line-height: 1;
+      margin-top: 3px
+    }
+    .stat-card-sub {
+      font-size: 10px;
+      color: #5858a8;
+      margin-top: 3px;
+      line-height: 1.4
+    }
+    .mvp-card {
+      border-color: #b8922a;
+      background: linear-gradient(135deg, #171410, #1e1a0c)
+    }
+    .mvp-card .stat-card-label {
+      color: #f9c846
+    }
+    .mvp-card .stat-card-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: #e0c060;
+      margin-top: 4px;
+      line-height: 1.5
+    }
+
     /* ── SCORECARD ── */
     .sc-screen {
       width: 100%
@@ -1946,6 +2156,13 @@
       font-size: 12px;
       color: #8080a0
     }
+    .perf-over .perf-label { color: #4a7a5a }
+    .perf-met .perf-label  { color: #6868a0 }
+    .perf-under .perf-label { color: #8a5030 }
+
+    .perf-over .perf-row   { border-bottom-color: rgba(74,222,128,.07) }
+    .perf-met .perf-row    { border-bottom-color: rgba(160,160,224,.07) }
+    .perf-under .perf-row  { border-bottom-color: rgba(249,115,22,.07) }
 
     .perf-val {
       font-size: 12px;
@@ -2061,6 +2278,270 @@
       height: 1px;
       background: #111118;
       margin: 0
+    }
+
+    /* ── SHARE CARD ─────────────────────────────────────────────────────────── */
+    #share-card {
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      width: 380px;
+      background: #0d0d14;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 0;
+      overflow: hidden;
+      border-radius: 18px
+    }
+    .sc-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid #1a1a25
+    }
+    .sc-brand {
+      font-size: 22px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px
+    }
+    .sc-ovr {
+      background: #1a1a25;
+      border: 1px solid #2a2a3a;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #f9c846;
+      letter-spacing: .5px
+    }
+    .sc-result-band {
+      padding: 20px 20px 16px;
+      text-align: center;
+      border-bottom: 1px solid #1a1a25
+    }
+    .sc-result-big {
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 4px
+    }
+    .sc-result-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #505068;
+      font-weight: 700;
+      margin-bottom: 10px
+    }
+    .sc-result-finish {
+      display: inline-block;
+      padding: 5px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .3px
+    }
+    .sc-finish-won  { background: #0f2a1a; color: #4ade80; border: 1px solid #1a5a32 }
+    .sc-finish-final{ background: #1a1428; color: #c084fc; border: 1px solid #3a2a5a }
+    .sc-finish-sf   { background: #1a1428; color: #818cf8; border: 1px solid #2a2a5a }
+    .sc-finish-qf   { background: #101828; color: #60a5fa; border: 1px solid #1a3a5a }
+    .sc-finish-out  { background: #1a1010; color: #f87171; border: 1px solid #3a1a1a }
+    .sc-xi-section {
+      padding: 14px 20px;
+      border-bottom: 1px solid #1a1a25
+    }
+    .sc-xi-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #404055;
+      font-weight: 800;
+      margin-bottom: 10px
+    }
+    .sc-xi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px 12px
+    }
+    .sc-xi-row {
+      display: flex;
+      align-items: center;
+      gap: 7px
+    }
+    .sc-xi-badge {
+      font-size: 8px;
+      font-weight: 800;
+      padding: 2px 5px;
+      border-radius: 3px;
+      letter-spacing: .3px;
+      flex-shrink: 0;
+      width: 30px;
+      text-align: center
+    }
+    .sc-xi-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #e0e0f0;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+    .sc-xi-rat {
+      font-size: 12px;
+      font-weight: 900;
+      flex-shrink: 0;
+      width: 24px;
+      text-align: right
+    }
+    .sc-stats-strip {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid #1a1a25
+    }
+    .sc-stat-cell {
+      flex: 1;
+      padding: 10px 14px;
+      border-right: 1px solid #1a1a25
+    }
+    .sc-stat-cell:last-child { border-right: none }
+    .sc-stat-lbl {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #404055;
+      margin-bottom: 3px
+    }
+    .sc-stat-name {
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+    .sc-stat-val {
+      font-size: 11px;
+      color: #f9c846;
+      font-weight: 700;
+      margin-top: 2px
+    }
+    .sc-footer {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+    .sc-verified {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #4ade80;
+      font-weight: 700
+    }
+    .sc-url {
+      font-size: 12px;
+      font-weight: 900;
+      color: #f9c846;
+      letter-spacing: -.3px
+    }
+    /* Share modal */
+    #share-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.8);
+      z-index: 30000;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0
+    }
+    #share-modal.open { display: flex }
+    .share-sheet {
+      background: #16161f;
+      border: 1px solid #252535;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 480px;
+      padding: 24px 20px 36px
+    }
+    .share-sheet h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 16px
+    }
+    .share-preview-wrap {
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      border: 1px solid #252535
+    }
+    .share-preview-wrap img {
+      width: 100%;
+      display: block
+    }
+    .share-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px
+    }
+    .btn-share-save {
+      background: #1e1e2a;
+      color: #fff;
+      border: 1px solid #252535;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center
+    }
+    .btn-share-save:hover { background: #252535 }
+    .btn-share-season {
+      width: 100%;
+      background: linear-gradient(135deg, #f9c846, #f97316);
+      color: #0f0f13;
+      border: none;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-bottom: 20px;
+      letter-spacing: -.2px
+    }
+    .btn-share-season:active { opacity: .85 }
+    .btn-share-native {
+      width: 100%;
+      background: linear-gradient(135deg, #f9c846, #f97316);
+      color: #0f0f13;
+      border: none;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-bottom: 10px;
+      letter-spacing: -.2px
+    }
+    .btn-share-close {
+      width: 100%;
+      background: transparent;
+      color: #606080;
+      border: 1px solid #252535;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px
     }
   </style>
 </head>
@@ -2238,7 +2719,11 @@
     </div>
     <div class="ov-quote" id="ov-q"></div>
     <div class="ov-stats" id="ov-stats"></div>
-    <div class="ov-reached" id="ov-reached"></div>
+    <div class="ov-lower">
+      <div class="ov-reached" id="ov-reached"></div>
+      <div class="ov-season-stats" id="ov-season-stats"></div>
+    </div>
+    <button class="btn-share-season" onclick="openShareModal()">📸 Share your season</button>
     <div class="section-lbl">Your XI</div>
     <div class="squad-list" id="ov-squad" style="margin-bottom:24px"></div>
     <button class="btn-new" onclick="fullReset()">New Run →</button>
@@ -3788,9 +4273,7 @@
     function go(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("on")); document.getElementById(id).classList.add("on"); window.scrollTo(0, 0); }
 
     function startDraft() {
-      gtag('event', 'Sim_Started', {
-        league: 'T20 Blast'
-      });
+      pingEvent('Sim_Started', { league: 'T20 Blast' });
       S = { slot: 0, squad: [], counts: {}, roleCounts: { bat: 0, bowl: 0, all: 0, wk: 0 }, respinsUsed: 0 };
       DEV_MODE = false;
       go("s-spin"); updatePickUI(); renderSquadTracker(); doSpin();
@@ -3916,7 +4399,7 @@
 
     // ── SPIN ───────────────────────────────────────────────────────────────────────
     function doSpin() {
-      gtag('event', 'Spin_Completed', {
+      pingEvent('Spin_Completed', {
         league: 'T20 Blast'
       });
       const limit = RESPIN_LIMITS[SETTINGS.diff];
@@ -4327,19 +4810,34 @@
 
       for (const slot of SLOTS) {
         const pool = PDB[slot.role][county] || [];
-        // Find best available player — highest peak rating across all years
-        let best = null, bestRating = 0;
+        // Build candidates — use the player's best year rating so opponents
+        // are drafted at peak form, matching how the player picks their own XI.
+        const candidates = [];
         for (const def of pool) {
           if (taken.has(def.n)) continue;
-          // Get their best year rating
-          const peak = Math.max(...Object.values(def.y));
-          // Also get the rating for their best year (use midpoint year as representative)
-          const years = Object.keys(def.y).map(Number);
-          const midYear = years[Math.floor(years.length / 2)];
-          const rep = def.y[midYear] || peak;
-          if (peak > bestRating) { bestRating = peak; best = { name: def.n, rating: rep, peakRating: peak, role: slot.role, county, year: midYear }; }
+          const entries = Object.entries(def.y).map(([y, r]) => ({ year: parseInt(y), rating: r }));
+          const best = entries.reduce((b, e) => e.rating > b.rating ? e : b, entries[0]);
+          candidates.push({ name: def.n, rating: best.rating, peakRating: best.rating, year: best.year, role: slot.role, county });
         }
-        if (best) { squad.push(best); taken.add(best.name); }
+        candidates.sort((a, b) => b.peakRating - a.peakRating);
+
+        // Weight by rating gap from the top candidate: players within a few points
+        // of the best get high weight; players far below get weight 1.
+        // This means strong counties reliably pick their elite players while
+        // weaker counties — with a flatter pool — get more natural variance.
+        if (candidates.length > 0) {
+          const topR = candidates[0].peakRating;
+          const weights = candidates.map(c => Math.max(1, 10 - (topR - c.peakRating) * 1.5));
+          const totalW = weights.reduce((s, w) => s + w, 0);
+          let pick = null;
+          let rand = Math.random() * totalW;
+          for (let i = 0; i < candidates.length; i++) {
+            rand -= weights[i];
+            if (rand <= 0) { pick = candidates[i]; break; }
+          }
+          if (!pick) pick = candidates[candidates.length - 1];
+          squad.push(pick); taken.add(pick.name);
+        }
       }
 
       // If we didn't fill all slots (small pool), fill with repeats at lower rating
@@ -4360,9 +4858,6 @@
       if (DEV_MODE && (a === MY || b === MY)) {
         aW = a === MY;
       } else {
-        // Exponential scaling so rating gaps matter much more.
-        // A 20-point gap (e.g. 85 vs 65) gives ~82% win chance rather than 57%.
-        // A 10-point gap gives ~73%. Equal teams give 50%.
         const pA = Math.pow(rA, 4);
         const pB = Math.pow(rB, 4);
         aW = Math.random() < pA / (pA + pB);
@@ -4372,11 +4867,85 @@
       const ws = 138 + Math.floor(Math.random() * 58);
       const wk = Math.floor(Math.random() * 7) + 2;
       const ls = Math.max(88, ws - Math.floor(Math.random() * 40) - 3);
-      return { a, b, w, l, ws, ls, wk, batFirst };
+      const winNRR = parseFloat((0.10 + Math.random() * 0.42).toFixed(2));
+      const losNRR = parseFloat((0.10 + Math.random() * 0.32).toFixed(2));
+
+      // Generate player stats for OUR team only (group stage has no scorecard)
+      let myBatStats = null, myBowlStats = null;
+      if ((a === MY || b === MY) && S.squad && S.squad.length) {
+        const myScore = w === MY ? ws : ls;
+        const oppWkts = w === MY ? wk : Math.floor(Math.random() * 7) + 2;
+
+        // ── Batting: distribute myScore across our top 7–9 batters ──────────
+        const batOrder = [...S.squad].sort((p1, p2) => {
+          const ro = ["bat","wk","all","bowl"];
+          return ro.indexOf(p1.role) - ro.indexOf(p2.role);
+        });
+        const contributors = batOrder.slice(0, 9);
+        // Weights: higher rating + top-order = more runs
+        const batWeights = contributors.map((p, i) => {
+          const posW = Math.max(0.3, 1 - i * 0.08);
+          const ratW = (p.rating - 60) / 40 + 0.5;
+          return Math.max(0.1, posW * ratW);
+        });
+        const totalBW = batWeights.reduce((s, w) => s + w, 0);
+        // Assign runs in proportion, then add noise
+        let assigned = 0;
+        myBatStats = contributors.map((p, i) => {
+          const share = (batWeights[i] / totalBW) * myScore;
+          const noise = (Math.random() - 0.5) * share * 0.5;
+          const runs = i < contributors.length - 1
+            ? Math.max(0, Math.round(share + noise))
+            : Math.max(0, myScore - assigned);
+          assigned += runs;
+          // Balls: SR roughly 120–160 for top order, 100–130 for tail
+          const sr = p.role === "bowl" ? 110 + Math.random() * 30
+                   : p.role === "all"  ? 120 + Math.random() * 40
+                   :                     130 + Math.random() * 50;
+          const balls = Math.max(1, Math.round((runs / sr) * 100));
+          return { name: p.name, role: p.role, runs, balls };
+        });
+        // Fix rounding so runs add up to myScore
+        const diff = myScore - myBatStats.reduce((s, p) => s + p.runs, 0);
+        if (myBatStats.length) myBatStats[0].runs = Math.max(0, myBatStats[0].runs + diff);
+
+        // ── Bowling: distribute oppWkts across our bowlers ─────────────────
+        const bowlOrder = [...S.squad].sort((p1, p2) => {
+          const ro = ["bowl","all","wk","bat"];
+          return ro.indexOf(p1.role) - ro.indexOf(p2.role);
+        });
+        const bowlers = bowlOrder.slice(0, 6);
+        const bowlWeights = bowlers.map(p =>
+          p.role === "bowl" ? 3 + (p.rating - 65) / 10
+          : p.role === "all" ? 2 + (p.rating - 65) / 12
+          : 0.5
+        );
+        const totalBowlW = bowlWeights.reduce((s, w) => s + w, 0);
+        // Assign overs (each bowler gets 2–4, max 4)
+        let wktsLeft = oppWkts;
+        myBowlStats = bowlers.map((p, i) => {
+          const overs = Math.min(4, Math.max(1, Math.round(2 + Math.random() * 2)));
+          const wkts = i < bowlers.length - 1
+            ? Math.min(wktsLeft, Math.random() < bowlWeights[i] / totalBowlW * 2.5 ? Math.floor(Math.random() * 3) + 1 : 0)
+            : wktsLeft;
+          wktsLeft = Math.max(0, wktsLeft - wkts);
+          const runsConceded = Math.round(overs * (7 + Math.random() * 4));
+          return { name: p.name, role: p.role, overs, wickets: Math.max(0, wkts), runs: runsConceded };
+        });
+      }
+
+      return { a, b, w, l, ws, ls, wk, batFirst, winNRR, losNRR, myBatStats, myBowlStats };
     }
     function buildTable(teams, res) {
       const t = {}; teams.forEach(x => { t[x] = { team: x, p: 0, w: 0, l: 0, pts: 0, nrr: 0 }; });
-      res.forEach(r => { t[r.w].w++; t[r.w].pts += 2; t[r.w].nrr += parseFloat((0.1 + Math.random() * 0.42).toFixed(2)); t[r.l].l++; t[r.l].nrr -= parseFloat((0.1 + Math.random() * 0.32).toFixed(2)); t[r.w].p++; t[r.l].p++; });
+      res.forEach(r => {
+        // Use stored NRR from simMatch so table is deterministic across multiple calls
+        const wNRR = r.winNRR !== undefined ? r.winNRR : parseFloat((0.10 + Math.random() * 0.42).toFixed(2));
+        const lNRR = r.losNRR !== undefined ? r.losNRR : parseFloat((0.10 + Math.random() * 0.32).toFixed(2));
+        t[r.w].w++; t[r.w].pts += 2; t[r.w].nrr += wNRR;
+        t[r.l].l++; t[r.l].nrr -= lNRR;
+        t[r.w].p++; t[r.l].p++;
+      });
       return Object.values(t).sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
     }
 
@@ -4415,6 +4984,23 @@
 
       simAll = matches.map(([a, b]) => simMatch(a, b, ratings));
       S.groupResults = simAll; simIdx = 0;
+      // Pre-compute accumulated group stats for season review
+      S.groupStats = { bat: {}, bowl: {} };
+      const MY_G = "Your XI";
+      simAll.forEach(r => {
+        if (!r.myBatStats && !r.myBowlStats) return;
+        (r.myBatStats || []).forEach(p => {
+          if (!S.groupStats.bat[p.name]) S.groupStats.bat[p.name] = { runs: 0, balls: 0 };
+          S.groupStats.bat[p.name].runs  += p.runs;
+          S.groupStats.bat[p.name].balls += p.balls;
+        });
+        (r.myBowlStats || []).forEach(p => {
+          if (!S.groupStats.bowl[p.name]) S.groupStats.bowl[p.name] = { wickets: 0, overs: 0, runs: 0 };
+          S.groupStats.bowl[p.name].wickets += p.wickets;
+          S.groupStats.bowl[p.name].overs   += p.overs;
+          S.groupStats.bowl[p.name].runs    += p.runs;
+        });
+      });
 
       document.getElementById("match-feed").innerHTML = "";
       document.getElementById("tbl-wrap").innerHTML = "";
@@ -4506,10 +5092,12 @@
 
     function finishGroup() {
       S.groupTable = buildTable(S.groupTeams, simAll);
-      renderLiveTable();
+      // myPos and qualified must come from the same sorted table shown to the user.
+      // buildTable already sorts by pts desc, then NRR desc — so position is correct.
       const MY = S.myTeam;
       S.myPos = S.groupTable.findIndex(r => r.team === MY) + 1;
       S.qualified = S.myPos <= 4;
+      renderLiveTable();  // render after so the table shown matches S.myPos/qualified
       // Count my wins/losses for display
       const myGames = simAll.filter(r => r.a === MY || r.b === MY);
       const myWins = myGames.filter(r => r.w === MY).length;
@@ -4558,195 +5146,249 @@
       }));
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // MATCH SIMULATION
+    //
+    // Design principles:
+    //   1. Both innings are simulated freely, ball by ball. No predetermined winner.
+    //   2. Team rating influences the *quality of play* — scoring rate and wicket
+    //      probability — so better teams naturally outscore weaker ones.
+    //   3. The second innings knows the target and stops the moment it is reached
+    //      (win) or runs out of overs/wickets (loss). No post-corrections, no caps.
+    //   4. forceWinner biases the ratings for that match only, making the forced
+    //      team play significantly better — it does not override the simulation.
+    // ─────────────────────────────────────────────────────────────────────────────
+
     function simulateFullMatch(teamA, teamB, ratings, forceWinner) {
-      const rA = ratings[teamA] || 65, rB = ratings[teamB] || 65;
-      const pA = Math.pow(rA, 4), pB = Math.pow(rB, 4);
-      const winnerTeam = forceWinner || (Math.random() < pA / (pA + pB) ? teamA : teamB);
-      const loserTeam = winnerTeam === teamA ? teamB : teamA;
-      const winnerBatsFirst = Math.random() < 0.5;
-      const firstBatTeam = winnerBatsFirst ? winnerTeam : loserTeam;
-      const secondBatTeam = winnerBatsFirst ? loserTeam : winnerTeam;
+      const BASE_A = ratings[teamA] || 65;
+      const BASE_B = ratings[teamB] || 65;
 
-      const playersFirst = getTeamPlayers(firstBatTeam);
+      // If a winner is forced, boost their effective rating for this match so they
+      // are very likely to win through natural play, without guaranteeing it.
+      const FORCE_BOOST = 18;
+      const rA = forceWinner === teamA ? Math.min(99, BASE_A + FORCE_BOOST)
+               : forceWinner === teamB ? Math.max(40, BASE_A - FORCE_BOOST)
+               : BASE_A;
+      const rB = forceWinner === teamB ? Math.min(99, BASE_B + FORCE_BOOST)
+               : forceWinner === teamA ? Math.max(40, BASE_B - FORCE_BOOST)
+               : BASE_B;
+
+      const firstBatA   = Math.random() < 0.5;
+      const firstBatTeam  = firstBatA ? teamA : teamB;
+      const secondBatTeam = firstBatA ? teamB : teamA;
+      const rFirst  = firstBatA  ? rA : rB;
+      const rSecond = !firstBatA ? rA : rB;
+
+      const playersFirst  = getTeamPlayers(firstBatTeam);
       const playersSecond = getTeamPlayers(secondBatTeam);
-      const rFirst = firstBatTeam === teamA ? rA : rB;
-      const rSecond = secondBatTeam === teamA ? rA : rB;
 
-      const inns1 = simulateInnings(firstBatTeam, playersFirst, playersSecond, true, null, false, rFirst);
+      const inns1  = simulateInnings(playersFirst,  playersSecond, true,  null,   rFirst);
       const target = inns1.runs + 1;
-      const chaseWin = winnerTeam === secondBatTeam;
-      const inns2 = simulateInnings(secondBatTeam, playersSecond, playersFirst, false, target, chaseWin, rSecond);
+      const inns2  = simulateInnings(playersSecond, playersFirst,  false, target, rSecond);
+
+      const chased = inns2.runs >= target;
+      const winner = chased ? secondBatTeam : firstBatTeam;
+      const loser  = chased ? firstBatTeam  : secondBatTeam;
 
       let marginText;
-      if (winnerBatsFirst) {
-        // Winner batted first — margin = difference in runs, always >= 1
-        const runMargin = Math.max(1, inns1.runs - inns2.runs);
-        marginText = `${winnerTeam} won by ${runMargin} run${runMargin !== 1 ? "s" : ""}`;
+      if (!chased) {
+        const margin = Math.max(1, inns1.runs - inns2.runs);
+        marginText = `${winner} won by ${margin} run${margin !== 1 ? "s" : ""}`;
       } else {
-        // Winner chased — margin = wickets in hand, always 1–10
-        const wktsLeft = Math.max(1, Math.min(10, 10 - inns2.wickets));
-        marginText = `${winnerTeam} won by ${wktsLeft} wicket${wktsLeft !== 1 ? "s" : ""}`;
+        const wktsLeft = Math.max(1, 10 - inns2.wickets);
+        marginText = `${winner} won by ${wktsLeft} wicket${wktsLeft !== 1 ? "s" : ""}`;
       }
 
       return {
-        teamA, teamB, winner: winnerTeam, loser: loserTeam, winnerBatsFirst,
-        inns1: { team: firstBatTeam, ...inns1 },
+        teamA, teamB, winner, loser,
+        winnerBatsFirst: winner === firstBatTeam,
+        inns1: { team: firstBatTeam,  ...inns1 },
         inns2: { team: secondBatTeam, ...inns2 },
         marginText, target
       };
     }
 
-    function simulateInnings(team, batPlayers, fieldPlayers, isFirst, target, chaseWin, quality) {
-      const batters = batPlayers.map(p => ({ name: p.name, role: p.role, runs: 0, balls: 0, out: false, how: "", fours: 0, sixes: 0, batting: false, batted: false }));
-      batters[0].batting = true; batters[1].batting = true;
+    // ─────────────────────────────────────────────────────────────────────────────
+    // INNINGS SIMULATION
+    //
+    // Simulates one innings ball by ball.
+    //   - isFirst=true  → bat until 10 wickets or 20 overs.
+    //   - isFirst=false → also stop immediately when runs >= target (chase won).
+    // No caps, no corrections. What happens, happens.
+    // ─────────────────────────────────────────────────────────────────────────────
 
+    function simulateInnings(batPlayers, fieldPlayers, isFirst, target, quality) {
+      // ── Batting order ──────────────────────────────────────────────────────────
+      const batters = batPlayers.map(p => ({
+        name: p.name, role: p.role,
+        runs: 0, balls: 0, out: false, how: "",
+        fours: 0, sixes: 0, batting: false, batted: false
+      }));
+      batters[0].batting = batters[0].batted = true;
+      batters[1].batting = batters[1].batted = true;
+
+      // ── Bowling attack ─────────────────────────────────────────────────────────
+      // Prefer specialist bowlers, then all-rounders, then the rest.
       const bowlPool = [
         ...fieldPlayers.filter(p => p.role === "bowl"),
         ...fieldPlayers.filter(p => p.role === "all"),
-        ...fieldPlayers.filter(p => p.role === "bat" || p.role === "wk")
+        ...fieldPlayers.filter(p => p.role === "wk"),
+        ...fieldPlayers.filter(p => p.role === "bat"),
       ];
-      const bowlers = bowlPool.slice(0, 6).map(p => ({ name: p.name, role: p.role, overs: 0, balls: 0, runs: 0, wickets: 0, maidens: 0 }));
+      // Up to 6 different bowlers; each capped at 4 overs
+      const bowlers = bowlPool.slice(0, 6).map(p => ({
+        name: p.name, role: p.role,
+        overs: 0, runs: 0, wickets: 0, maidens: 0
+      }));
 
+      // ── State ──────────────────────────────────────────────────────────────────
       let runs = 0, wickets = 0, oversPlayed = 0;
+      let striker = 0, nonStriker = 1;
+      let lastBowler = -1;
       const overScores = [];
-      let batting1 = 0, batting2 = 1;
-      let lastBowlerIdx = -1;
 
-      // For a losing chaser: cap scoring so they never reach target
-      // We'll track a soft ceiling to prevent accidental wins
-      const runCap = (!isFirst && !chaseWin && target) ? target - 1 : Infinity;
-
+      // ── Bowler selector ────────────────────────────────────────────────────────
+      // Rotates fairly; no bowler bowls consecutive overs; max 4 overs each.
       function pickBowler() {
-        let best = -1, bestScore = 99999;
+        // Priority: fewest overs bowled, preferring specialists
+        let best = -1, bestScore = Infinity;
         for (let i = 0; i < bowlers.length; i++) {
-          const b = bowlers[i];
-          if (b.overs >= 4) continue;
-          if (i === lastBowlerIdx) continue;
-          const rolePrio = b.role === "bowl" ? 0 : b.role === "all" ? 1 : 2;
-          const score = b.overs * 10 + rolePrio;
+          if (bowlers[i].overs >= 4) continue;
+          if (i === lastBowler) continue;
+          const prio = bowlers[i].role === "bowl" ? 0 : bowlers[i].role === "all" ? 1 : 2;
+          const score = bowlers[i].overs * 10 + prio;
           if (score < bestScore) { best = i; bestScore = score; }
         }
+        // Fallback: if all at 4 overs or only one option, ignore lastBowler rule
         if (best === -1) {
           for (let i = 0; i < bowlers.length; i++) {
-            if (i !== lastBowlerIdx) { best = i; break; }
+            if (i !== lastBowler) { best = i; break; }
           }
         }
         return best === -1 ? 0 : best;
       }
 
+      // ── Quality → wicket probability ──────────────────────────────────────────
+      // Base wicket chance per ball ~7.5% (gives ~9 wickets per 120 balls on average).
+      // Bowling quality increases it; batting quality decreases it.
+      // Here "quality" is the batting team's rating; fielding team is implicitly
+      // the inverse — if a weak team bats, wickets fall faster.
+      function wicketProb(ov, wktsGone) {
+        const q = Math.max(0, Math.min(1, (quality - 50) / 50));
+        const base = 0.060 - q * 0.018;
+        const tailPressure = wktsGone >= 7 ? 0.020 : wktsGone >= 5 ? 0.010 : wktsGone * 0.002;
+        return Math.min(0.20, base + tailPressure + (ov > 16 ? 0.005 : 0));
+      }
+
+      // ── Main loop ─────────────────────────────────────────────────────────────
       for (let ov = 0; ov < 20; ov++) {
-        // Winning chaser: stop as soon as target reached
-        if (!isFirst && chaseWin && runs >= target) { oversPlayed = ov; break; }
-        // All out
         if (wickets >= 10) { oversPlayed = ov; break; }
+        if (!isFirst && runs >= target) { oversPlayed = ov; break; }
 
-        const bowlerIdx = pickBowler();
-        const activeBowler = bowlers[bowlerIdx];
-        lastBowlerIdx = bowlerIdx;
+        const bi = pickBowler();
+        lastBowler = bi;
+        const bowl = bowlers[bi];
 
-        let overRuns = 0, overWkts = 0;
-        let maiden = true;
+        let overRuns = 0, overWkts = 0, maiden = true;
         const balls = [];
-        let inningsComplete = false;
+        let overDone = false;
 
         for (let b = 0; b < 6; b++) {
-          if (wickets >= 10) { inningsComplete = true; break; }
-          if (!isFirst && chaseWin && runs >= target) { inningsComplete = true; break; }
+          if (wickets >= 10)                       { overDone = true; break; }
+          if (!isFirst && runs >= target)           { overDone = true; break; }
 
-          const wktChance = 0.048 + (wickets * 0.006) + (ov > 16 ? 0.012 : 0);
-          const currentBatterRole = batPlayers[batting1] ? batPlayers[batting1].role : "bat";
-
-          if (Math.random() < wktChance) {
-            wickets++; overWkts++;
-            batters[batting1].out = true;
-            const how = DISMISSALS[Math.floor(Math.random() * DISMISSALS.length)];
-            batters[batting1].how = DISMISSAL_FULL[how] || how;
-            batters[batting1].batting = false;
+          if (Math.random() < wicketProb(ov, wickets)) {
+            // ── Dismissal ────────────────────────────────────────────────────
+            wickets++;
+            batters[striker].out    = true;
+            batters[striker].batting = false;
+            batters[striker].how    = DISMISSAL_FULL[DISMISSALS[Math.floor(Math.random() * DISMISSALS.length)]] || "out";
             balls.push("W");
             maiden = false;
-            activeBowler.wickets++;
-            const nextIn = wickets + 1;
-            if (nextIn < 11) { batting1 = nextIn; batters[nextIn].batting = true; batters[nextIn].batted = true; }
-          } else {
-            let r = weightedRun(quality, ov, currentBatterRole);
-            // Losing chaser: never let runs reach target
-            if (!isFirst && !chaseWin && target) {
-              r = Math.min(r, runCap - runs);
-              if (r < 0) r = 0;
+            bowl.wickets++;
+            overWkts++;
+            const nextIn = wickets + 1; // batters[0..10], wickets already counts this one
+            if (nextIn < 11) {
+              striker = nextIn;
+              batters[striker].batting = batters[striker].batted = true;
             }
-            batters[batting1].runs += r;
-            batters[batting1].balls++;
-            batters[batting1].batted = true;
-            if (r === 4) batters[batting1].fours++;
-            if (r === 6) batters[batting1].sixes++;
+          } else {
+            // ── Scoring delivery ─────────────────────────────────────────────
+            const r = ballRuns(quality, ov, batPlayers[striker]?.role ?? "bat");
+            batters[striker].runs  += r;
+            batters[striker].balls += 1;
+            batters[striker].batted = true;
+            if (r === 4) batters[striker].fours++;
+            if (r === 6) batters[striker].sixes++;
             if (r > 0) maiden = false;
-            if (r % 2 === 1) { const t = batting1; batting1 = batting2; batting2 = t; }
-            runs += r; overRuns += r;
-            activeBowler.runs += r;
+            // Odd run = batters cross
+            if (r % 2 === 1) { const tmp = striker; striker = nonStriker; nonStriker = tmp; }
+            runs     += r;
+            overRuns += r;
+            bowl.runs += r;
             balls.push(r);
           }
         }
-        if (maiden) activeBowler.maidens++;
-        activeBowler.overs++;
 
-        const t = batting1; batting1 = batting2; batting2 = t;
+        if (maiden) bowl.maidens++;
+        bowl.overs++;
         oversPlayed = ov + 1;
 
-        const batterSnap = batters.map(b => ({ ...b }));
-        const bowlerSnap = bowlers.map(b => ({ ...b }));
+        // End-of-over: batters cross
+        const tmp = striker; striker = nonStriker; nonStriker = tmp;
 
         overScores.push({
-          runs: overRuns, wickets: overWkts, balls,
-          total: runs, wkts: wickets, over: ov + 1,
-          batterSnap, bowlerSnap
+          over: ov + 1, runs: overRuns, wickets: overWkts, balls,
+          total: runs, wkts: wickets,
+          batterSnap: batters.map(b => ({ ...b })),
+          bowlerSnap:  bowlers.map(b => ({ ...b }))
         });
 
-        if (inningsComplete) break;
+        if (overDone) break;
       }
 
-      // Winning chaser: if they should win but still fell short (all out before reaching target),
-      // add the needed runs to the last over's snapshot only — don't extend the innings
-      if (!isFirst && chaseWin && runs < target) {
-        let diff = target - runs;
-        const nb = batters.find(b => b.batting && !b.out) || batters.find(b => !b.out && b.batted) || batters[0];
-        const nb2 = batters.find(b => b.batting && !b.out && b !== nb) || batters.find(b => !b.out && b.batted && b !== nb);
-        let striker = nb;
-        while (diff > 0) {
-          const r = Math.min(diff, Math.random() < 0.3 ? 6 : Math.random() < 0.45 ? 4 : Math.random() < 0.5 ? 2 : 1);
-          if (striker) { striker.runs += r; striker.balls++; striker.batted = true; if (r === 4) striker.fours++; if (r === 6) striker.sixes++; if (r % 2 === 1 && nb2) striker = (striker === nb) ? nb2 : nb; }
-          diff -= r; runs += r;
-        }
-        if (overScores.length > 0) {
-          const last = overScores[overScores.length - 1];
-          last.total = runs;
-          last.batterSnap = batters.map(b => ({ ...b }));
-          last.bowlerSnap = bowlers.map(b => ({ ...b }));
-        }
-      }
+      // ── Tidy up dismissal text ─────────────────────────────────────────────────
+      batters.forEach(b => {
+        if (!b.out && b.batted)  b.how = "not out";
+        if (!b.batted)           b.how = "did not bat";
+      });
 
-      batters.forEach(b => { if (!b.out && b.batted) b.how = "not out"; });
-      batters.forEach(b => { if (!b.batted && !b.out) b.how = "did not bat"; });
-
-      const extras = Math.floor(Math.random() * 10 + 2);
+      const extras      = Math.floor(Math.random() * 10 + 2);
       const usedBowlers = bowlers.filter(b => b.overs > 0);
 
       return { runs, wickets, oversPlayed, overScores, batters, bowlers: usedBowlers, extras };
     }
 
-    function weightedRun(quality, over, role) {
-      const boost = over > 15 ? 1.3 : over > 10 ? 1.1 : 1;
-      const q = Math.min(1.3, quality / 72);
-      // Role modifier: bowlers score ~40% less, allrounders ~15% less
-      const roleMod = role === "bowl" ? 0.58 : role === "wk" ? 0.88 : role === "all" ? 0.85 : 1.0;
+    // ─────────────────────────────────────────────────────────────────────────────
+    // BALL RUNS
+    //
+    // Returns the runs scored off one non-wicket delivery.
+    // Distribution is fixed and always sums to 1.0.
+    // Quality shifts the mix: better teams hit more boundaries, fewer dots.
+    // Phase (powerplay / middle / death) adjusts boundary and dot rates.
+    // Role adjusts for tailenders and keepers.
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    function ballRuns(quality, over, role) {
+      const q = Math.max(0, Math.min(1, (quality - 50) / 50));
+      const isPP = over < 6, isDeath = over > 15;
+      const bMod = isPP ? 0.03 : isDeath ? 0.05 : 0;
+      const dMod = isPP ? -0.02 : isDeath ? -0.03 : 0;
+      const rDA  = role === "bowl" ? 0.10 : role === "wk" ? 0.03 : role === "all" ? 0.04 : 0;
+      const rBS  = role === "bowl" ? 0.08 : role === "wk" ? 0.02 : role === "all" ? 0.03 : 0;
+      const pDot   = Math.max(0.10, 0.36 - q * 0.10 + dMod + rDA);
+      const pOne   = 0.29;
+      const pTwo   = 0.13;
+      const pFour  = Math.max(0.04, 0.11 + q * 0.05 + bMod - rBS);
+      const pThree = 0.04;
+      const pSix   = Math.max(0.01, 1 - pDot - pOne - pTwo - pFour - pThree);
       const r = Math.random();
-      const adj = boost * q * roleMod;
-      if (r < 0.30 * adj) return 1;
-      if (r < 0.47 * adj) return 2;
-      if (r < 0.56 * adj) return 0;
-      if (r < 0.68 * adj) return 4;
-      if (r < 0.74 * adj) return 3;
-      if (r < 0.83 * adj) return 6;
-      return 0;
+      let c = pDot;    if (r < c) return 0;
+      c += pOne;       if (r < c) return 1;
+      c += pTwo;       if (r < c) return 2;
+      c += pFour;      if (r < c) return 4;
+      c += pThree;     if (r < c) return 3;
+      return 6;
     }
 
     // ── SCORECARD DISPLAY ──────────────────────────────────────────────────────────
@@ -5270,11 +5912,13 @@
 
       if (phase === "qf") {
         S.qfWon = matchData.winner === MY;
+        S.qfMatch = matchData;
         S.qfRes.push({ a: pair[0], b: pair[1], w: matchData.winner, l: matchData.loser, ws: matchData.inns1.runs, ls: matchData.inns2.runs, wk: matchData.inns2.wickets, batFirst: matchData.winnerBatsFirst });
         matchData._next = S.qfWon ? () => doKO('fd') : () => showOverview();
         matchData._label = S.qfWon ? "Finals Day →" : "Season overview →";
       } else if (phase === "sf") {
         S.sfWon = matchData.winner === MY;
+        S.sfMatch = matchData;
         const otherW = S._otherSFRes ? S._otherSFRes.w : (pair[0] === MY ? pair[1] : pair[0]);
         S.sfRes = [{ a: pair[0], b: pair[1], w: matchData.winner, l: matchData.loser }, { a: "a", b: "b", w: otherW, l: "c" }];
         matchData._next = S.sfWon ? () => doKO('f') : () => showOverview();
@@ -5319,6 +5963,9 @@
     // ── OVERVIEW ───────────────────────────────────────────────────────────────────
     function showOverview() {
       const MY = S.myTeam;
+      // Reset layout state from any previous run
+      const lower = document.querySelector(".ov-lower");
+      if (lower) lower.classList.remove("ov-lower-full");
       const gr = (S.groupTable || []).find(r => r.team === MY) || { w: 0, l: 16, pts: 0 };
       const myGames = S.groupResults ? S.groupResults.filter(r => r.a === MY || r.b === MY) : [];
       const groupWins = myGames.filter(r => r.w === MY).length;
@@ -5371,7 +6018,7 @@
 
       // Outcome icons/verdict for header
       const oh = document.getElementById("ov-header");
-      if (S.finalWon) { oh.className = "ov-header ovh-won"; document.getElementById("ov-icon").textContent = "🏆"; document.getElementById("ov-result").textContent = "T20 Blast Champions!"; document.getElementById("ov-sub").textContent = "Lifted the trophy at Edgbaston — went 19-0!"; }
+      if (S.finalWon) { oh.className = "ov-header ovh-won"; document.getElementById("ov-icon").textContent = "🏆"; document.getElementById("ov-result").textContent = "T20 Blast Champions!"; const went190 = (groupWins === 16); document.getElementById("ov-sub").textContent = went190 ? "Lifted the trophy at Edgbaston — went 19-0!" : "Lifted the T20 Blast trophy at Edgbaston!"; }
       else if (S.sfWon) { oh.className = "ov-header ovh-final"; document.getElementById("ov-icon").textContent = "🥈"; document.getElementById("ov-result").textContent = "Runners-up"; document.getElementById("ov-sub").textContent = "Finals Day — fell just short in the final"; }
       else if (S.qfWon) { oh.className = "ov-header ovh-final"; document.getElementById("ov-icon").textContent = "🏟️"; document.getElementById("ov-result").textContent = "Semi-finalists"; document.getElementById("ov-sub").textContent = "Made it to Finals Day at Edgbaston"; }
       else { oh.className = "ov-header ovh-early"; document.getElementById("ov-icon").textContent = S.qualified ? "🎟️" : "📋"; document.getElementById("ov-result").textContent = S.qualified ? "Quarter-finalists" : "Eliminated in the group"; document.getElementById("ov-sub").textContent = S.qualified ? `Finished ${ordinal(S.myPos)} · knocked out in the quarters` : `Finished ${ordinal(S.myPos)} of 9 — only top 4 advance`; }
@@ -5424,6 +6071,73 @@
       const OV_ORDER = ["bat", "wk", "all", "bowl"];
       const ovSorted = [...S.squad].sort((a, b) => OV_ORDER.indexOf(a.role) - OV_ORDER.indexOf(b.role));
       document.getElementById("ov-squad").innerHTML = ovSorted.map(p => `<div class="squad-item si-${p.role}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.county} · ${p.year}</div></div><div class="si-right"><span class="rp-badge rpb-${p.role}">${RL[p.role]}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`).join("");
+
+      // ── Season stats: merge group stage + knockout totals ──────────────────
+      const runTotals = {}, wktTotals = {}, ballsFaced = {};
+
+      // Group stage stats (generated alongside simMatch results)
+      if (S.groupStats) {
+        for (const [name, s] of Object.entries(S.groupStats.bat || {})) {
+          runTotals[name]  = (runTotals[name]  || 0) + s.runs;
+          ballsFaced[name] = (ballsFaced[name] || 0) + s.balls;
+        }
+        for (const [name, s] of Object.entries(S.groupStats.bowl || {})) {
+          wktTotals[name] = (wktTotals[name] || 0) + s.wickets;
+        }
+      }
+
+      // KO stage stats (from full ball-by-ball innings data)
+      const koMatches = [S.qfMatch, S.sfMatch, S.finalRes].filter(Boolean);
+      for (const m of koMatches) {
+        const myInns  = m.inns1.team === MY ? m.inns1 : m.inns2.team === MY ? m.inns2 : null;
+        const oppInns = m.inns1.team === MY ? m.inns2  : m.inns2.team === MY ? m.inns1  : null;
+        if (myInns?.batters)  for (const b of myInns.batters)  { if (!b.batted) continue; runTotals[b.name]  = (runTotals[b.name]  || 0) + b.runs;  ballsFaced[b.name] = (ballsFaced[b.name] || 0) + b.balls; }
+        if (oppInns?.bowlers) for (const b of oppInns.bowlers) { if (!b.overs)  continue; wktTotals[b.name]  = (wktTotals[b.name]  || 0) + b.wickets; }
+      }
+
+      const topBat  = Object.entries(runTotals).sort((a, b) => b[1] - a[1])[0];
+      const topBowl = Object.entries(wktTotals).sort((a, b) => b[1] - a[1])[0];
+
+      // MVP = runs/25 + wickets*2
+      const mvpScore = {};
+      for (const [n, r] of Object.entries(runTotals)) mvpScore[n] = (mvpScore[n] || 0) + r / 25;
+      for (const [n, w] of Object.entries(wktTotals)) mvpScore[n] = (mvpScore[n] || 0) + w * 2;
+      const topMVP = Object.entries(mvpScore).sort((a, b) => b[1] - a[1])[0];
+
+      const hasStats = topBat || topBowl;
+      const statsEl = document.getElementById("ov-season-stats");
+      if (hasStats) {
+        const batBalls = topBat ? (ballsFaced[topBat[0]] || 0) : 0;
+        const batSR = batBalls > 0 ? ((topBat[1] / batBalls) * 100).toFixed(0) : "—";
+        const scope = koMatches.length > 0 ? "Full season" : "Group stage";
+        statsEl.innerHTML =
+          (topBat ? `<div class="stat-card">
+            <div class="stat-card-label">Most Runs</div>
+            <div class="stat-card-name">${topBat[0].split(" ").slice(-1)[0]}</div>
+            <div class="stat-card-val">${topBat[1]}</div>
+            <div class="stat-card-sub">SR ${batSR} · ${scope}</div>
+          </div>` : "") +
+          (topBowl ? `<div class="stat-card">
+            <div class="stat-card-label">Most Wickets</div>
+            <div class="stat-card-name">${topBowl[0].split(" ").slice(-1)[0]}</div>
+            <div class="stat-card-val">${topBowl[1]}</div>
+            <div class="stat-card-sub">${topBowl[1] === 1 ? "wicket" : "wickets"} · ${scope}</div>
+          </div>` : "") +
+          (topMVP ? `<div class="stat-card mvp-card">
+            <div class="stat-card-label">⭐ MVP</div>
+            <div class="stat-card-name">${topMVP[0].split(" ").slice(-1)[0]}</div>
+            <div class="stat-card-val">${
+              [runTotals[topMVP[0]] ? runTotals[topMVP[0]] + " runs" : "",
+               wktTotals[topMVP[0]] ? wktTotals[topMVP[0]] + " wkts" : ""].filter(Boolean).join(" · ")
+            }</div>
+            <div class="stat-card-sub">${scope}</div>
+          </div>` : "");
+      } else {
+        statsEl.innerHTML = "";
+        const lower = document.querySelector(".ov-lower");
+        if (lower) lower.classList.add("ov-lower-full");
+      }
+
       go("s-over");
     }
     function genQuote(pos, w, qual, qf, sf, fin) {
@@ -5439,9 +6153,7 @@
     function ordinal(n) { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 
     function launchConfetti() {
-      gtag('event', 'Finals_Won', {
-        league: 'T20 Blast'
-      });
+      pingEvent('Finals_Won', { league: 'T20 Blast' });
       const canvas = document.createElement("canvas");
       canvas.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999";
       document.body.appendChild(canvas);
@@ -5486,6 +6198,300 @@
       draw();
     }
   </script>
+
+  <!-- ── COOKIE BANNER ─────────────────────────────────────── -->
+  <div id="cookie-banner" style="display:none">
+    <p>We use cookies to measure how the game is being played — nothing else.
+      No advertising, no selling your data.
+      <a onclick="openPrivacy()">Privacy policy</a>
+    </p>
+    <div class="cookie-btns">
+      <button class="btn-cookie-decline" onclick="declineCookies()">Decline</button>
+      <button class="btn-cookie-accept" onclick="acceptCookies()">Accept</button>
+    </div>
+  </div>
+
+  <!-- ── PRIVACY MODAL ─────────────────────────────────────── -->
+  <div id="privacy-modal">
+    <div class="priv-box">
+      <h2>Privacy Policy</h2>
+      <p>19-0 is a free fan-made game. Here's exactly what we do and don't do with your data.</p>
+
+      <h3>What we collect</h3>
+      <p>If you accept cookies, we use <strong>Google Analytics</strong> to collect anonymous usage data — things like which screens are visited and how often a run is completed. This helps us understand how the game is played and improve it.</p>
+      <ul>
+        <li>No personal information (name, email, etc.) is ever collected</li>
+        <li>No data is sold to third parties</li>
+        <li>No advertising cookies are used</li>
+      </ul>
+
+      <h3>If you decline</h3>
+      <p>No cookies are set and no analytics data is collected. The game works identically either way.</p>
+
+      <h3>Your choices</h3>
+      <p>You can change your preference at any time using the cookie settings link in the footer. Google's privacy policy is available at <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.</p>
+
+      <h3>Data storage</h3>
+      <p>Game progress (your high score and run count) is saved locally in your browser using <strong>localStorage</strong>. This data never leaves your device.</p>
+
+      <h3>Contact</h3>
+      <p>Questions? The game is an unofficial fan project — find us on <a href="https://twitter.com" target="_blank" rel="noopener">X/Twitter</a>.</p>
+
+      <button class="btn-priv-close" onclick="closePrivacy()">Close</button>
+    </div>
+  </div>
+
+  <!-- ── FOOTER (appended to body, visible on home screen) ─── -->
+  <script>
+    // Append footer to home screen
+    document.addEventListener('DOMContentLoaded', function() {
+      var home = document.getElementById('s-home');
+      if (home) {
+        var footer = document.createElement('div');
+        footer.className = 'site-footer';
+        footer.innerHTML =
+          '<div style="display:flex;gap:8px;margin-bottom:16px">' +
+            '<a href="https://www.buymeacoffee.com/19_0" target="_blank" rel="noopener" style="flex:1;display:block;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:800;text-decoration:none;">☕ Enjoying 19-0?</a>' +
+            '<a href="mailto:george.19-0@outlook.com" style="flex:1;display:block;background:#16161f;border:1px solid #252535;color:#c0c0d8;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;">✉ Contact Us</a>' +
+          '</div>' +
+          '<p>19-0 is an unofficial fan project, not affiliated with or endorsed by the ECB, Vitality T20 Blast, or any county cricket club. Player and team names are used for entertainment purposes only. T20 Blast is a registered trademark of the England and Wales Cricket Board.</p>' +
+          '<p style="margin-top:8px">&copy; 2026 19-0 &nbsp;·&nbsp; <a onclick="openPrivacy()">Privacy policy</a> &nbsp;·&nbsp; <a onclick="showCookieBanner()">Cookie settings</a></p>';
+        home.appendChild(footer);
+      }
+
+      // Show cookie banner if no decision yet
+      if (!localStorage.getItem('cookie_consent')) {
+        showCookieBanner();
+      }
+    });
+
+    function showCookieBanner() {
+      var b = document.getElementById('cookie-banner');
+      if (b) b.style.display = 'flex';
+    }
+
+    function acceptCookies() {
+      localStorage.setItem('cookie_consent', 'accepted');
+      document.getElementById('cookie-banner').style.display = 'none';
+      gtag('consent', 'update', { analytics_storage: 'granted' });
+      loadAnalytics();
+    }
+
+    function declineCookies() {
+      localStorage.setItem('cookie_consent', 'declined');
+      document.getElementById('cookie-banner').style.display = 'none';
+    }
+
+    function openPrivacy() {
+      document.getElementById('privacy-modal').classList.add('open');
+    }
+
+    function closePrivacy() {
+      document.getElementById('privacy-modal').classList.remove('open');
+    }
+
+    // Close modal on backdrop click
+    document.addEventListener('click', function(e) {
+      var modal = document.getElementById('privacy-modal');
+      if (e.target === modal) closePrivacy();
+    });
+  </script>
+
+  <!-- ── SHARE CARD (off-screen, captured by html2canvas) ──────────────────── -->
+  <div id="share-card"></div>
+
+  <!-- ── SHARE MODAL ───────────────────────────────────────────────────────── -->
+  <div id="share-modal">
+    <div class="share-sheet">
+      <h3>Share your season</h3>
+      <div class="share-preview-wrap" id="share-preview-wrap"></div>
+      <button class="btn-share-native" id="btn-native-share" onclick="nativeShare()" style="display:none">📤 Share</button>
+      <div class="share-actions">
+        <button class="btn-share-save" onclick="saveShareImage()">⬇ Save image</button>
+        <button class="btn-share-save" onclick="copyShareImage()">📋 Copy image</button>
+      </div>
+      <button class="btn-share-close" onclick="closeShareModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // ── Share card logic ─────────────────────────────────────────────────────
+
+    function buildShareCard() {
+      const MY = S.myTeam;
+      const RL = { bat: "BAT", all: "AR", bowl: "BOWL", wk: "WK" };
+      const ROLE_BG  = { bat: "#0e1d3a", wk: "#2a1400", all: "#1e0e3a", bowl: "#0a1e0e" };
+      const ROLE_COL = { bat: "#60a5fa", wk: "#fb923c", all: "#c084fc", bowl: "#4ade80" };
+
+      function rColor(r) {
+        if (r >= 85) return "#ff4d6d";
+        if (r >= 75) return "#ffd700";
+        if (r >= 65) return "#a0b0c8";
+        return "#cd7f32";
+      }
+
+      const myGames = S.groupResults ? S.groupResults.filter(r => r.a === MY || r.b === MY) : [];
+      const groupWins = myGames.filter(r => r.w === MY).length;
+      const koWins = (S.qfWon ? 1 : 0) + (S.sfWon ? 1 : 0) + (S.finalWon ? 1 : 0);
+      const totalWins   = groupWins + koWins;
+      const totalLosses = (16 - groupWins) + (S.qualified && !S.qfWon ? 1 : 0) + (S.qfWon && !S.sfWon ? 1 : 0) + (S.sfWon && !S.finalWon ? 1 : 0);
+
+      // Result label + colour class
+      let finishText, finishCls;
+      if (S.finalWon)      { finishText = groupWins === 16 ? "Champions · 19-0 🏆" : "T20 Blast Champions 🏆"; finishCls = "sc-finish-won"; }
+      else if (S.sfWon)    { finishText = "Runners-up 🥈"; finishCls = "sc-finish-final"; }
+      else if (S.qfWon)    { finishText = "Semi-finalists 🏟️"; finishCls = "sc-finish-sf"; }
+      else if (S.qualified){ finishText = "Quarter-finalists 🎟️"; finishCls = "sc-finish-qf"; }
+      else                  { finishText = `${ordinal(S.myPos || 9)} in the group`; finishCls = "sc-finish-out"; }
+
+      // W-D-L colours (all wins green, losses red)
+      const wCol = "#4ade80", lCol = "#f87171", dCol = "#fbbf24";
+
+      // Squad sorted
+      const OV_ORDER = ["bat","wk","all","bowl"];
+      const sorted = [...S.squad].sort((a,b) => OV_ORDER.indexOf(a.role) - OV_ORDER.indexOf(b.role));
+
+      // Full season stats (group + KO)
+      const koMatches = [S.qfMatch, S.sfMatch, S.finalRes].filter(Boolean);
+      const runTotals = {}, wktTotals = {}, ballsFaced = {};
+      if (S.groupStats) {
+        for (const [n, s] of Object.entries(S.groupStats.bat  || {})) { runTotals[n]  = (runTotals[n]  || 0) + s.runs;    ballsFaced[n] = (ballsFaced[n] || 0) + s.balls; }
+        for (const [n, s] of Object.entries(S.groupStats.bowl || {})) { wktTotals[n]  = (wktTotals[n]  || 0) + s.wickets; }
+      }
+      for (const m of koMatches) {
+        const myInns  = m.inns1.team === MY ? m.inns1 : m.inns2.team === MY ? m.inns2 : null;
+        const oppInns = m.inns1.team === MY ? m.inns2 : m.inns2.team === MY ? m.inns1 : null;
+        if (myInns?.batters)  for (const b of myInns.batters)  { if(!b.batted)continue; runTotals[b.name]=(runTotals[b.name]||0)+b.runs; ballsFaced[b.name]=(ballsFaced[b.name]||0)+b.balls; }
+        if (oppInns?.bowlers) for (const b of oppInns.bowlers) { if(!b.overs)continue; wktTotals[b.name]=(wktTotals[b.name]||0)+b.wickets; }
+      }
+      const topBat  = Object.entries(runTotals).sort((a,b)=>b[1]-a[1])[0];
+      const topBowl = Object.entries(wktTotals).sort((a,b)=>b[1]-a[1])[0];
+
+      const avgRating = Math.round(sorted.reduce((s,p)=>s+p.rating,0)/sorted.length);
+
+      const xiHTML = sorted.map(p => `
+        <div class="sc-xi-row">
+          <div class="sc-xi-badge" style="background:${ROLE_BG[p.role]};color:${ROLE_COL[p.role]}">${RL[p.role]}</div>
+          <div class="sc-xi-name">${p.name}</div>
+          <div class="sc-xi-rat" style="color:${rColor(p.rating)}">${p.rating}</div>
+        </div>`).join("");
+
+      const awardsHTML = [
+        topBat  ? `<div class="sc-stat-cell"><div class="sc-stat-lbl">🏏 Most Runs</div><div class="sc-stat-name">${topBat[0].split(" ").slice(-1)[0]}</div><div class="sc-stat-val">${topBat[1]} runs</div></div>` : "",
+        topBowl ? `<div class="sc-stat-cell"><div class="sc-stat-lbl">🎯 Most Wickets</div><div class="sc-stat-name">${topBowl[0].split(" ").slice(-1)[0]}</div><div class="sc-stat-val">${topBowl[1]} wkts</div></div>` : "",
+      ].filter(Boolean).join("");
+
+      document.getElementById("share-card").innerHTML = `
+        <div class="sc-top-bar">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div class="sc-brand">19-0</div>
+            <div style="font-size:11px;color:#606080;font-weight:700;letter-spacing:.3px">${MY}</div>
+          </div>
+          <div class="sc-ovr">OVR ${avgRating}</div>
+        </div>
+        <div class="sc-result-band">
+          <div class="sc-result-big">
+            <span style="color:${wCol}">${totalWins}</span><span style="color:#252535">-</span><span style="color:${lCol}">${totalLosses}</span>
+          </div>
+          <div class="sc-result-label">Won · Lost</div>
+          <div class="sc-result-finish ${finishCls}">${finishText}</div>
+        </div>
+        <div class="sc-xi-section">
+          <div class="sc-xi-label">Your XI</div>
+          <div class="sc-xi-grid">${xiHTML}</div>
+        </div>
+        ${awardsHTML ? `<div class="sc-stats-strip">${awardsHTML}</div>` : ""}
+        <div class="sc-footer">
+          <div class="sc-verified">✓ Verified result</div>
+          <div class="sc-url">19-0.co.uk</div>
+        </div>`;
+    }
+
+    let _shareImgDataUrl = null;
+
+    async function openShareModal() {
+      buildShareCard();
+
+      // Load html2canvas if not already loaded
+      if (!window.html2canvas) {
+        await new Promise((res, rej) => {
+          const s = document.createElement("script");
+          s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+          s.onload = res; s.onerror = rej;
+          document.head.appendChild(s);
+        });
+      }
+
+      const card = document.getElementById("share-card");
+      card.style.left = "-9999px";
+
+      const canvas = await html2canvas(card, {
+        backgroundColor: "#0d0d14",
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+
+      _shareImgDataUrl = canvas.toDataURL("image/png");
+
+      // Show preview
+      const preview = document.getElementById("share-preview-wrap");
+      preview.innerHTML = `<img src="${_shareImgDataUrl}" alt="Season result card">`;
+
+      // Show native share button on mobile if Web Share API is available
+      const nativeBtn = document.getElementById("btn-native-share");
+      if (nativeBtn) nativeBtn.style.display = navigator.share ? "block" : "none";
+
+      document.getElementById("share-modal").classList.add("open");
+    }
+
+    function closeShareModal() {
+      document.getElementById("share-modal").classList.remove("open");
+    }
+
+    function saveShareImage() {
+      if (!_shareImgDataUrl) return;
+      const a = document.createElement("a");
+      a.href = _shareImgDataUrl;
+      a.download = "19-0-season.png";
+      a.click();
+    }
+
+    async function copyShareImage() {
+      if (!_shareImgDataUrl) return;
+      try {
+        const res = await fetch(_shareImgDataUrl);
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        const btn = event.target;
+        btn.textContent = "✅ Copied!";
+        setTimeout(() => btn.textContent = "📋 Copy image", 2000);
+      } catch(e) {
+        // Fallback: open in new tab so user can long-press save
+        const w = window.open();
+        w.document.write(`<img src="${_shareImgDataUrl}" style="max-width:100%">`);
+      }
+    }
+    async function nativeShare() {
+      if (!_shareImgDataUrl || !navigator.share) return;
+      try {
+        const res = await fetch(_shareImgDataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], "19-0-season.png", { type: "image/png" });
+        await navigator.share({
+          title: "19-0 · T20 Blast Draft",
+          text: "Check out my 19-0 T20 Blast season!",
+          files: [file]
+        });
+      } catch(e) {
+        if (e.name !== "AbortError") {
+          // Fallback to URL share without image
+          try { await navigator.share({ title: "19-0", url: "https://19-0.app" }); } catch(_) {}
+        }
+      }
+    }
+  </script>
+
 </body>
 
 </html>
