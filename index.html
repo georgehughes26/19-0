@@ -4392,9 +4392,9 @@
     // Get effective rating based on current settings
     function getEffectiveRating(def, year) {
       if (SETTINGS.rating === 'prime') {
-        // Prime mode: show if they played any year, use best rating
-        const hasAnyYear = Object.keys(def.y).length > 0;
-        return hasAnyYear ? getPrimeRating(def) : null;
+        // Prime mode: player must have played that year, but use their peak rating
+        const playedThatYear = getPlayerYear(def, year) !== null;
+        return playedThatYear ? getPrimeRating(def) : null;
       }
       return getPlayerYear(def, year);
     }
