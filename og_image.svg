@@ -1,0 +1,52 @@
+<svg width="100%" viewBox="0 0 690 367" role="img" style="" xmlns="http://www.w3.org/2000/svg">
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">19-0 OG image — T20 Blast Draft Simulator</title>
+  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Social share preview card for 19-0, the T20 Blast draft simulator</desc>
+
+  <rect width="680" height="357" fill="#0f0f13" rx="0" style="fill:rgb(15, 15, 19);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Subtle grid texture -->
+  <line x1="0" y1="178" x2="680" y2="178" stroke="#1a1a22" stroke-width="0.5" mask="url(#imagine-text-gaps-n40a98)" style="fill:rgb(0, 0, 0);stroke:rgb(26, 26, 34);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="340" y1="0" x2="340" y2="357" stroke="#1a1a22" stroke-width="0.5" mask="url(#imagine-text-gaps-n40a98)" style="fill:rgb(0, 0, 0);stroke:rgb(26, 26, 34);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Glow blob behind logo -->
+  <ellipse cx="340" cy="155" rx="180" ry="90" fill="#f9c846" opacity="0.07" style="fill:rgb(249, 200, 70);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.07;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Big 19-0 logo text -->
+  <text x="340" y="175" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="130" font-weight="800" letter-spacing="-6" fill="url(#logoGrad)" style="stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, -apple-system, sans-serif;font-size:130px;font-weight:800;text-anchor:middle;dominant-baseline:auto">19-0</text>
+
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f9c846"/>
+      <stop offset="50%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+  <mask id="imagine-text-gaps-n40a98" maskUnits="userSpaceOnUse"><rect x="0" y="0" width="690" height="367" fill="white"/><rect x="200.46682739257812" y="47.29206466674805" width="279.8971862792969" height="157.3968963623047" fill="black" rx="2"/><rect x="172.29762268066406" y="217.4941864013672" width="335.40478515625" height="22.828500747680664" fill="black" rx="2"/><rect x="154.14404296875" y="252.7093048095703" width="371.7119445800781" height="20.059602737426758" fill="black" rx="2"/><rect x="145.33746337890625" y="298.3706359863281" width="79.32505798339844" height="18.39826488494873" fill="black" rx="2"/><rect x="292.792236328125" y="298.3706359863281" width="94.4155502319336" height="18.39826488494873" fill="black" rx="2"/><rect x="461.6237487792969" y="298.3706359863281" width="66.75253677368164" height="18.39826488494873" fill="black" rx="2"/><rect x="279.925537109375" y="331.3706359863281" width="120.14898681640625" height="18.39826488494873" fill="black" rx="2"/></mask></defs>
+
+  <!-- Divider line -->
+  <line x1="80" y1="205" x2="600" y2="205" stroke="#252535" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(37, 37, 53);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Tagline -->
+  <text x="340" y="235" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="600" fill="#9090a8" letter-spacing="3" style="fill:rgb(144, 144, 168);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, -apple-system, sans-serif;font-size:16px;font-weight:600;text-anchor:middle;dominant-baseline:auto">
+    T20 BLAST · DRAFT SIMULATOR
+  </text>
+
+  <!-- Sub copy -->
+  <text x="340" y="268" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="400" fill="#606070" style="fill:rgb(96, 96, 112);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, -apple-system, sans-serif;font-size:14px;font-weight:400;text-anchor:middle;dominant-baseline:auto">
+    Spin the county. Draft your all-time XI. Can you go 19-0?
+  </text>
+
+  <!-- Stat pills -->
+  <rect x="120" y="292" width="130" height="30" rx="15" fill="#16161f" stroke="#252535" stroke-width="0.5" style="fill:rgb(22, 22, 31);stroke:rgb(37, 37, 53);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="185" y="312" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="700" fill="#f9c846" style="fill:rgb(249, 200, 70);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, -apple-system, sans-serif;font-size:12px;font-weight:700;text-anchor:middle;dominant-baseline:auto">18 Counties</text>
+
+  <rect x="275" y="292" width="130" height="30" rx="15" fill="#16161f" stroke="#252535" stroke-width="0.5" style="fill:rgb(22, 22, 31);stroke:rgb(37, 37, 53);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="340" y="312" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="700" fill="#f97316" style="fill:rgb(249, 115, 22);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, -apple-system, sans-serif;font-size:12px;font-weight:700;text-anchor:middle;dominant-baseline:auto">1000+ Players</text>
+
+  <rect x="430" y="292" width="130" height="30" rx="15" fill="#16161f" stroke="#252535" stroke-width="0.5" style="fill:rgb(22, 22, 31);stroke:rgb(37, 37, 53);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="495" y="312" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="700" fill="#e11d48" style="fill:rgb(225, 29, 72);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, -apple-system, sans-serif;font-size:12px;font-weight:700;text-anchor:middle;dominant-baseline:auto">19 Games</text>
+
+  <!-- URL -->
+  <text x="340" y="345" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="700" fill="#404060" letter-spacing="1" style="fill:rgb(64, 64, 96);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, -apple-system, sans-serif;font-size:12px;font-weight:700;text-anchor:middle;dominant-baseline:auto">
+    www.19-0.co.uk
+  </text>
+</svg>

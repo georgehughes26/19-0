@@ -30,7 +30,7 @@
     function pingEvent(name, params) {
       try {
         var body = JSON.stringify({ client_id: _cid, events: [{ name: name, params: Object.assign({ engagement_time_msec: 1 }, params || {}) }] });
-        navigator.sendBeacon('https://www.google-analytics.com/mp/collect?measurement_id=G-KZJJ63KTD7&api_secret=MJVkxYfZQD6ahE8SjTmKGQ', body);
+        navigator.sendBeacon('https://www.google-analytics.com/mp/collect?measurement_id=G-KZJJ63KTD7&api_secret=REPLACE_WITH_SECRET', body);
       } catch(e) {}
     }
   </script>
@@ -2753,6 +2753,7 @@
     </div>
 
     <button class="btn-start" onclick="startDraft()">Start New Run →</button>
+
     <!-- <button class="btn-dev" onclick="devRun()">⚡ Dev run</button>-->
     <div class="home-stats">
       <div>
@@ -2882,6 +2883,13 @@
     </div>
     <div class="ov-quote" id="ov-q"></div>
     <div class="ov-stats" id="ov-stats"></div>
+    <div id="ov-signup-prompt" style="display:none;width:100%;background:linear-gradient(135deg,#0d0d18,#13131f);border:1px solid #252535;border-radius:12px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="text-align:left;min-width:0;flex:1">
+        <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:3px">Save your drafts</div>
+        <div style="font-size:11px;color:#606080;line-height:1.5">Create a free account to track your stats, best runs and most drafted players.</div>
+      </div>
+      <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up →</button>
+    </div>
     <div class="ov-lower">
       <div class="ov-reached" id="ov-reached"></div>
       <div class="ov-season-stats" id="ov-season-stats"></div>
@@ -6313,6 +6321,9 @@
 
       saveRun().catch(e => console.warn('saveRun failed:', e));
       go("s-over");
+      // Show sign-up prompt only if not logged in
+      const prompt = document.getElementById('ov-signup-prompt');
+      if (prompt) prompt.style.display = AUTH_USER ? 'none' : 'flex';
     }
     function genQuote(pos, w, qual, qf, sf, fin) {
       if (fin) return "Lifted the trophy at Edgbaston. A side for the ages.";
@@ -6424,9 +6435,10 @@
         var footer = document.createElement('div');
         footer.className = 'site-footer';
         footer.innerHTML =
+          '<a href="https://x.com/19_0app" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;background:#111118;border:1px solid #252535;border-radius:10px;padding:11px;text-decoration:none;color:#c0c0d8;font-size:13px;font-weight:700;width:100%;box-sizing:border-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.741l7.73-8.835L1.254 2.25H8.08l4.259 5.622 5.905-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> Follow @19_0app on X</a>' +
           '<div style="display:flex;gap:8px;margin-bottom:16px">' +
             '<a href="https://www.buymeacoffee.com/19_0" target="_blank" rel="noopener" style="flex:1;display:block;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:800;text-decoration:none;">☕ Enjoying 19-0?</a>' +
-            '<a href="mailto:george.19-0@outlook.com" style="flex:1;display:block;background:#16161f;border:1px solid #252535;color:#c0c0d8;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;">✉ Contact Us</a>' +
+            '<a href="mailto:george.19-0@outlook.com" style="flex:1;display:block;background:#16161f;border:1px solid #252535;color:#c0c0d8;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Contact Us</a>' +
           '</div>' +
           '<p>19-0 is an unofficial fan project, not affiliated with or endorsed by the ECB, Vitality T20 Blast, or any county cricket club. Player and team names are used for entertainment purposes only. T20 Blast is a registered trademark of the England and Wales Cricket Board.</p>' +
           '<p style="margin-top:8px">&copy; 2026 19-0 &nbsp;·&nbsp; <a onclick="openPrivacy()">Privacy policy</a> &nbsp;·&nbsp; <a onclick="showCookieBanner()">Cookie settings</a></p>';
@@ -6907,8 +6919,30 @@
         const qfWon      = runs.filter(r => r.qf_won).length;
         const sfWon      = runs.filter(r => r.sf_won).length;
         const finalWon   = runs.filter(r => r.final_won).length;
-        const avgGroupWins = (runs.reduce((s,r) => s + (r.group_wins||0), 0) / total).toFixed(1);
+        const totalWinsAll = runs.reduce((s,r) => s + (r.group_wins||0) + (r.qf_won?1:0) + (r.sf_won?1:0) + (r.final_won?1:0), 0);
+        const totalGamesAll = runs.reduce((s,r) => s + 16 + (r.qualified?1:0) + (r.qf_won?1:0) + (r.sf_won?1:0), 0);
+        const avgWins      = totalGamesAll ? (totalWinsAll / total).toFixed(1) : '0.0';
         const avgRating    = Math.round(runs.reduce((s,r) => s + (r.team_rating||0), 0) / total);
+
+        // Most used players across all runs
+        const playerCount = {};
+        runs.forEach(r => {
+          if (!r.squad) return;
+          r.squad.forEach(p => {
+            if (!p.n) return;
+            playerCount[p.n] = (playerCount[p.n] || 0) + 1;
+          });
+        });
+        const topPlayers = Object.entries(playerCount)
+          .sort((a,b) => b[1] - a[1])
+          .slice(0, 5);
+
+        // Best run — rank by: final_won > sf_won > qf_won > qualified > group_pos, then group_wins
+        const resultRank = r => r.final_won ? 6 : r.sf_won ? 5 : r.qf_won ? 4 : r.qualified ? 3 : (10 - (r.group_pos||9));
+        const bestRun = [...runs].sort((a,b) => {
+          const rd = resultRank(b) - resultRank(a);
+          return rd !== 0 ? rd : (b.group_wins||0) - (a.group_wins||0);
+        })[0];
 
         function pct(n) { return total ? Math.round((n / total) * 100) : 0; }
 
@@ -6942,23 +6976,56 @@
           </div>`;
         }).join('');
 
+        // Best run result label
+        const brResult = bestRun.final_won ? '🏆 Champions' : bestRun.sf_won ? '🥈 Runners-up' : bestRun.qf_won ? '🏟️ Semis' : bestRun.qualified ? '🎟️ QF exit' : `${ordinal(bestRun.group_pos||9)} group`;
+        const brCol    = bestRun.final_won ? '#f9c846' : bestRun.sf_won ? '#c084fc' : bestRun.qf_won ? '#818cf8' : bestRun.qualified ? '#60a5fa' : '#f87171';
+        const brKoW    = (bestRun.qf_won?1:0)+(bestRun.sf_won?1:0)+(bestRun.final_won?1:0);
+        const brKoL    = (bestRun.qualified&&!bestRun.qf_won?1:0)+(bestRun.qf_won&&!bestRun.sf_won?1:0)+(bestRun.sf_won&&!bestRun.final_won?1:0);
+        const brTotalW = (bestRun.group_wins||0) + brKoW;
+        const brTotalL = (16-(bestRun.group_wins||0)) + brKoL;
+        const brDate   = new Date(bestRun.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+        const mostUsedHTML = topPlayers.map(([name, count], i) => `
+          <div class="recent-run-row">
+            <div style="display:flex;align-items:center;gap:10px;text-align:left">
+              <div style="font-size:13px;font-weight:800;color:${i===0?'#f9c846':'#606070'};width:16px">${i===0?'⭐':''+( i+1)}</div>
+              <div style="font-size:13px;font-weight:${i===0?'800':'700'};color:${i===0?'#f9c846':'#d0d0e8'}">${name}</div>
+            </div>
+            <div style="font-size:12px;font-weight:800;color:${i===0?'#f9c846':'#8080a0'}">${count}× drafted</div>
+          </div>`).join('');
+
         document.getElementById('stats-content').innerHTML = `
           <div class="stats-grid">
             <div class="stats-box">
               <div class="stats-n" style="color:#60a5fa">${total}</div>
-              <div class="stats-l">Total runs</div>
+              <div class="stats-l">Total drafts</div>
             </div>
             <div class="stats-box">
               <div class="stats-n" style="color:#f9c846">${finalWon}</div>
               <div class="stats-l">Blast Wins</div>
             </div>
             <div class="stats-box">
-              <div class="stats-n" style="color:#60a5fa">${avgGroupWins}</div>
-              <div class="stats-l">Avg group wins</div>
+              <div class="stats-n" style="color:#60a5fa">${avgWins}</div>
+              <div class="stats-l">Avg wins</div>
             </div>
             <div class="stats-box">
               <div class="stats-n" style="color:${ratingColor(avgRating)}">${avgRating||'—'}</div>
               <div class="stats-l">Avg team OVR</div>
+            </div>
+          </div>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">
+            Best run
+          </div>
+          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-bottom:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:15px;font-weight:800;color:${brCol}">${brResult}</div>
+                <div style="font-size:11px;color:#606080;margin-top:3px">OVR ${bestRun.team_rating||'—'} · ${brDate}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:22px;font-weight:900;letter-spacing:-1px"><span style="color:#4ade80">${brTotalW}W</span><span style="color:#606070">-</span><span style="color:#f87171">${brTotalL}L</span></div>
+              </div>
             </div>
           </div>
 
@@ -6971,6 +7038,14 @@
             ${stageBarRow('SF won',    sfWon,     '#c084fc')}
             ${stageBarRow('Champions', finalWon,  '#f9c846')}
           </div>
+
+          ${topPlayers.length ? `
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">
+            Most drafted players
+          </div>
+          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">
+            ${mostUsedHTML}
+          </div>` : ''}
 
           <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">
             Recent runs
