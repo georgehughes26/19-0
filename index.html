@@ -34,6 +34,13 @@
       } catch(e) {}
     }
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    const sb = supabase.createClient(
+      'https://uxlhzgigjwnsvjucwmrg.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4bGh6Z2lnanduc3ZqdWN3bXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjA5ODMsImV4cCI6MjA5Njc5Njk4M30.YrKFhau7BszHi4J62Ywv5HEVhA7k0KtUoQmpR9CYOUg'
+    );
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
 
@@ -2426,12 +2433,15 @@
     .sc-xi-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 5px 12px
+      gap: 5px 8px;
+      overflow: hidden
     }
     .sc-xi-row {
       display: flex;
       align-items: center;
-      gap: 7px
+      gap: 5px;
+      min-width: 0;
+      overflow: hidden
     }
     .sc-xi-badge {
       font-size: 8px;
@@ -2467,7 +2477,8 @@
     .sc-stat-cell {
       flex: 1;
       padding: 10px 14px;
-      border-right: 1px solid #1a1a25
+      border-right: 1px solid #1a1a25;
+      text-align: center
     }
     .sc-stat-cell:last-child { border-right: none }
     .sc-stat-lbl {
@@ -2484,7 +2495,8 @@
       color: #fff;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis
+      text-overflow: ellipsis;
+      text-align: center
     }
     .sc-stat-val {
       font-size: 11px;
@@ -2606,6 +2618,93 @@
       cursor: pointer;
       margin-top: 4px
     }
+    /* ── AUTH MODAL ──────────────────────────────────────── */
+    #auth-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.82); z-index: 40000;
+      align-items: center; justify-content: center; padding: 20px
+    }
+    #auth-modal.open { display: flex }
+    .auth-box {
+      background: #16161f; border: 1px solid #252535;
+      border-radius: 16px; max-width: 380px; width: 100%; padding: 24px 22px
+    }
+    .auth-box h2 { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: 16px; text-align: center }
+    .auth-tabs {
+      display: flex; gap: 4px; margin-bottom: 20px;
+      background: #0f0f18; border-radius: 8px; padding: 4px
+    }
+    .auth-tab {
+      flex: 1; padding: 8px; border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      background: transparent; color: #606080; transition: all .15s; font-family: inherit
+    }
+    .auth-tab.on { background: #1e1e2a; color: #fff }
+    .auth-field { margin-bottom: 12px }
+    .auth-field label {
+      display: block; font-size: 11px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase; color: #8080a0; margin-bottom: 5px
+    }
+    .auth-field input {
+      width: 100%; background: #0d0d12; border: 1px solid #252535;
+      border-radius: 8px; padding: 11px 14px; font-size: 14px; color: #fff;
+      outline: none; font-family: inherit
+    }
+    .auth-field input:focus { border-color: #4040a0 }
+    .auth-field input[type=number] { -moz-appearance: textfield; appearance: textfield }
+    .auth-field input[type=number]::-webkit-outer-spin-button,
+    .auth-field input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none }
+    .auth-error { font-size: 12px; color: #f87171; margin-bottom: 10px; min-height: 18px; text-align: center }
+    .btn-auth-submit {
+      width: 100%; background: linear-gradient(135deg, #f9c846, #f97316);
+      color: #0f0f13; border: none; padding: 13px; font-size: 14px;
+      font-weight: 800; border-radius: 8px; cursor: pointer; margin-bottom: 8px; font-family: inherit
+    }
+    .btn-auth-submit:disabled { opacity: .5; cursor: default }
+    .btn-auth-close {
+      width: 100%; background: transparent; color: #606080;
+      border: 1px solid #252535; padding: 11px; font-size: 13px;
+      font-weight: 700; border-radius: 8px; cursor: pointer; font-family: inherit
+    }
+    .auth-bar {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      background: #0d0d12; border: 1px solid #1a1a24; border-radius: 10px;
+      padding: 10px 14px; margin-bottom: 16px
+    }
+    .auth-bar-user { font-size: 13px; font-weight: 700; color: #f9c846 }
+    .auth-bar-sub { font-size: 11px; color: #606080; margin-top: 1px }
+    .btn-auth-small {
+      background: #1e1e2a; border: 1px solid #252535; color: #c0c0d8;
+      font-size: 12px; font-weight: 700; padding: 7px 14px;
+      border-radius: 6px; cursor: pointer; font-family: inherit
+    }
+    .btn-auth-small:hover { background: #252535 }
+    .stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; width: 100%; margin-bottom: 14px
+    }
+    .stats-box {
+      background: #111118; border: 1px solid #1a1a24;
+      border-radius: 10px; padding: 14px 10px; text-align: center
+    }
+    .stats-n { font-size: 30px; font-weight: 900; letter-spacing: -1px }
+    .stats-l { font-size: 10px; color: #8080a0; margin-top: 3px; letter-spacing: 1.5px; text-transform: uppercase }
+    .stage-bar {
+      width: 100%; background: #111118; border: 1px solid #1a1a24;
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 8px
+    }
+    .stage-bar-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px }
+    .stage-bar-row:last-child { margin-bottom: 0 }
+    .stage-bar-label { font-size: 12px; font-weight: 700; color: #c0c0d8; width: 110px; flex-shrink: 0 }
+    .stage-bar-track { flex: 1; height: 8px; background: #1a1a24; border-radius: 4px; margin: 0 10px; overflow: hidden }
+    .stage-bar-fill { height: 100%; border-radius: 4px }
+    .stage-bar-pct { font-size: 12px; font-weight: 800; width: 36px; text-align: right; flex-shrink: 0 }
+    .recent-run-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 0; border-bottom: 1px solid #111118
+    }
+    .recent-run-row:last-child { border-bottom: none }
+
   </style>
 </head>
 
@@ -2614,6 +2713,7 @@
   <!-- HOME -->
   <div id="s-home" class="screen on">
     <div class="home-badge">T20 Blast · Draft Simulator</div>
+    <div class="auth-bar" id="auth-bar"></div>
     <div class="home-hero">19-0</div>
     <div class="home-sub">Spin the county. Spin the year. Draft your all-time T20 Blast XI. 16 group games, then
       Quarter-Final, Semi Final and Final. Can you go 19-0?</div>
@@ -2786,7 +2886,7 @@
       <div class="ov-reached" id="ov-reached"></div>
       <div class="ov-season-stats" id="ov-season-stats"></div>
     </div>
-    <button class="btn-share-season" onclick="openShareModal()">📸 Share your season</button>
+    <button class="btn-share-season" onclick="openShareModal()" style="margin-top:4px">📸 Share your season</button>
     <div class="section-lbl">Your XI</div>
     <div class="squad-list" id="ov-squad" style="margin-bottom:24px"></div>
     <button class="btn-new" onclick="fullReset()">New Run →</button>
@@ -4921,9 +5021,10 @@
       if (DEV_MODE && (a === MY || b === MY)) {
         aW = a === MY;
       } else {
-        const pA = Math.pow(rA, 4);
-        const pB = Math.pow(rB, 4);
-        aW = Math.random() < pA / (pA + pB);
+        // Logistic/Elo-style formula based on rating difference.
+        // k=0.08 gives: 10-pt gap → 69%, 20-pt gap → 83%, 35-pt gap → 94%
+        const pA = 1 / (1 + Math.exp(-0.08 * (rA - rB)));
+        aW = Math.random() < pA;
       }
       const w = aW ? a : b, l = aW ? b : a;
       const batFirst = Math.random() < 0.5;
@@ -6201,6 +6302,7 @@
         if (lower) lower.classList.add("ov-lower-full");
       }
 
+      saveRun().catch(e => console.warn('saveRun failed:', e));
       go("s-over");
     }
     function genQuote(pos, w, qual, qf, sf, fin) {
@@ -6368,11 +6470,13 @@
     <div class="share-sheet">
       <h3>Share your season</h3>
       <div class="share-preview-wrap" id="share-preview-wrap"></div>
+      <div id="share-text-preview" style="background:#0d0d12;border:1px solid #252535;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#c0c0d8;line-height:1.5"></div>
       <button class="btn-share-native" id="btn-native-share" onclick="nativeShare()" style="display:none">📤 Share</button>
       <div class="share-actions">
         <button class="btn-share-save" onclick="saveShareImage()">⬇ Save image</button>
         <button class="btn-share-save" onclick="copyShareImage()">📋 Copy image</button>
       </div>
+      <button class="btn-share-save" id="btn-copy-text" onclick="copyShareText()" style="width:100%;margin-bottom:10px">📝 Copy text</button>
       <button class="btn-share-close" onclick="closeShareModal()">Close</button>
     </div>
   </div>
@@ -6465,8 +6569,7 @@
         </div>
         ${awardsHTML ? `<div class="sc-stats-strip">${awardsHTML}</div>` : ""}
         <div class="sc-footer">
-          <div class="sc-verified">✓ Verified result</div>
-          <div class="sc-url">19-0.co.uk</div>
+          <div class="sc-verified">✓ Verified result · <span style="color:#f9c846;font-weight:900">www.19-0.co.uk</span></div>
         </div>`;
     }
 
@@ -6484,6 +6587,10 @@
           document.head.appendChild(s);
         });
       }
+
+      // Populate text preview
+      const textEl = document.getElementById('share-text-preview');
+      if (textEl) textEl.textContent = buildShareText();
 
       const card = document.getElementById("share-card");
       card.style.left = "-9999px";
@@ -6535,6 +6642,48 @@
         w.document.write(`<img src="${_shareImgDataUrl}" style="max-width:100%">`);
       }
     }
+    function buildShareText() {
+      const MY = S.myTeam;
+      const myGames = S.groupResults ? S.groupResults.filter(r => r.a === MY || r.b === MY) : [];
+      const groupWins = myGames.filter(r => r.w === MY).length;
+      const groupLosses = 16 - groupWins;
+      const koWins = (S.qfWon ? 1 : 0) + (S.sfWon ? 1 : 0) + (S.finalWon ? 1 : 0);
+      const totalWins = groupWins + koWins;
+      const totalLosses = groupLosses + (S.qualified && !S.qfWon ? 1 : 0) + (S.qfWon && !S.sfWon ? 1 : 0) + (S.sfWon && !S.finalWon ? 1 : 0);
+      const ovr = S.allRatings ? (S.allRatings[MY] || '—') : '—';
+
+      let result;
+      if (S.finalWon)     result = '🏆 T20 Blast Champions';
+      else if (S.sfWon)   result = '🥈 Runners-up';
+      else if (S.qfWon)   result = '🏟️ Semi-finalists';
+      else if (S.qualified) result = '🎟️ Quarter-finalists';
+      else                result = `Finished ${ordinal(S.myPos||9)} in the group`;
+
+      return `Just went ${totalWins}-${totalLosses} with an OVR ${ovr} Blastmen XI — ${result}! Can you do better? 🏏 www.19-0.co.uk`;
+    }
+
+    async function copyShareText() {
+      const text = buildShareText();
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('btn-copy-text');
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => btn.textContent = '📝 Copy text', 2000);
+      } catch(e) {
+        // Fallback — select a temp textarea
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        const btn = document.getElementById('btn-copy-text');
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => btn.textContent = '📝 Copy text', 2000);
+      }
+    }
+
     async function nativeShare() {
       if (!_shareImgDataUrl || !navigator.share) return;
       try {
@@ -6543,7 +6692,7 @@
         const file = new File([blob], "19-0-season.png", { type: "image/png" });
         await navigator.share({
           title: "19-0 · T20 Blast Draft",
-          text: "Check out my 19-0 T20 Blast season!",
+          text: buildShareText(),
           files: [file]
         });
       } catch(e) {
@@ -6553,7 +6702,320 @@
         }
       }
     }
+
+    // ── SUPABASE + AUTH ───────────────────────────────────────────────────────
+
+    // PIN hashing via SubtleCrypto (no external lib needed)
+    async function hashPin(pin) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(pin)));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    // Session: stored in localStorage as {id, username, email}
+    let AUTH_USER = null;
+
+    function loadSession() {
+      try { AUTH_USER = JSON.parse(localStorage.getItem('19_0_user') || 'null'); } catch(e) { AUTH_USER = null; }
+      renderAuthBar();
+    }
+
+    function saveSession(user) {
+      AUTH_USER = user;
+      localStorage.setItem('19_0_user', JSON.stringify(user));
+      renderAuthBar();
+    }
+
+    function signOut() {
+      AUTH_USER = null;
+      localStorage.removeItem('19_0_user');
+      renderAuthBar();
+    }
+
+    function renderAuthBar() {
+      const bar = document.getElementById('auth-bar');
+      if (!bar) return;
+      if (AUTH_USER) {
+        bar.innerHTML = `
+          <div style="text-align:left;min-width:0;flex:1">
+            <div class="auth-bar-user">👤 ${AUTH_USER.username}</div>
+            <div class="auth-bar-sub">Signed in · <span style="cursor:pointer;text-decoration:underline;color:#8080a0" onclick="showStats()">View stats</span></div>
+          </div>
+          <button class="btn-auth-small" onclick="signOut()">Sign out</button>`;
+      } else {
+        bar.innerHTML = `
+          <div>
+            <div class="auth-bar-user" style="color:#8080a0">Not signed in</div>
+            <div class="auth-bar-sub">Sign in to track your stats</div>
+          </div>
+          <button class="btn-auth-small" onclick="openAuthModal()">Sign in</button>`;
+      }
+    }
+
+    // ── AUTH MODAL ────────────────────────────────────────────────────────────
+    let _authMode = 'login';
+
+    function openAuthModal() {
+      document.getElementById('auth-modal').classList.add('open');
+      document.getElementById('auth-error').textContent = '';
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.remove('open');
+    }
+
+    function authTab(mode, btn) {
+      _authMode = mode;
+      document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      document.getElementById('auth-login-form').style.display    = mode === 'login'    ? 'block' : 'none';
+      document.getElementById('auth-register-form').style.display = mode === 'register' ? 'block' : 'none';
+      document.getElementById('btn-auth-submit').textContent = mode === 'login' ? 'Sign in' : 'Create account';
+      document.getElementById('auth-error').textContent = '';
+    }
+
+    async function authSubmit() {
+      const btn = document.getElementById('btn-auth-submit');
+      const errEl = document.getElementById('auth-error');
+      errEl.textContent = '';
+      btn.disabled = true;
+      btn.textContent = _authMode === 'login' ? 'Signing in…' : 'Creating account…';
+
+      try {
+        if (_authMode === 'login') {
+          const username = document.getElementById('login-username').value.trim();
+          const pin      = document.getElementById('login-pin').value.trim();
+          if (!username || !pin) { errEl.textContent = 'Please fill in all fields.'; return; }
+          if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { errEl.textContent = 'PIN must be 4 digits.'; return; }
+
+          const hash = await hashPin(pin);
+          const { data, error } = await sb.from('users')
+            .select('id,username,email')
+            .eq('username', username)
+            .eq('pin_hash', hash)
+            .maybeSingle();
+          if (error) { console.log('Login error:', JSON.stringify(error)); errEl.textContent = 'Something went wrong. Please try again.'; return; }
+          if (!data) { errEl.textContent = 'Incorrect username or PIN.'; return; }
+          saveSession({ id: data.id, username: data.username, email: data.email });
+          closeAuthModal();
+
+        } else {
+          const username = document.getElementById('reg-username').value.trim();
+          const email    = document.getElementById('reg-email').value.trim();
+          const pin      = document.getElementById('reg-pin').value.trim();
+          const pin2     = document.getElementById('reg-pin2').value.trim();
+
+          if (!username || !email || !pin || !pin2) { errEl.textContent = 'Please fill in all fields.'; return; }
+          if (username.length < 3) { errEl.textContent = 'Username must be at least 3 characters.'; return; }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email.'; return; }
+          if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { errEl.textContent = 'PIN must be exactly 4 digits.'; return; }
+          if (pin !== pin2) { errEl.textContent = 'PINs do not match.'; return; }
+
+          // Check username not taken
+          const { data: existing } = await sb.from('users').select('id').eq('username', username).maybeSingle();
+          if (existing) { errEl.textContent = 'Username already taken.'; return; }
+
+          const hash = await hashPin(pin);
+          const { data, error } = await sb.from('users')
+            .insert({ username, email, pin_hash: hash })
+            .select('id,username,email')
+            .single();
+          if (error || !data) { errEl.textContent = 'Could not create account. Try a different username.'; return; }
+          saveSession({ id: data.id, username: data.username, email: data.email });
+          closeAuthModal();
+        }
+      } catch(e) {
+        errEl.textContent = 'Something went wrong. Please try again.';
+        console.error(e);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = _authMode === 'login' ? 'Sign in' : 'Create account';
+      }
+    }
+
+    // ── SAVE RUN ──────────────────────────────────────────────────────────────
+    async function saveRun() {
+      if (!AUTH_USER) return;
+      try {
+        const MY = S.myTeam;
+        const myGames = S.groupResults ? S.groupResults.filter(r => r.a === MY || r.b === MY) : [];
+        const groupWins = myGames.filter(r => r.w === MY).length;
+        const squadJson = S.squad ? S.squad.map(p => ({
+          n: p.name, r: p.rating, role: p.role, c: p.county, y: p.year
+        })) : [];
+
+        await sb.from('runs').insert({
+          user_id:     AUTH_USER.id,
+          group_pos:   S.myPos || null,
+          group_wins:  groupWins,
+          qualified:   !!S.qualified,
+          qf_won:      !!S.qfWon,
+          sf_won:      !!S.sfWon,
+          final_won:   !!S.finalWon,
+          team_rating: S.allRatings ? (S.allRatings[MY] || null) : null,
+          squad:       squadJson
+        });
+      } catch(e) {
+        console.warn('Could not save run:', e);
+      }
+    }
+
+    // ── STATS SCREEN ──────────────────────────────────────────────────────────
+    async function showStats() {
+      if (!AUTH_USER) { openAuthModal(); return; }
+      document.getElementById('stats-username-title').textContent = AUTH_USER.username;
+      document.getElementById('stats-loading').style.display  = 'block';
+      document.getElementById('stats-loading').textContent    = 'Loading stats…';
+      document.getElementById('stats-content').style.display  = 'none';
+      go('s-stats');
+
+      try {
+        const { data: runs, error } = await sb
+          .from('runs')
+          .select('*')
+          .eq('user_id', AUTH_USER.id)
+          .order('created_at', { ascending: false });
+
+        if (error || !runs) {
+          document.getElementById('stats-loading').textContent = 'Could not load stats.';
+          return;
+        }
+
+        document.getElementById('stats-loading').style.display = 'none';
+        document.getElementById('stats-content').style.display = 'block';
+
+        if (!runs.length) {
+          document.getElementById('stats-content').innerHTML =
+            `<div style="text-align:center;color:#606080;font-size:13px;padding:40px 0">
+              No runs yet — complete a season to see your stats here.
+            </div>`;
+          return;
+        }
+
+        const total      = runs.length;
+        const qualified  = runs.filter(r => r.qualified).length;
+        const qfWon      = runs.filter(r => r.qf_won).length;
+        const sfWon      = runs.filter(r => r.sf_won).length;
+        const finalWon   = runs.filter(r => r.final_won).length;
+        const avgGroupWins = (runs.reduce((s,r) => s + (r.group_wins||0), 0) / total).toFixed(1);
+        const avgRating    = Math.round(runs.reduce((s,r) => s + (r.team_rating||0), 0) / total);
+
+        function pct(n) { return total ? Math.round((n / total) * 100) : 0; }
+
+        function stageBarRow(label, n, color) {
+          const p = pct(n);
+          return `<div class="stage-bar-row">
+            <div class="stage-bar-label">${label}</div>
+            <div class="stage-bar-track">
+              <div class="stage-bar-fill" style="width:${p}%;background:${color}"></div>
+            </div>
+            <div class="stage-bar-pct" style="color:${color}">${p}%</div>
+          </div>`;
+        }
+
+        const recentHTML = runs.slice(0, 10).map(r => {
+          let result, col;
+          if      (r.final_won)  { result = '🏆 Champions';   col = '#f9c846'; }
+          else if (r.sf_won)     { result = '🥈 Runners-up';  col = '#c084fc'; }
+          else if (r.qf_won)     { result = '🏟️ Semis';       col = '#818cf8'; }
+          else if (r.qualified)  { result = '🎟️ QF exit';     col = '#60a5fa'; }
+          else                   { result = `${ordinal(r.group_pos||9)} group`; col = '#f87171'; }
+          const d = new Date(r.created_at);
+          const dateStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+          return `<div class="recent-run-row">
+            <div style="text-align:left">
+              <div style="font-size:13px;font-weight:700;color:${col}">${result}</div>
+              <div style="font-size:11px;color:#606080;margin-top:1px">
+                ${r.group_wins||0}W · ${16-(r.group_wins||0)}L · OVR ${r.team_rating||'—'} · ${dateStr}
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+
+        document.getElementById('stats-content').innerHTML = `
+          <div class="stats-grid">
+            <div class="stats-box">
+              <div class="stats-n" style="color:#60a5fa">${total}</div>
+              <div class="stats-l">Total runs</div>
+            </div>
+            <div class="stats-box">
+              <div class="stats-n" style="color:#f9c846">${finalWon}</div>
+              <div class="stats-l">Blast Wins</div>
+            </div>
+            <div class="stats-box">
+              <div class="stats-n" style="color:#60a5fa">${avgGroupWins}</div>
+              <div class="stats-l">Avg group wins</div>
+            </div>
+            <div class="stats-box">
+              <div class="stats-n" style="color:${ratingColor(avgRating)}">${avgRating||'—'}</div>
+              <div class="stats-l">Avg team OVR</div>
+            </div>
+          </div>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">
+            Knockout reach
+          </div>
+          <div class="stage-bar">
+            ${stageBarRow('Qualified', qualified, '#60a5fa')}
+            ${stageBarRow('QF won',    qfWon,     '#818cf8')}
+            ${stageBarRow('SF won',    sfWon,     '#c084fc')}
+            ${stageBarRow('Champions', finalWon,  '#f9c846')}
+          </div>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">
+            Recent runs
+          </div>
+          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">
+            ${recentHTML}
+          </div>`;
+
+      } catch(e) {
+        document.getElementById('stats-loading').textContent = 'Could not load stats.';
+        console.error(e);
+      }
+    }
+
+    // Initialise session on load
+    document.addEventListener('DOMContentLoaded', loadSession);
+
   </script>
+
+
+  <!-- AUTH MODAL -->
+  <div id="auth-modal">
+    <div class="auth-box">
+      <h2>19-0 Account</h2>
+      <div class="auth-tabs">
+        <button class="auth-tab on" onclick="authTab('login',this)">Sign in</button>
+        <button class="auth-tab" onclick="authTab('register',this)">Register</button>
+      </div>
+      <div id="auth-login-form">
+        <div class="auth-field"><label>Username</label><input id="login-username" type="text" placeholder="your username" autocomplete="username"></div>
+        <div class="auth-field"><label>PIN</label><input id="login-pin" type="password" inputmode="numeric" placeholder="4-digit PIN" maxlength="4" autocomplete="current-password"></div>
+      </div>
+      <div id="auth-register-form" style="display:none">
+        <div class="auth-field"><label>Username</label><input id="reg-username" type="text" placeholder="choose a username" autocomplete="username"></div>
+        <div class="auth-field"><label>Email</label><input id="reg-email" type="email" placeholder="your email address" autocomplete="email"></div>
+        <div class="auth-field"><label>PIN (4 digits)</label><input id="reg-pin" type="password" inputmode="numeric" placeholder="choose a 4-digit PIN" maxlength="4" autocomplete="new-password"></div>
+        <div class="auth-field"><label>Confirm PIN</label><input id="reg-pin2" type="password" inputmode="numeric" placeholder="confirm PIN" maxlength="4" autocomplete="new-password"></div>
+      </div>
+      <div class="auth-error" id="auth-error"></div>
+      <button class="btn-auth-submit" id="btn-auth-submit" onclick="authSubmit()">Sign in</button>
+      <button class="btn-auth-close" onclick="closeAuthModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- STATS SCREEN -->
+  <div id="s-stats" class="screen">
+    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="text-align:left;min-width:0;flex:1">
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">Your Stats</div>
+        <div style="font-size:24px;font-weight:900;color:#fff" id="stats-username-title">—</div>
+      </div>
+      <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
+    </div>
+    <div id="stats-loading" style="text-align:center;color:#606080;font-size:13px;padding:40px 0">Loading stats…</div>
+    <div id="stats-content" style="width:100%;display:none"></div>
+  </div>
 
 </body>
 
