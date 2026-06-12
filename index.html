@@ -4668,7 +4668,7 @@
       S.squad.push(p); S.counts[p.county] = (S.counts[p.county] || 0) + 1; S.roleCounts[p.role]++; S.slot++;
       S.respinsUsed = 0; // reset re-spin count for next pick
       S.spunTeam = null; // mark as fresh pick so first spin isn't counted
-      if (S.slot >= 11) { showSquad(); return; }
+      if (S.slot >= 11) { pingEvent('Draft_Completed', { ovr: Math.round(S.squad.reduce((s,p)=>s+p.rating,0)/S.squad.length) }); showSquad(); return; }
       updatePickUI(); document.getElementById("roster-area").innerHTML = ""; doSpin();
     }
 
@@ -5115,6 +5115,7 @@
 
     let simAll = [], simIdx = 0;
     function startSim() {
+      pingEvent('Season_Started', { league: 'T20 Blast' });
       const MY = "Your XI";
       const groupTeams = [...(S.repGroup === "north" ? NORTH : SOUTH)];
       const idx = groupTeams.indexOf(S.repTeam); if (idx > -1) groupTeams[idx] = MY;
@@ -5261,6 +5262,7 @@
       const MY = S.myTeam;
       S.myPos = S.groupTable.findIndex(r => r.team === MY) + 1;
       S.qualified = S.myPos <= 4;
+      pingEvent('Group_Completed', { qualified: S.qualified, group_pos: S.myPos, group_wins: simAll.filter(r => (r.a === MY || r.b === MY) && r.w === MY).length });
       renderLiveTable();  // render after so the table shown matches S.myPos/qualified
       // Count my wins/losses for display
       const myGames = simAll.filter(r => r.a === MY || r.b === MY);
@@ -5986,6 +5988,7 @@
       const nxt = document.getElementById("ko-next");
 
       if (phase === "qf") {
+        pingEvent('QF_Reached', { league: 'T20 Blast' });
         document.getElementById("ko-pill").textContent = "Quarter-Finals";
         document.getElementById("ko-pill").className = "ko-stage-pill kp-qf";
         document.getElementById("ko-title").textContent = "Quarter-Finals";
@@ -6015,6 +6018,7 @@
         go("s-ko");
 
       } else if (phase === "fd") {
+        pingEvent('SF_Reached', { league: 'T20 Blast' });
         document.getElementById("ko-pill").textContent = "Finals Day";
         document.getElementById("ko-pill").className = "ko-stage-pill kp-fd";
         document.getElementById("ko-title").textContent = "Finals Day";
@@ -6127,6 +6131,11 @@
     // ── OVERVIEW ───────────────────────────────────────────────────────────────────
     function showOverview() {
       const MY = S.myTeam;
+      // Fire run completed event
+      const _myGamesOv = S.groupResults ? S.groupResults.filter(r => r.a === MY || r.b === MY) : [];
+      const _gwOv = _myGamesOv.filter(r => r.w === MY).length;
+      const _result = S.finalWon ? 'champions' : S.sfWon ? 'runners-up' : S.qfWon ? 'semi-finalists' : S.qualified ? 'quarter-finalists' : 'group-exit';
+      pingEvent('Run_Completed', { result: _result, group_wins: _gwOv, group_pos: S.myPos || 9, ovr: S.allRatings ? (S.allRatings[MY] || 0) : 0 });
       // Reset layout state from any previous run
       const lower = document.querySelector(".ov-lower");
       if (lower) lower.classList.remove("ov-lower-full");
@@ -6796,6 +6805,7 @@
           if (error) { console.log('Login error:', JSON.stringify(error)); errEl.textContent = 'Something went wrong. Please try again.'; return; }
           if (!data) { errEl.textContent = 'Incorrect username or PIN.'; return; }
           saveSession({ id: data.id, username: data.username, email: data.email });
+          pingEvent('Sign_In', { league: 'T20 Blast' });
           closeAuthModal();
 
         } else {
@@ -6821,6 +6831,7 @@
             .single();
           if (error || !data) { errEl.textContent = 'Could not create account. Try a different username.'; return; }
           saveSession({ id: data.id, username: data.username, email: data.email });
+          pingEvent('Account_Created', { league: 'T20 Blast' });
           closeAuthModal();
         }
       } catch(e) {
