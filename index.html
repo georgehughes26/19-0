@@ -1012,6 +1012,45 @@
       opacity: 0.88
     }
 
+    /* SPEED CONTROL */
+    .speed-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+    .speed-icon {
+      font-size: 13px;
+      line-height: 1;
+      flex-shrink: 0
+    }
+    .speed-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 72px;
+      height: 3px;
+      border-radius: 2px;
+      background: #1a1a24;
+      outline: none;
+      cursor: pointer
+    }
+    .speed-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #f9c846;
+      cursor: pointer;
+      border: none
+    }
+    .speed-slider::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #f9c846;
+      cursor: pointer;
+      border: none
+    }
+
     /* SIM */
     .sim-topbar {
       width: 100%;
@@ -2290,58 +2329,69 @@
       background: #0d0d12;
       border: 1px solid #1a1a24;
       border-radius: 14px;
-      padding: 4px 0;
+      padding: 0;
       margin-bottom: 20px;
-      text-align: left
+      text-align: left;
+      overflow: hidden
     }
 
-    .settings-row {
+    /* Each setting is a self-contained stacked panel */
+    .setting-panel {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid #111118
+    }
+
+    .setting-panel:last-child {
+      border-bottom: none
+    }
+
+    .setting-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #6060a0;
+      margin-bottom: 8px
+    }
+
+    .setting-btns {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px
-    }
-
-    .settings-label {
-      font-size: 13px;
-      font-weight: 700;
-      color: #c0c0d8
-    }
-
-    .settings-opts {
-      display: flex;
-      gap: 4px
+      gap: 6px;
+      width: 100%
     }
 
     .sopt {
-      background: #0f0f18;
+      flex: 1;
+      background: #111118;
       border: 1px solid #1e1e2a;
-      color: #606070;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 5px 12px;
-      border-radius: 5px;
+      color: #505065;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 9px 6px;
+      border-radius: 7px;
       cursor: pointer;
-      letter-spacing: .5px;
-      transition: all .12s
+      letter-spacing: .3px;
+      transition: all .12s;
+      font-family: system-ui, -apple-system, sans-serif;
+      text-align: center
     }
 
     .sopt:hover {
-      border-color: #333;
-      color: #9090a8
+      border-color: #2a2a3a;
+      color: #8080a8
     }
 
-    .sopt.on {
-      background: #1a1a2a;
-      border-color: #4040a0;
-      color: #a0a0f0
-    }
+    /* Colour-coded active states */
+    .sopt-green.on  { background: #0a1e0e; border-color: #1a5a28; color: #4ade80 }
+    .sopt-amber.on  { background: #1e1500; border-color: #5a3a00; color: #fbbf24 }
+    .sopt-red.on    { background: #1e0808; border-color: #5a1818; color: #f87171 }
+    .sopt-blue.on   { background: #0a1428; border-color: #1a3a6a; color: #60a5fa }
 
-    .settings-desc {
+    .setting-desc {
       font-size: 11px;
-      color: #444;
-      padding: 0 16px 10px;
-      margin-top: -4px
+      color: #404055;
+      margin-top: 7px;
+      line-height: 1.5
     }
 
     .settings-divider {
@@ -2349,6 +2399,11 @@
       background: #111118;
       margin: 0
     }
+
+    /* Legacy compat — some JS still calls settings-row etc */
+    .settings-row { display: none }
+    .settings-label { display: none }
+    .settings-opts { display: none }
 
     /* ── SHARE CARD ─────────────────────────────────────────────────────────── */
     #share-card {
@@ -2719,39 +2774,62 @@
       Quarter-Final, Semi Final and Final. Can you go 19-0?</div>
 
     <div class="settings-block">
-      <div class="settings-row">
-        <div class="settings-label">Difficulty</div>
-        <div class="settings-opts" id="opt-diff">
-          <button class="sopt on" onclick="setSetting('diff','easy',this)">Easy</button>
-          <button class="sopt" onclick="setSetting('diff','medium',this)">Medium</button>
-          <button class="sopt" onclick="setSetting('diff','hard',this)">Hard</button>
+
+      <!-- Difficulty -->
+      <div class="setting-panel">
+        <div class="setting-label">Difficulty</div>
+        <div class="setting-btns" id="opt-diff">
+          <button class="sopt sopt-green on" onclick="setSetting('diff','easy',this)">Easy</button>
+          <button class="sopt sopt-amber" onclick="setSetting('diff','medium',this)">Medium</button>
+          <button class="sopt sopt-red" onclick="setSetting('diff','hard',this)">Hard</button>
         </div>
+        <div class="setting-desc" id="desc-diff">Unlimited re-spins</div>
       </div>
-      <div class="settings-desc" id="desc-diff">Unlimited re-spins</div>
 
-      <div class="settings-divider"></div>
-
-      <div class="settings-row">
-        <div class="settings-label">Rating mode</div>
-        <div class="settings-opts" id="opt-rating">
-          <button class="sopt on" onclick="setSetting('rating','year',this)">By Year</button>
-          <button class="sopt" onclick="setSetting('rating','prime',this)">Prime</button>
+      <!-- Rating mode -->
+      <div class="setting-panel">
+        <div class="setting-label">Rating mode</div>
+        <div class="setting-btns" id="opt-rating">
+          <button class="sopt sopt-blue on" onclick="setSetting('rating','year',this)">By Year</button>
+          <button class="sopt sopt-blue" onclick="setSetting('rating','prime',this)">Prime</button>
         </div>
+        <div class="setting-desc" id="desc-rating">Rating reflects that specific season</div>
       </div>
-      <div class="settings-desc" id="desc-rating">Rating reflects that specific season</div>
 
-      <div class="settings-divider"></div>
-
-      <div class="settings-row">
-        <div class="settings-label">Show ratings</div>
-        <div class="settings-opts" id="opt-show">
-          <button class="sopt on" onclick="setSetting('show','visible',this)">Visible</button>
-          <button class="sopt" onclick="setSetting('show','hidden',this)">Hidden</button>
+      <!-- Show ratings -->
+      <div class="setting-panel">
+        <div class="setting-label">Show ratings</div>
+        <div class="setting-btns" id="opt-show">
+          <button class="sopt sopt-green on" onclick="setSetting('show','visible',this)">Visible</button>
+          <button class="sopt sopt-red" onclick="setSetting('show','hidden',this)">Hidden</button>
         </div>
+        <div class="setting-desc" id="desc-show">Ratings shown during draft</div>
       </div>
-      <div class="settings-desc" id="desc-show">Ratings shown during draft</div>
+
+      <!-- Draft mode -->
+      <div class="setting-panel">
+        <div class="setting-label">Draft mode</div>
+        <div class="setting-btns" id="opt-budget">
+          <button class="sopt sopt-green on" onclick="setSetting('budget','normal',this)">Normal</button>
+          <button class="sopt sopt-red" onclick="setSetting('budget','budget',this)">Budget · £1m</button>
+        </div>
+        <div class="setting-desc" id="desc-budget">No budget limit — draft freely</div>
+      </div>
+
     </div>
 
+    <div style="width:100%;margin-bottom:12px">
+      <input id="team-name-input" type="text" maxlength="20" placeholder="Your XI"
+        style="width:100%;background:#0d0d12;border:1px solid #252535;border-radius:8px;
+               padding:13px 16px;font-size:15px;font-weight:700;color:#fff;outline:none;
+               font-family:system-ui,-apple-system,sans-serif;text-align:center;
+               transition:border-color .15s"
+        oninput="SETTINGS.teamName=this.value.trim()||'Your XI'"
+        onfocus="if(this.value==='Your XI'){this.value='';this.style.borderColor='#4040a0'}"
+        onblur="if(this.value===''){this.value='Your XI'};this.style.borderColor='#252535'"
+      >
+      <div style="font-size:10px;color:#404055;text-align:center;margin-top:5px;letter-spacing:.5px">Your team name · optional · 20 chars max</div>
+    </div>
     <button class="btn-start" onclick="startDraft()">Start New Run →</button>
 
     <!-- <button class="btn-dev" onclick="devRun()">⚡ Dev run</button>-->
@@ -2819,6 +2897,10 @@
       </div>
     </div>
     <div class="squad-list" id="squad-list"></div>
+    <div id="sq-budget-row" style="display:none;width:100%;background:#0d0d12;border:1px solid #2a2a1a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:left">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">💰 Budget summary</div>
+      <div id="sq-budget-text" style="font-size:13px;color:#c0c0d8;line-height:1.7"></div>
+    </div>
     <button class="btn-sim" onclick="showPreview()">Season Preview →</button>
   </div>
 
@@ -2837,7 +2919,15 @@
           style="font-size:11px;color:#8080a0;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-top:1px;text-align:left">
         </div>
       </div>
-      <div class="sim-prog" id="sim-prog"></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+        <div class="sim-prog" id="sim-prog"></div>
+        <div class="speed-wrap" id="group-speed-bar">
+          <span class="speed-icon">🐢</span>
+          <input class="speed-slider" type="range" min="0.25" max="2" step="0.25" value="1"
+            oninput="setSimSpeed(this.value)" title="Simulation speed">
+          <span class="speed-icon">🐇</span>
+        </div>
+      </div>
     </div>
     <div style="height:1px;background:#1a1a22;width:100%;margin-bottom:16px"></div>
 
@@ -2859,6 +2949,9 @@
 
   <!-- SCORECARD -->
   <div id="s-scorecard" class="screen">
+    <div style="width:100%;display:flex;justify-content:flex-end;margin-bottom:10px">
+      <div class="speed-wrap" id="sc-speed-bar"></div>
+    </div>
     <div id="sc-content" style="width:100%"></div>
     <div id="sc-next" style="margin-top:12px;width:100%"></div>
   </div>
@@ -3364,7 +3457,6 @@
           { n: "Matthew Pillans", y: { 2019: 67, 2020: 67 } },
           { n: "Duanne Olivier", y: { 2019: 80, 2020: 80 } },
           { n: "Jared Warner Poysden", y: { 2018: 64, 2019: 65, 2020: 65, 2021: 65 } },
-          { n: "Jordan Thompson", y: { 2018: 68, 2019: 71, 2020: 74, 2021: 77, 2022: 80, 2023: 82, 2024: 83, 2025: 84 } },
           { n: "Jared Leech", y: { 2022: 66, 2023: 67, 2024: 68 } },
           { n: "Ollie Robinson", y: { 2014: 65 } },
           { n: "Dom Moriarty", y: { 2024: 67, 2025: 69 } },
@@ -3696,7 +3788,8 @@
           { n: "Naseem Shah", y: { 2022: 82 } },
           { n: "Akhil Rao", y: { 2025: 64 } },
           { n: "Rob Montgomery", y: { 2014: 60 } },
-          { n: "Jared Warner", y: { 2022: 65 } }
+          { n: "Jared Warner", y: { 2022: 65 } },
+          { n: "Ajeet Singh Dale", y: { 2022: 71, 2023: 72, 2024: 73, 2025: 74 } },
         ],
         Glamorgan: [
           { n: "Andrew Salter", y: { 2014: 64, 2015: 67, 2016: 69, 2017: 71, 2018: 70, 2019: 72, 2020: 71, 2021: 73, 2022: 74, 2023: 72 } },
@@ -3800,7 +3893,6 @@
           { n: "Naveen-ul-Haq", y: { 2021: 76, 2022: 80, 2023: 79 } },
           { n: "Will Davis", y: { 2019: 63, 2020: 66, 2021: 68, 2022: 65, 2023: 62 } },
           { n: "Josh Hull", y: { 2023: 60, 2024: 67, 2025: 73, 2026: 76 } },
-          { n: "Niall O'Brien", y: { 2014: 71, 2015: 69, 2016: 67 } },
           { n: "Dieter Klein", y: { 2017: 64, 2018: 67, 2019: 69, 2020: 67 } },
           { n: "Rob Taylor", y: { 2014: 62, 2015: 65, 2016: 63 } },
           { n: "Matt Pillans", y: { 2017: 66 } },
@@ -3862,7 +3954,7 @@
         Yorkshire: [
           { n: "David Willey", y: { 2016: 85, 2017: 86, 2018: 87, 2019: 88, 2020: 87, 2021: 88, 2022: 87 } },
           { n: "Tim Bresnan", y: { 2014: 82, 2015: 81, 2016: 80, 2017: 79, 2018: 77, 2019: 75 } },
-          { n: "Jordan Thompson", y: { 2018: 68, 2019: 71, 2020: 74, 2021: 77, 2022: 80, 2023: 82, 2024: 83, 2025: 84 } },
+          { n: "Jordan Thompson", y: { 2018: 68, 2019: 71, 2020: 74, 2021: 77, 2022: 80, 2023: 81, 2024: 81, 2025: 82 } },
           { n: "Dom Bess", y: { 2019: 72, 2020: 74, 2021: 75, 2022: 76, 2023: 75, 2024: 74, 2025: 74, 2026: 74 } },
           { n: "Matthew Revis", y: { 2020: 65, 2021: 68, 2022: 71, 2023: 74, 2024: 76, 2025: 78, 2026: 80 } },
           { n: "George Hill", y: { 2020: 64, 2021: 67, 2022: 70, 2023: 73, 2024: 76, 2025: 78, 2026: 79 } },
@@ -4039,7 +4131,7 @@
           { n: "Kai Smith", y: { 2025: 60, 2026: 63 } },
           { n: "Chris Green", y: { 2019: 75 } },
           { n: "Shoaib Malik", y: { 2014: 82 } },
-          { n: "Jordan Thompson", y: { 2026: 75 } },
+          { n: "Jordan Thompson", y: { 2026: 81 } },
           { n: "Beau Webster", y: { 2026: 81 } },
           { n: "Ashton Agar", y: { 2019: 79 } },
           { n: "Tazeem Ali", y: { 2026: 66 } },
@@ -4102,7 +4194,6 @@
           { n: "Ollie Price", y: { 2022: 61, 2023: 67, 2024: 72, 2025: 75, 2026: 76 } },
           { n: "Kieran Noema-Barnett", y: { 2015: 71, 2016: 69, 2017: 66, 2018: 63 } },
           { n: "Glenn Phillips", y: { 2021: 82, 2022: 84 } },
-          { n: "Alice Dale", y: { 2022: 61, 2023: 63, 2024: 65, 2025: 64 } },
           { n: "James Fuller", y: { 2014: 69, 2015: 71 } },
           { n: "Alex Gidman", y: { 2014: 72 } },
           { n: "Beau Webster", y: { 2024: 76 } },
@@ -4365,6 +4456,7 @@
           { n: "Ned Eckersley", y: { 2014: 67, 2015: 69, 2016: 68, 2017: 65, 2018: 63 } },
           { n: "Harry Swindells", y: { 2018: 60, 2019: 64, 2020: 67, 2021: 69, 2022: 66, 2023: 65, 2024: 63 } },
           { n: "Luke Ronchi", y: { 2017: 78 } },
+          { n: "Niall O'Brien", y: { 2014: 71, 2015: 69, 2016: 67 } },
         ],
         Sussex: [
           { n: "Matt Prior", y: { 2014: 74 } },
@@ -4412,21 +4504,67 @@
       return "#cd7f32";
     }
 
+    // ── SIM SPEED ──────────────────────────────────────────────────────────────────────
+    // Multiplier applied to all simulation delays. 1x = normal, 2x = twice as fast.
+    let SIM_SPEED = 1;
+    function setSimSpeed(v) {
+      SIM_SPEED = parseFloat(v);
+      // Sync all speed sliders on screen (group stage + scorecard)
+      document.querySelectorAll('.speed-slider').forEach(s => { s.value = SIM_SPEED; });
+    }
+    function simDelay(base) {
+      // base is the "1x" delay in ms; divide by speed multiplier
+      if (DEV_MODE) return 0;
+      return Math.round(base / SIM_SPEED);
+    }
+
     // ── SETTINGS ───────────────────────────────────────────────────────────────────
-    const SETTINGS = { diff: 'easy', rating: 'year', show: 'visible' };
+    const SETTINGS = { diff: 'easy', rating: 'year', show: 'visible', budget: 'normal', teamName: 'Your XI' };
     const RESPIN_LIMITS = { easy: Infinity, medium: 3, hard: 0 };
     const SETTING_DESCS = {
       diff: { easy: 'Unlimited re-spins', medium: '3 re-spins per pick', hard: 'No re-spins (unless no players available)' },
-      rating: { year: 'Rating reflects that specific season', prime: 'Always uses each player\'s career-best rating' },
-      show: { visible: 'Ratings shown during draft', hidden: 'Ratings revealed only after draft is complete' }
+      rating: { year: 'Rating reflects that specific season', prime: "Always uses each player's career-best rating" },
+      show: { visible: 'Ratings shown during draft', hidden: 'Ratings revealed only after draft is complete' },
+      budget: { normal: 'No budget limit — draft freely', budget: '£1m budget · player prices based on rating' }
     };
+
+    // ── BUDGET MODE ────────────────────────────────────────────────────────────────
+    const BUDGET_TOTAL = 1000000;
+
+    function getPlayerPrice(rating) {
+      if (rating >= 95) return 200000;
+      if (rating >= 90) return 160000;
+      if (rating >= 85) return 130000;
+      if (rating >= 80) return 100000;
+      if (rating >= 75) return 75000;
+      if (rating >= 70) return 55000;
+      if (rating >= 65) return 38000;
+      return 25000;
+    }
+
+    function fmtPrice(p) {
+      if (p >= 1000000) return '£' + (p / 1000000).toFixed(2) + 'm';
+      return '£' + (p / 1000).toFixed(0) + 'k';
+    }
+
+    function budgetRemaining() {
+      return BUDGET_TOTAL - (S.budgetSpent || 0);
+    }
+
+    function canAfford(price) {
+      if (SETTINGS.budget !== 'budget') return true;
+      const slotsLeft = 11 - S.slot - 1;
+      const minFill = slotsLeft * 25000;
+      return (budgetRemaining() - price) >= minFill;
+    }
 
     function setSetting(key, val, btn) {
       SETTINGS[key] = val;
-      btn.closest('.settings-opts').querySelectorAll('.sopt').forEach(b => b.classList.remove('on'));
+      // Support both old .settings-opts and new .setting-btns containers
+      const container = btn.closest('.setting-btns') || btn.closest('.settings-opts');
+      if (container) container.querySelectorAll('.sopt').forEach(b => b.classList.remove('on'));
       btn.classList.add('on');
-      const descId = 'desc-' + key;
-      const el = document.getElementById(descId);
+      const el = document.getElementById('desc-' + key);
       if (el) el.textContent = SETTING_DESCS[key][val];
     }
 
@@ -4435,8 +4573,11 @@
     let DEV_MODE = false;
 
     function fullReset() {
-      S = { slot: 0, squad: [], counts: {}, roleCounts: { bat: 0, bowl: 0, all: 0, wk: 0 }, respinsUsed: 0 };
+      S = { slot: 0, squad: [], counts: {}, roleCounts: { bat: 0, bowl: 0, all: 0, wk: 0 }, respinsUsed: 0, budgetSpent: 0 };
       DEV_MODE = false;
+      SETTINGS.teamName = 'Your XI';
+      const ni = document.getElementById('team-name-input');
+      if (ni) ni.value = 'Your XI';
       go("s-home");
     }
     fullReset();
@@ -4445,7 +4586,9 @@
 
     function startDraft() {
       pingEvent('Sim_Started', { league: 'T20 Blast' });
-      S = { slot: 0, squad: [], counts: {}, roleCounts: { bat: 0, bowl: 0, all: 0, wk: 0 }, respinsUsed: 0 };
+      const nameInput = document.getElementById('team-name-input');
+      if (nameInput) SETTINGS.teamName = nameInput.value.trim() || 'Your XI';
+      S = { slot: 0, squad: [], counts: {}, roleCounts: { bat: 0, bowl: 0, all: 0, wk: 0 }, respinsUsed: 0, budgetSpent: 0 };
       DEV_MODE = false;
       go("s-spin"); updatePickUI(); renderSquadTracker(); doSpin();
     }
@@ -4514,7 +4657,7 @@
       // Draft all county squads now so preview has real ratings
       S.countySquads = {};
       S.allRatings = {};
-      const MY_DEV = "Your XI";
+      const MY_DEV = SETTINGS.teamName;
       S.countySquads[MY_DEV] = S.squad;
       S.allRatings[MY_DEV] = Math.round(S.squad.reduce((s, p) => s + p.rating, 0) / S.squad.length);
       ALL_C.forEach(county => {
@@ -4544,7 +4687,23 @@
     function renderSquadTracker() {
       const tracker = document.getElementById("squad-tracker");
       if (!tracker) return;
-      let html = `<div class="st-title">Your XI so far</div>`;
+      const _budgetBar = SETTINGS.budget === 'budget' ? (() => {
+        const rem = budgetRemaining();
+        const spent = S.budgetSpent || 0;
+        const pct = Math.max(0, Math.min(100, (rem / BUDGET_TOTAL) * 100));
+        const col = rem < 150000 ? '#f87171' : rem < 300000 ? '#fbbf24' : '#4ade80';
+        return '<div style="margin-bottom:10px;background:#0d0d12;border:1px solid #1a1a24;border-radius:8px;padding:9px 12px">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
+          + '<span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6a6a8a;font-weight:800">Budget remaining</span>'
+          + '<span style="font-size:13px;font-weight:900;color:' + col + '">' + fmtPrice(rem) + '</span>'
+          + '</div>'
+          + '<div style="height:4px;background:#1a1a24;border-radius:2px;overflow:hidden">'
+          + '<div style="height:100%;width:' + pct + '%;background:' + col + ';border-radius:2px;transition:width .3s"></div>'
+          + '</div>'
+          + '<div style="font-size:10px;color:#404055;margin-top:4px">' + fmtPrice(spent) + ' spent of ' + fmtPrice(BUDGET_TOTAL) + '</div>'
+          + '</div>';
+      })() : '';
+      let html = _budgetBar + `<div class="st-title">Your XI so far</div>`;
       for (const g of TRACKER_GROUPS) {
         const filled = S.squad.filter(p => p.role === g.role);
         const empty = g.max - filled.length;
@@ -4588,7 +4747,33 @@
         dc.textContent = ALL_C[Math.floor(Math.random() * ALL_C.length)]; tick++;
         if (tick < cm) { setTimeout(tickCounty, 72); }
         else {
-          const c = ALL_C[Math.floor(Math.random() * ALL_C.length)];
+          // In budget mode with limited funds, only spin counties that have
+          // at least one affordable player in a role we still need.
+          // We don't know the year yet so we check across all years.
+          let spinPool = ALL_C;
+          if (SETTINGS.budget === 'budget' && budgetRemaining() < 160000) {
+            const rem = budgetRemaining();
+            const slotsLeft = 11 - S.slot - 1;
+            const minForRest = slotsLeft * 25000;
+            const maxSpend = rem - minForRest;
+            const viable = ALL_C.filter(county => {
+              for (const role of ["bat", "wk", "all", "bowl"]) {
+                if (S.roleCounts[role] >= ROLE_MAX[role]) continue;
+                const taken = new Set(S.squad.map(p => p.name));
+                const defs = PDB[role][county] || [];
+                if (defs.some(d => {
+                  if (taken.has(d.n)) return false;
+                  const vals = Object.values(d.y);
+                  if (!vals.length) return false;
+                  const maxR = Math.max(...vals);
+                  return getPlayerPrice(maxR) <= maxSpend;
+                })) return true;
+              }
+              return false;
+            });
+            if (viable.length > 0) spinPool = viable;
+          }
+          const c = spinPool[Math.floor(Math.random() * spinPool.length)];
           dc.textContent = c; S.spunTeam = c; S.spunGroup = NORTH.includes(c) ? "north" : "south";
           setTimeout(startYearSpin, 220);
         }
@@ -4633,7 +4818,13 @@
       for (const role of ["bat", "wk", "all", "bowl"]) {
         if (S.roleCounts[role] >= ROLE_MAX[role]) continue;
         const defs = PDB[role][county] || [];
-        if (defs.some(d => !taken.has(d.n) && getEffectiveRating(d, year) != null)) return true;
+        if (defs.some(d => {
+          if (taken.has(d.n)) return false;
+          const r = getEffectiveRating(d, year);
+          if (r == null) return false;
+          if (SETTINGS.budget === 'budget' && !canAfford(getPlayerPrice(r))) return false;
+          return true;
+        })) return true;
       }
       return false;
     }
@@ -4650,7 +4841,9 @@
             const r = getEffectiveRating(d, S.spunYear);
             return r != null && !taken.has(d.n) ? { name: d.n, rating: r, county: S.spunTeam, year: S.spunYear, role } : null;
           })
-          .filter(Boolean).sort((a, b) => b.rating - a.rating).slice(0, 5);
+          .filter(Boolean)
+          .sort((a, b) => SETTINGS.show === 'hidden' ? a.name.localeCompare(b.name) : b.rating - a.rating)
+          .slice(0, 5);
         const atMax = S.roleCounts[role] >= ROLE_MAX[role];
         const left = ROLE_MAX[role] - S.roleCounts[role];
         html += `<div class="role-section"><div class="role-header rh-${role}"><span class="rh-title">${roleNames[role]}</span><span class="rh-slots">${left} slot${left !== 1 ? "s" : ""} left</span></div>`;
@@ -4662,7 +4855,11 @@
               ? `<div class="rating-badge rb-grey" style="font-size:12px;letter-spacing:0">?</div>`
               : `<div class="rating-badge ${ratingBadgeClass(p.rating)}">${p.rating}</div>`;
             const modeTag = SETTINGS.rating === 'prime' ? `<span style="font-size:9px;color:#606070;margin-left:4px">peak</span>` : "";
-            html += `<div class="player-card pc-${role}${atMax ? " dimmed" : ""}" data-p="${obj}"><div><div class="pc-name">${p.name}${modeTag}</div><div class="pc-meta">${p.county} · ${p.year}</div></div><div class="pc-right">${badgeHTML}</div></div>`;
+            const _price = getPlayerPrice(p.rating);
+            const _priceTag = SETTINGS.budget === 'budget' ? `<span style="font-size:10px;font-weight:800;color:#f9c846;margin-left:5px">${fmtPrice(_price)}</span>` : "";
+            const _tooExp = SETTINGS.budget === 'budget' && !canAfford(_price);
+            const _cardDim = atMax || _tooExp;
+            html += `<div class="player-card pc-${role}${_cardDim ? " dimmed" : ""}" data-p="${obj}"><div><div class="pc-name">${p.name}${modeTag}${_priceTag}</div><div class="pc-meta">${p.county} · ${p.year}${_tooExp ? ' · <span style="color:#f87171;font-size:10px">over budget</span>' : ''}</div></div><div class="pc-right">${badgeHTML}</div></div>`;
           });
         }
         html += `</div>`;
@@ -4673,6 +4870,11 @@
     }
 
     function selectPlayer(p) {
+      if (SETTINGS.budget === 'budget') {
+        const _pp = getPlayerPrice(p.rating);
+        S.budgetSpent = (S.budgetSpent || 0) + _pp;
+        p.price = _pp;
+      }
       S.squad.push(p); S.counts[p.county] = (S.counts[p.county] || 0) + 1; S.roleCounts[p.role]++; S.slot++;
       S.respinsUsed = 0; // reset re-spin count for next pick
       S.spunTeam = null; // mark as fresh pick so first spin isn't counted
@@ -4696,12 +4898,12 @@
       colorEl("sq-ovr", ovr); colorEl("sq-bat", bat); colorEl("sq-bowl", bowl);
       const ORDER = ["bat", "wk", "all", "bowl"];
       const sortedSquad = [...S.squad].sort((a, b) => ORDER.indexOf(a.role) - ORDER.indexOf(b.role));
-      document.getElementById("squad-list").innerHTML = sortedSquad.map(p => `<div class="squad-item si-${p.role}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.county} · ${p.year}</div></div><div class="si-right"><span class="rp-badge rpb-${p.role}">${RL[p.role]}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`).join("");
+      document.getElementById("squad-list").innerHTML = sortedSquad.map(p => `<div class="squad-item si-${p.role}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.county} · ${p.year}${SETTINGS.budget === 'budget' && p.price ? ' · <span style="color:#f9c846;font-weight:800">' + fmtPrice(p.price) + '</span>' : ''}</div></div><div class="si-right"><span class="rp-badge rpb-${p.role}">${RL[p.role]}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`).join("");
 
       // Draft all 18 county XIs now so predictions and odds use real ratings
       S.countySquads = {};
       S.allRatings = {};
-      const MY = "Your XI";
+      const MY = SETTINGS.teamName;
       S.countySquads[MY] = S.squad;
       S.allRatings[MY] = ovr;
       ALL_C.forEach(county => {
@@ -4710,12 +4912,31 @@
         S.allRatings[county] = getCountyRating(xi);
       });
 
+      // Budget summary panel
+      const _bsEl = document.getElementById('sq-budget-row');
+      const _bsTx = document.getElementById('sq-budget-text');
+      if (_bsEl && _bsTx) {
+        if (SETTINGS.budget === 'budget') {
+          _bsEl.style.display = 'block';
+          const _spent = S.budgetSpent || 0;
+          const _rem   = BUDGET_TOTAL - _spent;
+          const _remCol = _rem >= 0 ? '#4ade80' : '#f87171';
+          const _pricedSquad = [...S.squad].sort((a,b)=>(b.price||0)-(a.price||0));
+          const _topPick = _pricedSquad[0];
+          _bsTx.innerHTML =
+            `Spent <strong style="color:#f9c846">${fmtPrice(_spent)}</strong> of <strong>£1m</strong> &nbsp;·&nbsp; ` +
+            `<span style="color:${_remCol};font-weight:800">${fmtPrice(_rem)} left</span><br>` +
+            (_topPick ? `Most expensive: <strong style="color:#fff">${_topPick.name}</strong> <span style="color:#f9c846">${fmtPrice(_topPick.price||0)}</span>` : '');
+        } else {
+          _bsEl.style.display = 'none';
+        }
+      }
       go("s-squad");
     }
 
     // ── SEASON PREVIEW ─────────────────────────────────────────────────────────────
     function showPreview() {
-      const MY = "Your XI";
+      const MY = SETTINGS.teamName;
       const ovr = Math.round(S.squad.reduce((s, p) => s + p.rating, 0) / S.squad.length);
       const bat = Math.round(S.squad.filter(p => p.role === "bat" || p.role === "all").reduce((s, p) => s + p.rating, 0) / 6);
       const bowl = Math.round(S.squad.filter(p => p.role === "bowl" || p.role === "all").reduce((s, p) => s + p.rating, 0) / 6);
@@ -4810,6 +5031,7 @@
       <div class="pr-box"><div class="pr-n" style="color:${ratingColor(ovr)}">${ovr}</div><div class="pr-l">Overall</div></div>
       <div class="pr-box"><div class="pr-n" style="color:${ratingColor(bat)}">${bat}</div><div class="pr-l">Batting</div></div>
       <div class="pr-box"><div class="pr-n" style="color:${ratingColor(bowl)}">${bowl}</div><div class="pr-l">Bowling</div></div>
+      ${SETTINGS.budget === 'budget' ? `<div class="pr-box"><div class="pr-n" style="color:#f9c846;font-size:13px;letter-spacing:-.3px;line-height:1.2;padding-top:2px">${fmtPrice(S.budgetSpent||0)}</div><div class="pr-l">Spent</div></div>` : ''}
     </div>
 
     <div style="width:100%;background:#0d0d12;border:1px solid #1e1e2a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:left">
@@ -4978,24 +5200,29 @@
       ];
       const squad = [];
       const taken = new Set();
+      // In budget mode, AI teams also draft within £1m so ratings are comparable
+      const useBudget = SETTINGS.budget === 'budget';
+      let budgetLeft = BUDGET_TOTAL;
+      const slotsTotal = SLOTS.length;
 
-      for (const slot of SLOTS) {
+      for (let si = 0; si < SLOTS.length; si++) {
+        const slot = SLOTS[si];
         const pool = PDB[slot.role][county] || [];
-        // Build candidates — use the player's best year rating so opponents
-        // are drafted at peak form, matching how the player picks their own XI.
+        // Build candidates using each player's best year rating
         const candidates = [];
         for (const def of pool) {
           if (taken.has(def.n)) continue;
           const entries = Object.entries(def.y).map(([y, r]) => ({ year: parseInt(y), rating: r }));
           const best = entries.reduce((b, e) => e.rating > b.rating ? e : b, entries[0]);
-          candidates.push({ name: def.n, rating: best.rating, peakRating: best.rating, year: best.year, role: slot.role, county });
+          const price = getPlayerPrice(best.rating);
+          // In budget mode: must leave enough for remaining slots at minimum price
+          const slotsLeft = slotsTotal - si - 1;
+          if (useBudget && price > budgetLeft - slotsLeft * 25000) continue;
+          candidates.push({ name: def.n, rating: best.rating, peakRating: best.rating, year: best.year, role: slot.role, county, price });
         }
         candidates.sort((a, b) => b.peakRating - a.peakRating);
 
-        // Weight by rating gap from the top candidate: players within a few points
-        // of the best get high weight; players far below get weight 1.
-        // This means strong counties reliably pick their elite players while
-        // weaker counties — with a flatter pool — get more natural variance.
+        // Weight by rating gap: players near the top get high weight, tail gets 1
         if (candidates.length > 0) {
           const topR = candidates[0].peakRating;
           const weights = candidates.map(c => Math.max(1, 10 - (topR - c.peakRating) * 1.5));
@@ -5007,11 +5234,12 @@
             if (rand <= 0) { pick = candidates[i]; break; }
           }
           if (!pick) pick = candidates[candidates.length - 1];
-          squad.push(pick); taken.add(pick.name);
+          squad.push(pick);
+          taken.add(pick.name);
+          if (useBudget) budgetLeft -= pick.price;
         }
       }
 
-      // If we didn't fill all slots (small pool), fill with repeats at lower rating
       const ORDER = ["bat", "wk", "all", "bowl"];
       squad.sort((a, b) => ORDER.indexOf(a.role) - ORDER.indexOf(b.role));
       return squad;
@@ -5023,7 +5251,7 @@
     }
 
     function simMatch(a, b, ratings) {
-      const MY = "Your XI";
+      const MY = SETTINGS.teamName;
       const rA = ratings[a] || 62, rB = ratings[b] || 62;
       let aW;
       if (DEV_MODE && (a === MY || b === MY)) {
@@ -5124,7 +5352,7 @@
     let simAll = [], simIdx = 0;
     function startSim() {
       pingEvent('Season_Started', { league: 'T20 Blast' });
-      const MY = "Your XI";
+      const MY = SETTINGS.teamName;
       const groupTeams = [...(S.repGroup === "north" ? NORTH : SOUTH)];
       const idx = groupTeams.indexOf(S.repTeam); if (idx > -1) groupTeams[idx] = MY;
       S.myTeam = MY; S.groupTeams = groupTeams;
@@ -5159,7 +5387,7 @@
       S.groupResults = simAll; simIdx = 0;
       // Pre-compute accumulated group stats for season review
       S.groupStats = { bat: {}, bowl: {} };
-      const MY_G = "Your XI";
+      const MY_G = SETTINGS.teamName;
       simAll.forEach(r => {
         if (!r.myBatStats && !r.myBowlStats) return;
         (r.myBatStats || []).forEach(p => {
@@ -5235,7 +5463,7 @@
       renderLiveTable();
       simIdx++;
       // Dev mode: instant. Normal: your matches get longer pause, others quick
-      setTimeout(dropNext, DEV_MODE ? 0 : isMe ? 900 : 120);
+      setTimeout(dropNext, DEV_MODE ? 0 : isMe ? simDelay(900) : simDelay(120));
     }
 
     function renderLiveTable() {
@@ -5291,7 +5519,7 @@
 
     // Get the 11 player names for a team in batting order
     function getTeamPlayers(team) {
-      const MY = "Your XI";
+      const MY = SETTINGS.teamName;
       const ORDER = ["bat", "wk", "all", "bowl"];
 
       // Use stored county squad if available
@@ -5570,7 +5798,7 @@
 
     function showScorecard(matchData, stagePillHTML, nextCallback) {
       scMatchData = matchData;
-      const MY = "Your XI";
+      const MY = SETTINGS.teamName;
       const myInvolved = matchData.teamA === MY || matchData.teamB === MY;
       const won = matchData.winner === MY;
 
@@ -5602,11 +5830,21 @@
     <div id="sc-result-wrap" style="opacity:0;transition:opacity .5s;width:100%"></div>
   `;
       document.getElementById("sc-next").innerHTML = "";
+      // Sync speed slider on scorecard screen
+      const _scSpeedBar = document.getElementById('sc-speed-bar');
+      if (_scSpeedBar && !_scSpeedBar.querySelector('.speed-slider')) {
+        _scSpeedBar.innerHTML =
+          '<span class="speed-icon">🐢</span>' +
+          '<input class="speed-slider" type="range" min="0.25" max="2" step="0.25" value="' + SIM_SPEED + '" oninput="setSimSpeed(this.value)" title="Simulation speed">' +
+          '<span class="speed-icon">🐇</span>';
+      } else if (_scSpeedBar) {
+        _scSpeedBar.querySelector('.speed-slider').value = SIM_SPEED;
+      }
       go("s-scorecard");
 
       // Play innings 1 over by over — fielding team is inns2's team
       playInningsLive(matchData.inns1, false, null, () => {
-        const delay = DEV_MODE ? 100 : 1000;
+        const delay = DEV_MODE ? 100 : simDelay(1000);
         setTimeout(() => revealInnings2(matchData, myInvolved, won), delay);
       }, matchData.inns2.team);
     }
@@ -5633,10 +5871,9 @@
     <div id="sc-bowl-table2" style="width:100%;margin-bottom:6px"></div>
   `;
 
-      setTimeout(() => sec.scrollIntoView({ behavior: "smooth", block: "start" }), DEV_MODE ? 0 : 300);
+      setTimeout(() => sec.scrollIntoView({ behavior: "smooth", block: "start" }), DEV_MODE ? 0 : simDelay(300));
 
       // Now play innings 2 live
-      const overDelay = DEV_MODE ? 25 : 850;
       let ovIdx2 = 0;
 
       renderLiveBattingSnap(matchData.inns2.overScores[0] ? matchData.inns2.overScores[0].batterSnap : matchData.inns2.batters, "sc-bat-table2");
@@ -5654,7 +5891,7 @@
           renderLiveBattingSnap(matchData.inns2.batters, "sc-bat-table2");
 
           // Innings 2 complete — go straight to result (bowling already shown live in sc-bowl-table2)
-          setTimeout(() => renderResult(matchData, myInvolved, won), DEV_MODE ? 100 : 800);
+          setTimeout(() => renderResult(matchData, myInvolved, won), DEV_MODE ? 100 : simDelay(800));
           return;
         }
 
@@ -5689,7 +5926,7 @@
 
         renderLiveBattingSnap(ov.batterSnap || matchData.inns2.batters, "sc-bat-table2");
         if (ov.bowlerSnap) renderLiveBowlingSnap(ov.bowlerSnap.filter(b => b.overs > 0), "sc-bowl-table2", matchData.inns1.team);
-        scTimer = setTimeout(nextOver2, overDelay);
+        scTimer = setTimeout(nextOver2, DEV_MODE ? 25 : simDelay(850));
       }
       nextOver2();
     }
@@ -5739,8 +5976,6 @@
       renderLiveBowlingSnap([], "sc-bowl-table");
 
       let ovIdx = 0;
-      const overDelay = DEV_MODE ? 25 : 850;
-
       function nextOver() {
         if (ovIdx >= inns.overScores.length) {
           const lrEl = document.getElementById("sc-live-runs");
@@ -5793,7 +6028,7 @@
         if (ov.batterSnap) renderLiveBattingSnap(ov.batterSnap, "sc-bat-table");
         if (ov.bowlerSnap) renderLiveBowlingSnap(ov.bowlerSnap.filter(b => b.overs > 0), "sc-bowl-table", fieldingTeam);
 
-        scTimer = setTimeout(nextOver, overDelay);
+        scTimer = setTimeout(nextOver, DEV_MODE ? 25 : simDelay(850));
       }
       nextOver();
     }
@@ -5926,7 +6161,7 @@
   </div>`;
       setTimeout(() => {
         document.getElementById("sc-next").innerHTML = `<button class="btn-next" onclick="scNextCallback()">${scMatchData._label || "Continue →"}</button>`;
-      }, DEV_MODE ? 50 : 500);
+      }, DEV_MODE ? 50 : simDelay(500));
     }
 
     function scNextCallback() { if (scMatchData && scMatchData._next) scMatchData._next(); }
@@ -6214,7 +6449,8 @@
       document.getElementById("ov-stats").innerHTML = `
     <div class="ov-box"><div class="ov-n" style="color:#4ade80">${totalWins}</div><div class="ov-l">Total wins</div></div>
     <div class="ov-box"><div class="ov-n" style="color:#f87171">${totalLosses}</div><div class="ov-l">Total losses</div></div>
-    <div class="ov-box"><div class="ov-n" style="color:#fbbf24">${(groupWins || 0) * 2}</div><div class="ov-l">Group pts</div></div>`;
+    <div class="ov-box"><div class="ov-n" style="color:#fbbf24">${(groupWins || 0) * 2}</div><div class="ov-l">Group pts</div></div>
+    ${SETTINGS.budget === 'budget' ? `<div class="ov-box" style="grid-column:span 3"><div class="ov-n" style="color:#f9c846;font-size:22px">${fmtPrice(S.budgetSpent||0)}</div><div class="ov-l">Budget spent of £1m</div></div>` : ''}`;
 
       // Confetti if they won the final
       if (S.finalWon) launchConfetti();
@@ -6251,7 +6487,7 @@
 
       const OV_ORDER = ["bat", "wk", "all", "bowl"];
       const ovSorted = [...S.squad].sort((a, b) => OV_ORDER.indexOf(a.role) - OV_ORDER.indexOf(b.role));
-      document.getElementById("ov-squad").innerHTML = ovSorted.map(p => `<div class="squad-item si-${p.role}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.county} · ${p.year}</div></div><div class="si-right"><span class="rp-badge rpb-${p.role}">${RL[p.role]}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`).join("");
+      document.getElementById("ov-squad").innerHTML = ovSorted.map(p => `<div class="squad-item si-${p.role}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.county} · ${p.year}${SETTINGS.budget === 'budget' && p.price ? ' · <span style="color:#f9c846;font-weight:800">' + fmtPrice(p.price) + '</span>' : ''}</div></div><div class="si-right"><span class="rp-badge rpb-${p.role}">${RL[p.role]}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`).join("");
 
       // ── Season stats: merge group stage + knockout totals ──────────────────
       const runTotals = {}, wktTotals = {}, ballsFaced = {};
@@ -6321,9 +6557,11 @@
 
       saveRun().catch(e => console.warn('saveRun failed:', e));
       go("s-over");
-      // Show sign-up prompt only if not logged in
+      // Show sign-up prompt banner only if not logged in
       const prompt = document.getElementById('ov-signup-prompt');
       if (prompt) prompt.style.display = AUTH_USER ? 'none' : 'flex';
+      // Pop up the sign-up nudge modal after a short delay so user sees their result first
+      if (!AUTH_USER) setTimeout(openSignupNudge, 1800);
     }
     function genQuote(pos, w, qual, qf, sf, fin) {
       if (fin) return "Lifted the trophy at Edgbaston. A side for the ages.";
@@ -6383,6 +6621,39 @@
       draw();
     }
   </script>
+
+  <!-- ── SIGN-UP NUDGE MODAL ─────────────────────────────────── -->
+  <div id="signup-nudge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:25000;align-items:flex-end;justify-content:center;padding:0">
+    <div style="background:#16161f;border:1px solid #252535;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:28px 22px 40px">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:32px;margin-bottom:10px">📊</div>
+        <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Save your runs</div>
+        <div style="font-size:13px;color:#8080a0;line-height:1.7;max-width:300px;margin:0 auto">Create a free account to track your stats, best finishes, total wins and most-drafted players across every run.</div>
+      </div>
+      <div style="background:#111118;border:1px solid #1a1a24;border-radius:12px;padding:14px 16px;margin-bottom:18px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="text-align:center;padding:10px 6px;background:#0d0d12;border-radius:8px;border:1px solid #1a1a24">
+            <div style="font-size:22px;font-weight:900;color:#f9c846">W–L</div>
+            <div style="font-size:10px;color:#606070;margin-top:2px;letter-spacing:1px;text-transform:uppercase">Record</div>
+          </div>
+          <div style="text-align:center;padding:10px 6px;background:#0d0d12;border-radius:8px;border:1px solid #1a1a24">
+            <div style="font-size:22px;font-weight:900;color:#4ade80">🏆</div>
+            <div style="font-size:10px;color:#606070;margin-top:2px;letter-spacing:1px;text-transform:uppercase">Blast wins</div>
+          </div>
+          <div style="text-align:center;padding:10px 6px;background:#0d0d12;border-radius:8px;border:1px solid #1a1a24">
+            <div style="font-size:22px;font-weight:900;color:#818cf8">⭐</div>
+            <div style="font-size:10px;color:#606070;margin-top:2px;letter-spacing:1px;text-transform:uppercase">Most drafted</div>
+          </div>
+          <div style="text-align:center;padding:10px 6px;background:#0d0d12;border-radius:8px;border:1px solid #1a1a24">
+            <div style="font-size:22px;font-weight:900;color:#f97316">📈</div>
+            <div style="font-size:10px;color:#606070;margin-top:2px;letter-spacing:1px;text-transform:uppercase">Best run</div>
+          </div>
+        </div>
+      </div>
+      <button onclick="openAuthModal();closeSignupNudge()" style="width:100%;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;margin-bottom:10px;font-family:system-ui,-apple-system,sans-serif">Create free account →</button>
+      <button onclick="closeSignupNudge()" style="width:100%;background:transparent;color:#606080;border:1px solid #252535;padding:13px;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif">Maybe later</button>
+    </div>
+  </div>
 
   <!-- ── COOKIE BANNER ─────────────────────────────────────── -->
   <div id="cookie-banner" style="display:none">
@@ -7059,6 +7330,27 @@
         console.error(e);
       }
     }
+
+    function closeSignupNudge() {
+      const m = document.getElementById('signup-nudge-modal');
+      if (m) { m.style.display = 'none'; m.style.opacity = '0'; }
+    }
+
+    function openSignupNudge() {
+      if (AUTH_USER) return; // already signed in
+      const m = document.getElementById('signup-nudge-modal');
+      if (!m) return;
+      m.style.display = 'flex';
+      m.style.opacity = '0';
+      m.style.transition = 'opacity .3s';
+      requestAnimationFrame(() => requestAnimationFrame(() => { m.style.opacity = '1'; }));
+    }
+
+    // Close nudge on backdrop click
+    document.addEventListener('click', function(e) {
+      const m = document.getElementById('signup-nudge-modal');
+      if (m && e.target === m) closeSignupNudge();
+    });
 
     // Initialise session on load
     document.addEventListener('DOMContentLoaded', loadSession);
