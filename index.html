@@ -32,7 +32,7 @@
     function pingEvent(name, params) {
       try {
         var body = JSON.stringify({ client_id: _cid, events: [{ name: name, params: Object.assign({ engagement_time_msec: 1 }, params || {}) }] });
-        navigator.sendBeacon('https://www.google-analytics.com/mp/collect?measurement_id=G-KZJJ63KTD7&api_secret=REPLACE_WITH_SECRET', body);
+        navigator.sendBeacon('https://www.google-analytics.com/mp/collect?measurement_id=G-KZJJ63KTD7&api_secret=MJVkxYfZQD6ahE8SjTmKGQ', body);
       } catch(e) {}
     }
   </script>
