@@ -2807,8 +2807,10 @@
       font-size: 12px; font-weight: 700; color: #c0c0d8;
       padding: 8px 8px; text-align: right; border-bottom: 1px solid #111118;
     }
-    .wtc-table td:first-child { text-align: center; color: #606070; font-size: 11px; width: 24px }
-    .wtc-table td:nth-child(2) { text-align: left; color: #e0e0f0 }
+    .wtc-table td:first-child { text-align: center; color: #606070; font-size: 11px; width: 20px; padding: 8px 4px }
+    .wtc-table td:nth-child(2) { text-align: left; color: #e0e0f0; min-width: 100px }
+    .wtc-table td:not(:first-child):not(:nth-child(2)):not(:last-child) { padding: 8px 4px }
+    .wtc-table th:not(:first-child):not(:nth-child(2)):not(:last-child) { padding: 6px 4px }
     .wtc-table tr.my-row td { color: #f9c846 }
     .wtc-table tr.my-row td:first-child { color: #606070 }
     .wtc-table tr.my-row td:nth-child(2) { color: #f9c846 }
@@ -3134,12 +3136,18 @@
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">💰 Budget summary</div>
       <div id="sq-budget-text" style="font-size:13px;color:#c0c0d8;line-height:1.7"></div>
     </div>
+    <!-- Ad slot: squad review -->
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-7657213088817585" data-ad-slot="3249453207" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     <button class="btn-sim" onclick="showPreview()">Season Preview →</button>
   </div>
 
   <!-- SEASON PREVIEW -->
   <div id="s-preview" class="screen">
     <div id="preview-content" style="width:100%"></div>
+    <!-- Ad slot: season preview -->
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-7657213088817585" data-ad-slot="2052755753" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     <button class="btn-sim" style="margin-top:8px" onclick="startSim()">Begin the season →</button>
   </div>
 
@@ -3221,6 +3229,9 @@
       <div class="ov-season-stats" id="ov-season-stats"></div>
     </div>
     <button class="btn-share-season" onclick="openShareModal()" style="margin-top:4px">📸 Share your season</button>
+    <!-- Ad slot: season overview (between share button and squad list) -->
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-7657213088817585" data-ad-slot="1907461690" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     <div class="section-lbl">Your XI</div>
     <div class="squad-list" id="ov-squad" style="margin-bottom:24px"></div>
     <button class="btn-new" onclick="fullReset()">New Run →</button>
@@ -7100,6 +7111,104 @@
 
     let _shareImgDataUrl = null;
 
+    function buildTestShareCard() {
+      const won = TS.finalResult === 'W';
+      const standings = Object.entries(TS.wtcTable).map(([id,t])=>({id,...t})).sort((a,b)=>b.pct-a.pct);
+      const engPos = standings.findIndex(t=>t.id==='eng') + 1;
+      const eng = TS.wtcTable['eng'];
+      const qualified = TS.qualified;
+      const col = won ? '#f9c846' : qualified ? '#4ade80' : '#f87171';
+      const headline = won ? '🏆 World Test Champions!' : qualified ? '🥈 WTC Finalists' : `${ordinal(engPos)} in WTC`;
+
+      const _runTotals = {}, _wktTotals = {};
+      for (const [id, ps] of Object.entries(TS.playerStats || {})) {
+        const p = TS.squad.find(x => x.id === id);
+        if (!p) continue;
+        if (ps.runs)    _runTotals[p.name] = (_runTotals[p.name] || 0) + ps.runs;
+        if (ps.wickets) _wktTotals[p.name] = (_wktTotals[p.name] || 0) + ps.wickets;
+      }
+      const topBat  = Object.entries(_runTotals).sort((a,b)=>b[1]-a[1])[0];
+      const topBowl = Object.entries(_wktTotals).sort((a,b)=>b[1]-a[1])[0];
+
+      function rColor(r) { return r >= 85 ? '#ff4d6d' : r >= 75 ? '#ffd700' : r >= 65 ? '#a0b0c8' : '#cd7f32'; }
+      const ROLE_MAP = { batsman:'BAT', wicketkeeper:'WK', allrounder:'AR', bowler:'BOWL' };
+      const ROLE_BG  = { BAT:'#0e1d3a', WK:'#2a1400', AR:'#1e0e3a', BOWL:'#0a1e0e' };
+      const ROLE_COL = { BAT:'#60a5fa', WK:'#fb923c', AR:'#c084fc', BOWL:'#4ade80' };
+      const OV_ORDER = ['batsman','wicketkeeper','allrounder','bowler'];
+      const sorted = [...TS.squad].sort((a,b)=>OV_ORDER.indexOf(a.role)-OV_ORDER.indexOf(b.role));
+
+      const xiHTML = sorted.map(p=>{
+        const roleKey = ROLE_MAP[p.role] || p.role;
+        return `
+        <div class="sc-xi-row">
+          <div class="sc-xi-badge" style="background:${ROLE_BG[roleKey]||'#111'};color:${ROLE_COL[roleKey]||'#aaa'}">${roleKey}</div>
+          <div class="sc-xi-name">${p.name}</div>
+          <div class="sc-xi-rat" style="color:${rColor(p.rating)}">${p.rating}</div>
+        </div>`;
+      }).join('');
+
+      const awardsHTML = [
+        topBat  ? `<div class="sc-stat-cell"><div class="sc-stat-lbl">🏏 Most Runs</div><div class="sc-stat-name">${topBat[0].split(' ').slice(-1)[0]}</div><div class="sc-stat-val">${topBat[1]} runs</div></div>` : '',
+        topBowl ? `<div class="sc-stat-cell"><div class="sc-stat-lbl">🎯 Most Wickets</div><div class="sc-stat-name">${topBowl[0].split(' ').slice(-1)[0]}</div><div class="sc-stat-val">${topBowl[1]} wkts</div></div>` : '',
+      ].filter(Boolean).join('');
+
+      const avgRating = sorted.length ? Math.round(sorted.reduce((s,p)=>s+p.rating,0)/sorted.length) : 0;
+      const finishCls = won ? 'sc-finish-won' : qualified ? 'sc-finish-sf' : 'sc-finish-out';
+
+      document.getElementById('share-card').innerHTML = `
+        <div class="sc-top-bar">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div class="sc-brand">19-0</div>
+            <div style="font-size:11px;color:#606080;font-weight:700;letter-spacing:.3px">World Test Championship</div>
+          </div>
+          <div class="sc-ovr">OVR ${avgRating}</div>
+        </div>
+        <div class="sc-result-band">
+          <div class="sc-result-big">
+            <span style="color:#4ade80">${eng.w}</span><span style="color:#252535">-</span><span style="color:#fbbf24">${eng.d}</span><span style="color:#252535">-</span><span style="color:#f87171">${eng.l}</span>
+          </div>
+          <div class="sc-result-label">Won · Drawn · Lost</div>
+          <div class="sc-result-finish ${finishCls}">${headline}</div>
+        </div>
+        <div class="sc-xi-section">
+          <div class="sc-xi-label">Your Squad</div>
+          <div class="sc-xi-grid">${xiHTML}</div>
+        </div>
+        ${awardsHTML ? `<div class="sc-stats-strip">${awardsHTML}</div>` : ''}
+        <div class="sc-footer">
+          <div class="sc-verified">✓ ${eng.pct.toFixed(1)}% PCT · <span style="color:#f9c846;font-weight:900">www.19-0.co.uk</span></div>
+        </div>`;
+    }
+
+    async function openTestShareModal() {
+      buildTestShareCard();
+      if (!window.html2canvas) {
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+          s.onload = res; s.onerror = rej;
+          document.head.appendChild(s);
+        });
+      }
+      const textEl = document.getElementById('share-text-preview');
+      const eng = TS.wtcTable['eng'];
+      const standings = Object.entries(TS.wtcTable).map(([id,t])=>({id,...t})).sort((a,b)=>b.pct-a.pct);
+      const engPos = standings.findIndex(t=>t.id==='eng') + 1;
+      const won = TS.finalResult === 'W';
+      const headline = won ? '🏆 World Test Champions!' : TS.qualified ? '🥈 WTC Finalists' : `${ordinal(engPos)} in WTC`;
+      if (textEl) textEl.textContent = `19-0 · World Test Championship\n${headline}\nW${eng.w} D${eng.d} L${eng.l} · ${eng.pct.toFixed(1)}% PCT\n19-0.co.uk`;
+      const card = document.getElementById('share-card');
+      card.style.left = '-9999px';
+      const canvas = await html2canvas(card, { backgroundColor:'#0d0d14', scale:2, useCORS:true, logging:false });
+      _shareImgDataUrl = canvas.toDataURL('image/png');
+      const preview = document.getElementById('share-preview-wrap');
+      if (preview) { const img = preview.querySelector('img') || document.createElement('img'); img.src = _shareImgDataUrl; img.style.cssText='width:100%;border-radius:8px'; if (!preview.querySelector('img')) preview.appendChild(img); }
+      card.style.left = '';
+      const nativeBtn = document.getElementById('btn-native-share');
+      if (nativeBtn) nativeBtn.style.display = navigator.share ? '' : 'none';
+      document.getElementById('share-modal').style.display = 'flex';
+    }
+
     async function openShareModal() {
       buildShareCard();
 
@@ -8461,15 +8570,13 @@
         return;
       }
 
-      // Warn if captain or VC is on the bench
+      // Block if captain is not in the XI — VC on bench is fine
       const capInXI = TS.xiSlots.some(p => p && p.id === TS.captain);
-      const vcInXI  = TS.xiSlots.some(p => p && p.id === TS.viceCaptain);
-      if (TS.captain && (!capInXI || !vcInXI)) {
-        const missing = !capInXI ? 'captain' : 'vice-captain';
+      if (TS.captain && !capInXI) {
         const hint = document.getElementById('xi-confirm-hint');
         if (hint) {
           hint.style.display = 'block';
-          hint.innerHTML = `Your ${missing} is on the bench.<br>
+          hint.innerHTML = `Your captain is on the bench.<br>
             <div style="display:flex;gap:8px;margin-top:8px">
               <button onclick="proceedWithNewCaptain()" style="flex:1;padding:8px;background:#061a06;border:1px solid #4ade80;border-radius:8px;color:#4ade80;font-size:11px;font-weight:700;cursor:pointer">Proceed — Pick New Captain</button>
               <button onclick="dismissCaptainWarning()" style="flex:1;padding:8px;background:#1a0606;border:1px solid #f87171;border-radius:8px;color:#f87171;font-size:11px;font-weight:700;cursor:pointer">Go Back</button>
@@ -8695,6 +8802,15 @@
       const eligible = TS.currentXI.filter(p => p.role !== 'wicketkeeper');
       if (!eligible.length) return [];
       const p = eligible[Math.floor(Math.random() * eligible.length)];
+
+      // Minimum squad availability per role needed to field an XI
+      const ROLE_MIN = { batsman: 7, allrounder: 3, bowler: 4 };
+      if (type === 'season' || type === 'series') {
+        const minNeeded = ROLE_MIN[p.role] || 1;
+        const currentlyAvail = TS.squad.filter(s => s.role === p.role && isPlayerAvailable(s)).length;
+        // If injuring this player would leave us below minimum, downgrade to single-test only
+        if (currentlyAvail - 1 < minNeeded) type = 'test';
+      }
 
       TS.playerInjured[p.id] = {
         type,
@@ -10469,6 +10585,16 @@
     function buildAshesNews(series, wins, losses, draws, serWon, serDraw) {
       const opp = series.nation;
       const cap = TS.squad.find(p => p.id === TS.captain);
+      // Compute top performers from TS.playerStats
+      const _runTotals = {}, _wktTotals = {};
+      for (const [id, ps] of Object.entries(TS.playerStats || {})) {
+        const p = TS.squad.find(x => x.id === id);
+        if (!p) continue;
+        if (ps.runs)    _runTotals[p.name] = (_runTotals[p.name] || 0) + ps.runs;
+        if (ps.wickets) _wktTotals[p.name] = (_wktTotals[p.name] || 0) + ps.wickets;
+      }
+      const topBat  = Object.entries(_runTotals).sort((a,b)=>b[1]-a[1])[0] ? { name: Object.entries(_runTotals).sort((a,b)=>b[1]-a[1])[0][0] } : null;
+      const topBowl = Object.entries(_wktTotals).sort((a,b)=>b[1]-a[1])[0] ? { name: Object.entries(_wktTotals).sort((a,b)=>b[1]-a[1])[0][0] } : null;
       const scoreline = `${wins}-${draws}-${losses}`;
       const result = serWon ? 'W' : serDraw ? 'D' : 'L';
       const resCol  = serWon ? '#4ade80' : serDraw ? '#fbbf24' : '#f87171';
@@ -10546,6 +10672,14 @@
       showXIPicker();
     }
 
+    function genTestQuote(won, qualified, engPos) {
+      if (won) return "The Mace is coming home. England — World Test Champions.";
+      if (qualified) return "Finals Day at Lord's — so close to cricket's greatest prize.";
+      if (engPos <= 3) return "Dominant all cycle, but couldn't cross the line when it mattered.";
+      if (engPos <= 5) return "A solid campaign. The top two just out of reach.";
+      return "A tough WTC cycle. The dressing room will be hungry for more.";
+    }
+
     function showTestEnd(qualified=true, standings=null) {
       if (!standings) {
         standings = Object.entries(TS.wtcTable)
@@ -10555,33 +10689,151 @@
       const engPos = standings.findIndex(t=>t.id==='eng') + 1;
       const won = TS.finalResult === 'W';
       const eng = TS.wtcTable['eng'];
-      const col = won ? '#f9c846' : qualified ? '#4ade80' : '#f87171';
-      const headline = won ? '🏆 World Test Champions' : qualified ? '🥈 WTC Finalists' : `${ordinal(engPos)} in WTC`;
+
+      // ── Header ──
+      const headerClass = won ? 'ov-header ovh-won' : qualified ? 'ov-header ovh-final' : 'ov-header ovh-early';
+      const icon = won ? '🏆' : qualified ? '🥈' : '📋';
+      const headline = won ? 'World Test Champions!' : qualified ? 'WTC Finalists' : `${ordinal(engPos)} in the WTC`;
+      const sub = won ? "England lift the Mace at Lord's" : qualified ? 'England reached the WTC Final' : `Finished ${ordinal(engPos)} · W${eng.w} D${eng.d} L${eng.l}`;
+
+      // ── Performance verdict vs predicted ──
+      const predPos = TS.preview ? TS.preview.predPos : null;
+      const predLabel = TS.preview ? TS.preview.predLabel : null;
+      const actualTier = won ? 4 : qualified ? 3 : engPos <= 4 ? 2 : 1;
+      const predTier = TS.preview ? TS.preview.predTier : 2;
+      const diff = actualTier - predTier;
+      let perfClass, perfEyebrow, perfVerdict;
+      if (diff >= 2)      { perfClass = 'perf-over';  perfEyebrow = 'Overperformed';    perfVerdict = 'Better than anyone predicted'; }
+      else if (diff === 1){ perfClass = 'perf-over';  perfEyebrow = 'Overperformed';    perfVerdict = 'Exceeded expectations'; }
+      else if (diff === 0){ perfClass = 'perf-met';   perfEyebrow = 'Prediction met';   perfVerdict = 'Exactly as the pundits called it'; }
+      else if (diff === -1){ perfClass = 'perf-under'; perfEyebrow = 'Underperformed'; perfVerdict = 'Fell slightly short of predictions'; }
+      else                { perfClass = 'perf-under'; perfEyebrow = 'Underperformed';   perfVerdict = 'The pundits expected more'; }
+      const perfDiffArrow = diff > 0 ? `↑ ${Math.abs(diff)} tier${Math.abs(diff)>1?'s':''} above` : diff < 0 ? `↓ ${Math.abs(diff)} tier${Math.abs(diff)>1?'s':''} below` : '= Matched prediction';
+      const perfDiffColor = diff > 0 ? '#4ade80' : diff < 0 ? '#f97316' : '#a0a0e0';
+
+      // ── Series recap ──
+      const playedSeries = TS.series.filter(s => s.results && s.results.length > 0 && !s.isWTCFinal);
+      const seriesWon = playedSeries.filter(s => s.results.filter(r=>r==='W').length > s.results.filter(r=>r==='L').length).length;
+      const seriesLost = playedSeries.filter(s => s.results.filter(r=>r==='L').length > s.results.filter(r=>r==='W').length).length;
+      const seriesDrawn = playedSeries.length - seriesWon - seriesLost;
+      const seriesRecapHTML = playedSeries.map(s => {
+        const sw = s.results.filter(r=>r==='W').length, sl = s.results.filter(r=>r==='L').length;
+        const sWon = sw > sl, sDrn = sw === sl;
+        const lbl = sWon ? 'Won' : sDrn ? 'Drawn' : 'Lost';
+        const lc = sWon ? '#4ade80' : sDrn ? '#fbbf24' : '#f87171';
+        const lb = sWon ? '#0a2a0a' : sDrn ? '#1a1200' : '#2a0a0a';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #111118">
+          <div style="font-size:18px">${s.nation.flag}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:#e0e0f0">${s.isAsches ? 'The Ashes · ' : ''}${s.nation.name}</div>
+            <div style="font-size:11px;color:#6060a0">${s.home?'🏠 Home':'✈️ Away'} · ${s.tests}-Test series</div>
+          </div>
+          <div style="display:flex;gap:3px">${s.results.map(r=>`<div style="width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:10px;background:${r==='W'?'#0a2a0a':r==='L'?'#2a0a0a':'#1a1200'};color:${r==='W'?'#4ade80':r==='L'?'#f87171':'#fbbf24'}">${r}</div>`).join('')}</div>
+          <div style="font-size:11px;font-weight:800;padding:3px 8px;border-radius:5px;background:${lb};color:${lc};flex-shrink:0">${lbl}</div>
+        </div>`;
+      }).join('');
+
+      // ── Player stats (most runs / wickets / MVP) ──
+      const runTotals = {}, wktTotals = {};
+      for (const [id, ps] of Object.entries(TS.playerStats || {})) {
+        const p = TS.squad.find(x => x.id === id);
+        if (!p) continue;
+        if (ps.runs)    runTotals[p.name] = (runTotals[p.name] || 0) + ps.runs;
+        if (ps.wickets) wktTotals[p.name] = (wktTotals[p.name] || 0) + ps.wickets;
+      }
+      const topBat  = Object.entries(runTotals).sort((a,b)=>b[1]-a[1])[0];
+      const topBowl = Object.entries(wktTotals).sort((a,b)=>b[1]-a[1])[0];
+      const mvpScore = {};
+      for (const [n,r] of Object.entries(runTotals)) mvpScore[n] = (mvpScore[n]||0) + r/25;
+      for (const [n,w] of Object.entries(wktTotals)) mvpScore[n] = (mvpScore[n]||0) + w*2;
+      const topMVP = Object.entries(mvpScore).sort((a,b)=>b[1]-a[1])[0];
+      const statsHTML = (topBat || topBowl) ? `
+        <div class="ov-lower">
+          <div class="ov-season-stats">
+            ${topBat  ? `<div class="stat-card"><div class="stat-card-label">Most Runs</div><div class="stat-card-name">${topBat[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBat[1]}</div><div class="stat-card-sub">Full cycle</div></div>` : ''}
+            ${topBowl ? `<div class="stat-card"><div class="stat-card-label">Most Wickets</div><div class="stat-card-name">${topBowl[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBowl[1]}</div><div class="stat-card-sub">Full cycle</div></div>` : ''}
+            ${topMVP  ? `<div class="stat-card mvp-card"><div class="stat-card-label">⭐ MVP</div><div class="stat-card-name">${topMVP[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${[runTotals[topMVP[0]]?runTotals[topMVP[0]]+' runs':'',wktTotals[topMVP[0]]?wktTotals[topMVP[0]]+' wkts':''].filter(Boolean).join(' · ')}</div><div class="stat-card-sub">Full cycle</div></div>` : ''}
+          </div>
+        </div>` : '';
+
+      const xi = (TS.currentXI && TS.currentXI.length ? TS.currentXI : TS.squad).slice(0, 15);
+      const signedIn = !!AUTH_USER;
+
       go('s-test-end');
+      if (won) launchConfetti();
+
       document.getElementById('test-end-content').innerHTML = `
-        <div style="text-align:center;margin-bottom:24px">
-          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:8px">Final Result</div>
-          <div style="font-size:32px;font-weight:900;color:${col}">${headline}</div>
-          <div style="font-size:14px;color:#7070a0;margin-top:8px">W${eng.w} D${eng.d} L${eng.l} · ${eng.pct.toFixed(1)}% PCT</div>
+        <div class="${headerClass}">
+          <span class="ov-icon">${icon}</span>
+          <div class="ov-result">${headline}</div>
+          <div class="ov-sub">${sub}</div>
         </div>
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Final WTC Standings</div>
-        <table class="wtc-table">
+
+        <div class="ov-quote">"${genTestQuote(won, qualified, engPos)}"</div>
+
+        <div class="ov-stats">
+          <div class="ov-box"><div class="ov-n" style="color:#4ade80">${eng.w}</div><div class="ov-l">Test wins</div></div>
+          <div class="ov-box"><div class="ov-n" style="color:#fbbf24">${eng.d}</div><div class="ov-l">Draws</div></div>
+          <div class="ov-box"><div class="ov-n" style="color:#f87171">${eng.l}</div><div class="ov-l">Losses</div></div>
+        </div>
+
+        ${!signedIn ? `<div style="width:100%;background:linear-gradient(135deg,#0d0d18,#13131f);border:1px solid #252535;border-radius:12px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div style="text-align:left;min-width:0;flex:1">
+            <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:3px">Save your drafts</div>
+            <div style="font-size:11px;color:#606080;line-height:1.5">Create a free account to track your stats, best runs and most drafted players.</div>
+          </div>
+          <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up →</button>
+        </div>` : ''}
+
+        <div class="ov-lower">
+          <div class="ov-reached">
+            <div class="perf-card ${perfClass}">
+              <div class="perf-eyebrow">${perfEyebrow}</div>
+              <div class="perf-verdict">${perfVerdict}</div>
+              ${predPos ? `<div class="perf-row"><span class="perf-label">Predicted finish</span><span class="perf-val" style="color:#9090a8">${predLabel || ordinal(predPos)+' in WTC'}</span></div>` : ''}
+              <div class="perf-row"><span class="perf-label">Actual record</span><span class="perf-val" style="color:#e0e0f0">W${eng.w} D${eng.d} L${eng.l} · ${eng.pct.toFixed(1)}% PCT</span></div>
+              <div class="perf-row"><span class="perf-label">Actual result</span><span class="perf-val" style="color:#e0e0f0">${headline}</span></div>
+              <div class="perf-row"><span class="perf-label">WTC position</span><span class="perf-val" style="color:#e0e0f0">${ordinal(engPos)}</span></div>
+              <div class="perf-row"><span class="perf-label">Verdict</span><span class="perf-val" style="color:${perfDiffColor}">${perfDiffArrow}</span></div>
+            </div>
+          </div>
+          ${(topBat||topBowl) ? `<div class="ov-season-stats">
+            ${topBat  ? `<div class="stat-card"><div class="stat-card-label">Most Runs</div><div class="stat-card-name">${topBat[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBat[1]}</div><div class="stat-card-sub">Full cycle</div></div>` : ''}
+            ${topBowl ? `<div class="stat-card"><div class="stat-card-label">Most Wickets</div><div class="stat-card-name">${topBowl[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBowl[1]}</div><div class="stat-card-sub">Full cycle</div></div>` : ''}
+            ${topMVP  ? `<div class="stat-card mvp-card"><div class="stat-card-label">⭐ MVP</div><div class="stat-card-name">${topMVP[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${[runTotals[topMVP[0]]?runTotals[topMVP[0]]+' runs':'',wktTotals[topMVP[0]]?wktTotals[topMVP[0]]+' wkts':''].filter(Boolean).join(' · ')}</div><div class="stat-card-sub">Full cycle</div></div>` : ''}
+          </div>` : ''}
+        </div>
+
+        ${playedSeries.length ? `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+          <div class="ov-box"><div class="ov-n" style="color:#4ade80">${seriesWon}</div><div class="ov-l">Series won</div></div>
+          <div class="ov-box"><div class="ov-n" style="color:#fbbf24">${seriesDrawn}</div><div class="ov-l">Series drawn</div></div>
+          <div class="ov-box"><div class="ov-n" style="color:#f87171">${seriesLost}</div><div class="ov-l">Series lost</div></div>
+        </div>
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Series results</div>
+        <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:0 14px;margin-bottom:16px">${seriesRecapHTML}</div>` : ''}
+
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Final WTC Standings</div>
+        <table class="wtc-table" style="margin-bottom:16px">
           <thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>D</th><th>PCT%</th></tr></thead>
-          <tbody>${standings.map((t,i) => `<tr class="${t.id==='eng'?'my-row':''}">
-            <td>${i+1}. ${t.flag} ${t.name}</td>
+          <tbody>${standings.map((t,i)=>`<tr class="${t.id==='eng'?'my-row':''}">
+            <td>${i+1}.</td><td>${t.name}</td>
             <td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td>${t.d}</td>
             <td class="wtc-pct">${t.pct.toFixed(1)}</td>
           </tr>`).join('')}</tbody>
         </table>
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:16px 0 8px;text-align:left">Your XI</div>
-        ${(TS.currentXI.length ? TS.currentXI : TS.squad).map((p,i) => `
-          <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #111118">
-            <div style="font-size:12px;font-weight:900;color:#4a4a70;width:20px">${i+1}</div>
-            <div style="font-size:13px;font-weight:700;color:#e0e0f0;flex:1">${p.name}</div>
-            <div style="font-size:11px;color:#6060a0">${p.year}</div>
-            <div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:36px;height:36px;font-size:14px">${p.rating}</div>
-          </div>`).join('')}
+
+        <button class="btn-share-season" onclick="openTestShareModal()" style="margin-top:4px;margin-bottom:4px">📸 Share your season</button>
+
+        <ins class="adsbygoogle" id="wtc-end-ad" style="display:block;margin:16px 0" data-ad-client="ca-pub-7657213088817585" data-ad-slot="8099289354" data-ad-format="auto" data-full-width-responsive="true"></ins>
+
+        <div class="section-lbl">Your Squad</div>
+        <div class="squad-list" style="margin-bottom:24px">${xi.map(p=>{const rk={batsman:'bat',wicketkeeper:'wk',allrounder:'all',bowler:'bowl'}[p.role]||p.role;return`<div class="squad-item si-${rk}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.year}</div></div><div class="si-right"><span class="rp-badge rpb-${rk}">${RL[rk]||rk.toUpperCase()}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`}).join('')}</div>
       `;
+
+      if (!signedIn) setTimeout(openSignupNudge, 1800);
+      // Push WTC end ad (injected via innerHTML so can't use inline script)
+      try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
     }
 
   </script>
@@ -10735,6 +10987,9 @@
       <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6060a0;margin-bottom:2px">BREAKING NEWS</div>
       <div style="height:1px;background:linear-gradient(90deg,#f9c846,transparent);margin-bottom:16px"></div>
       <div id="news-content" style="font-size:13px;color:#c0c0d8;line-height:1.6"></div>
+      <!-- Ad slot: test news / pre-hub -->
+      <ins class="adsbygoogle" style="display:block;margin:16px 0" data-ad-client="ca-pub-7657213088817585" data-ad-slot="5497176746" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
       <button onclick="go('s-test-hub');buildTestHub()" style="width:100%;margin-top:8px;padding:16px;background:linear-gradient(135deg,#f9c846,#f97316);color:#000;font-size:15px;font-weight:900;border:none;border-radius:12px;cursor:pointer">Let's Go 🏏</button>
     </div>
   </div>
@@ -10884,6 +11139,9 @@
   <div id="s-test-series-result" class="screen">
     <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:8px;text-align:left">Series Result</div>
     <div id="test-series-result-card" style="width:100%;margin-bottom:16px"></div>
+    <!-- Ad slot: test series result -->
+    <ins class="adsbygoogle" style="display:block;margin:12px 0" data-ad-client="ca-pub-7657213088817585" data-ad-slot="7113510745" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     <button class="btn-sim" onclick="afterSeriesResult()">Back to WTC Hub →</button>
   </div>
 
