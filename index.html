@@ -7995,6 +7995,7 @@
       });
       // Build 6 series: Ashes (5 tests, away) + 5 others (3 tests each)
       buildTestFixtures();
+      pingEvent('Test_Sim_Started', { league: 'WTC' });
     }
 
     function buildTestFixtures() {
@@ -8265,9 +8266,11 @@
       TS.slot++;
 
       if (TS.squad.length >= 15) {
+        pingEvent('Test_Draft_Completed', { league: 'WTC', ovr: Math.round(TS.squad.reduce((s,p)=>s+p.rating,0)/TS.squad.length) });
         showCaptainPicker();
         return;
       }
+      pingEvent('Test_Spin_Completed', { league: 'WTC', slot: TS.slot, role: player.role, year: player.year || year, rating: player.yearRatings[year] });
       TS.respinsUsed = 0;
       TS.spunYear = null;
       updateDraftProgress();
@@ -9117,6 +9120,8 @@
           delete TS.playerInjured[id];
         }
       });
+      const ser = TS.series[seriesIdx];
+      pingEvent('Test_Series_Started', { league: 'WTC', series_idx: seriesIdx, opponent: ser.nation.id, home: ser.home, is_ashes: !!ser.isAsches, is_final: !!ser.isWTCFinal });
       showXIPicker();
     }
 
@@ -10372,6 +10377,7 @@
       const draws = series.results.filter(r=>r==='D').length;
       const serWon = wins > losses;
       const serDraw = wins === losses;
+      pingEvent('Test_Series_Completed', { league: 'WTC', series_idx: TS.currentSeriesIdx, opponent: series.nation.id, wins, losses, draws, series_won: serWon, series_drawn: serDraw });
 
       // Accumulate player stats across all tests in this series
       const statMap = {}; // { playerId: { runs, balls, wkts, overs } }
@@ -10655,6 +10661,7 @@
     }
 
     function runWTCFinal(opp) {
+      pingEvent('Test_Final_Reached', { league: 'WTC', opponent: opp.id });
       // Wire up a synthetic series so the normal XI picker → match → summary flow works
       TS.inWTCFinal = true;
       TS.wtcFinalOpp = opp;
@@ -10689,6 +10696,10 @@
       const engPos = standings.findIndex(t=>t.id==='eng') + 1;
       const won = TS.finalResult === 'W';
       const eng = TS.wtcTable['eng'];
+
+      const _result = won ? 'champions' : qualified ? 'finalists' : 'eliminated';
+      pingEvent('Test_Run_Completed', { league: 'WTC', result: _result, wtc_pos: engPos, wins: eng.w, draws: eng.d, losses: eng.l, pct: Math.round(eng.pct) });
+      if (won) pingEvent('Test_Champions_Won', { league: 'WTC' });
 
       // ── Header ──
       const headerClass = won ? 'ov-header ovh-won' : qualified ? 'ov-header ovh-final' : 'ov-header ovh-early';
