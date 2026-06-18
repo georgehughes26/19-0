@@ -2766,6 +2766,13 @@
       padding: 9px 0; border-bottom: 1px solid #111118
     }
     .recent-run-row:last-child { border-bottom: none }
+    .stats-tab {
+      flex: 1; padding: 9px 0; font-size: 12px; font-weight: 800;
+      border-radius: 8px; border: 1px solid #252530; cursor: pointer;
+      letter-spacing: 0.5px; transition: background .15s, color .15s
+    }
+    .stats-tab-active   { background: #1e1e2e; color: #fff; border-color: #3a3a50 }
+    .stats-tab-inactive { background: transparent; color: #505068; border-color: #1a1a24 }
 
     /* ── TEST MODE STYLES ─────────────────────────────────────────────────── */
     .mode-selector {
@@ -7521,6 +7528,8 @@
     }
 
     // ── STATS SCREEN ──────────────────────────────────────────────────────────
+    let _statsMode = 't20'; // persists toggle state between opens
+
     async function showStats() {
       if (!AUTH_USER) { openAuthModal(); return; }
       document.getElementById('stats-username-title').textContent = AUTH_USER.username;
@@ -7530,26 +7539,52 @@
       go('s-stats');
 
       try {
-        const { data: runs, error } = await sb
-          .from('runs')
-          .select('*')
-          .eq('user_id', AUTH_USER.id)
-          .order('created_at', { ascending: false });
+        const [{ data: runs, error: e1 }, { data: testRuns, error: e2 }] = await Promise.all([
+          sb.from('runs').select('*').eq('user_id', AUTH_USER.id).order('created_at', { ascending: false }),
+          sb.from('test_runs').select('*').eq('user_id', AUTH_USER.id).order('created_at', { ascending: false }),
+        ]);
 
-        if (error || !runs) {
-          document.getElementById('stats-loading').textContent = 'Could not load stats.';
-          return;
-        }
+        if (e1) { document.getElementById('stats-loading').textContent = 'Could not load stats.'; return; }
 
         document.getElementById('stats-loading').style.display = 'none';
         document.getElementById('stats-content').style.display = 'block';
 
+        function renderStatsTab(mode) {
+          _statsMode = mode;
+          document.getElementById('stats-tab-t20').classList.toggle('stats-tab-active', mode === 't20');
+          document.getElementById('stats-tab-test').classList.toggle('stats-tab-active', mode === 'test');
+          document.getElementById('stats-tab-t20').classList.toggle('stats-tab-inactive', mode !== 't20');
+          document.getElementById('stats-tab-test').classList.toggle('stats-tab-inactive', mode !== 'test');
+
+          if (mode === 't20') {
+            document.getElementById('stats-panel').innerHTML = buildT20Stats(runs || []);
+          } else {
+            document.getElementById('stats-panel').innerHTML = buildTestStats(testRuns || []);
+          }
+        }
+
+        document.getElementById('stats-content').innerHTML = `
+          <div style="display:flex;gap:6px;margin-bottom:18px">
+            <button id="stats-tab-t20"  class="stats-tab stats-tab-active"  onclick="renderStatsTab('t20')">T20 Blast</button>
+            <button id="stats-tab-test" class="stats-tab stats-tab-inactive" onclick="renderStatsTab('test')">Test Cricket</button>
+          </div>
+          <div id="stats-panel"></div>`;
+
+        // expose renderStatsTab globally for inline onclick
+        window.renderStatsTab = renderStatsTab;
+        renderStatsTab(_statsMode);
+
+      } catch(e) {
+        document.getElementById('stats-loading').textContent = 'Could not load stats.';
+        console.error(e);
+      }
+    }
+
+    function buildT20Stats(runs) {
         if (!runs.length) {
-          document.getElementById('stats-content').innerHTML =
-            `<div style="text-align:center;color:#606080;font-size:13px;padding:40px 0">
-              No runs yet — complete a season to see your stats here.
-            </div>`;
-          return;
+          return `<div style="text-align:center;color:#606080;font-size:13px;padding:40px 0">
+            No T20 runs yet — complete a Blast season to see your stats here.
+          </div>`;
         }
 
         const total      = runs.length;
@@ -7562,20 +7597,13 @@
         const avgWins      = totalGamesAll ? (totalWinsAll / total).toFixed(1) : '0.0';
         const avgRating    = Math.round(runs.reduce((s,r) => s + (r.team_rating||0), 0) / total);
 
-        // Most used players across all runs
         const playerCount = {};
         runs.forEach(r => {
           if (!r.squad) return;
-          r.squad.forEach(p => {
-            if (!p.n) return;
-            playerCount[p.n] = (playerCount[p.n] || 0) + 1;
-          });
+          r.squad.forEach(p => { if (!p.n) return; playerCount[p.n] = (playerCount[p.n] || 0) + 1; });
         });
-        const topPlayers = Object.entries(playerCount)
-          .sort((a,b) => b[1] - a[1])
-          .slice(0, 5);
+        const topPlayers = Object.entries(playerCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
 
-        // Best run — rank by: final_won > sf_won > qf_won > qualified > group_pos, then group_wins
         const resultRank = r => r.final_won ? 6 : r.sf_won ? 5 : r.qf_won ? 4 : r.qualified ? 3 : (10 - (r.group_pos||9));
         const bestRun = [...runs].sort((a,b) => {
           const rd = resultRank(b) - resultRank(a);
@@ -7583,14 +7611,11 @@
         })[0];
 
         function pct(n) { return total ? Math.round((n / total) * 100) : 0; }
-
         function stageBarRow(label, n, color) {
           const p = pct(n);
           return `<div class="stage-bar-row">
             <div class="stage-bar-label">${label}</div>
-            <div class="stage-bar-track">
-              <div class="stage-bar-fill" style="width:${p}%;background:${color}"></div>
-            </div>
+            <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${p}%;background:${color}"></div></div>
             <div class="stage-bar-pct" style="color:${color}">${p}%</div>
           </div>`;
         }
@@ -7602,19 +7627,15 @@
           else if (r.qf_won)     { result = '🏟️ Semis';       col = '#818cf8'; }
           else if (r.qualified)  { result = '🎟️ QF exit';     col = '#60a5fa'; }
           else                   { result = `${ordinal(r.group_pos||9)} group`; col = '#f87171'; }
-          const d = new Date(r.created_at);
-          const dateStr = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+          const dateStr = new Date(r.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
           return `<div class="recent-run-row">
             <div style="text-align:left">
               <div style="font-size:13px;font-weight:700;color:${col}">${result}</div>
-              <div style="font-size:11px;color:#606080;margin-top:1px">
-                ${r.group_wins||0}W · ${16-(r.group_wins||0)}L · OVR ${r.team_rating||'—'} · ${dateStr}
-              </div>
+              <div style="font-size:11px;color:#606080;margin-top:1px">${r.group_wins||0}W · ${16-(r.group_wins||0)}L · OVR ${r.team_rating||'—'} · ${dateStr}</div>
             </div>
           </div>`;
         }).join('');
 
-        // Best run result label
         const brResult = bestRun.final_won ? '🏆 Champions' : bestRun.sf_won ? '🥈 Runners-up' : bestRun.qf_won ? '🏟️ Semis' : bestRun.qualified ? '🎟️ QF exit' : `${ordinal(bestRun.group_pos||9)} group`;
         const brCol    = bestRun.final_won ? '#f9c846' : bestRun.sf_won ? '#c084fc' : bestRun.qf_won ? '#818cf8' : bestRun.qualified ? '#60a5fa' : '#f87171';
         const brKoW    = (bestRun.qf_won?1:0)+(bestRun.sf_won?1:0)+(bestRun.final_won?1:0);
@@ -7626,35 +7647,21 @@
         const mostUsedHTML = topPlayers.map(([name, count], i) => `
           <div class="recent-run-row">
             <div style="display:flex;align-items:center;gap:10px;text-align:left">
-              <div style="font-size:13px;font-weight:800;color:${i===0?'#f9c846':'#606070'};width:16px">${i===0?'⭐':''+( i+1)}</div>
+              <div style="font-size:13px;font-weight:800;color:${i===0?'#f9c846':'#606070'};width:16px">${i===0?'⭐':''+(i+1)}</div>
               <div style="font-size:13px;font-weight:${i===0?'800':'700'};color:${i===0?'#f9c846':'#d0d0e8'}">${name}</div>
             </div>
             <div style="font-size:12px;font-weight:800;color:${i===0?'#f9c846':'#8080a0'}">${count}× drafted</div>
           </div>`).join('');
 
-        document.getElementById('stats-content').innerHTML = `
+        return `
           <div class="stats-grid">
-            <div class="stats-box">
-              <div class="stats-n" style="color:#60a5fa">${total}</div>
-              <div class="stats-l">Total drafts</div>
-            </div>
-            <div class="stats-box">
-              <div class="stats-n" style="color:#f9c846">${finalWon}</div>
-              <div class="stats-l">Blast Wins</div>
-            </div>
-            <div class="stats-box">
-              <div class="stats-n" style="color:#60a5fa">${avgWins}</div>
-              <div class="stats-l">Avg wins</div>
-            </div>
-            <div class="stats-box">
-              <div class="stats-n" style="color:${ratingColor(avgRating)}">${avgRating||'—'}</div>
-              <div class="stats-l">Avg team OVR</div>
-            </div>
+            <div class="stats-box"><div class="stats-n" style="color:#60a5fa">${total}</div><div class="stats-l">Total drafts</div></div>
+            <div class="stats-box"><div class="stats-n" style="color:#f9c846">${finalWon}</div><div class="stats-l">Blast Wins</div></div>
+            <div class="stats-box"><div class="stats-n" style="color:#60a5fa">${avgWins}</div><div class="stats-l">Avg wins</div></div>
+            <div class="stats-box"><div class="stats-n" style="color:${ratingColor(avgRating)}">${avgRating||'—'}</div><div class="stats-l">Avg team OVR</div></div>
           </div>
 
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">
-            Best run
-          </div>
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Best run</div>
           <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-bottom:8px">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
@@ -7678,24 +7685,112 @@
           </div>
 
           ${topPlayers.length ? `
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">
-            Most drafted players
-          </div>
-          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">
-            ${mostUsedHTML}
-          </div>` : ''}
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Most drafted players</div>
+          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${mostUsedHTML}</div>` : ''}
 
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">
-            Recent runs
-          </div>
-          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">
-            ${recentHTML}
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Recent runs</div>
+          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${recentHTML}</div>`;
+    }
+
+    function buildTestStats(runs) {
+        if (!runs || !runs.length) {
+          return `<div style="text-align:center;color:#606080;font-size:13px;padding:40px 0">
+            No Test cycles yet — complete a WTC cycle to see your stats here.
           </div>`;
+        }
 
-      } catch(e) {
-        document.getElementById('stats-loading').textContent = 'Could not load stats.';
-        console.error(e);
-      }
+        const total      = runs.length;
+        const qualified  = runs.filter(r => r.qualified).length;
+        const finalWon   = runs.filter(r => r.final_won).length;
+        const avgWins    = (runs.reduce((s,r) => s + (r.wins||0), 0) / total).toFixed(1);
+        const avgRating  = Math.round(runs.reduce((s,r) => s + (r.team_rating||0), 0) / total);
+
+        const playerCount = {};
+        runs.forEach(r => {
+          if (!r.squad) return;
+          r.squad.forEach(p => { if (!p.n) return; playerCount[p.n] = (playerCount[p.n] || 0) + 1; });
+        });
+        const topPlayers = Object.entries(playerCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
+        const resultRank = r => r.final_won ? 3 : r.qualified ? 2 : (10 - (r.wtc_pos||9));
+        const bestRun = [...runs].sort((a,b) => {
+          const rd = resultRank(b) - resultRank(a);
+          return rd !== 0 ? rd : (b.wins||0) - (a.wins||0);
+        })[0];
+
+        function pct(n) { return total ? Math.round((n / total) * 100) : 0; }
+        function stageBarRow(label, n, color) {
+          const p = pct(n);
+          return `<div class="stage-bar-row">
+            <div class="stage-bar-label">${label}</div>
+            <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${p}%;background:${color}"></div></div>
+            <div class="stage-bar-pct" style="color:${color}">${p}%</div>
+          </div>`;
+        }
+
+        const recentHTML = runs.slice(0, 10).map(r => {
+          let result, col;
+          if      (r.final_won)  { result = '🏆 WTC Champions'; col = '#f9c846'; }
+          else if (r.qualified)  { result = '🥈 WTC Finalist';   col = '#c084fc'; }
+          else                   { result = `${ordinal(r.wtc_pos||9)} in WTC`;   col = '#f87171'; }
+          const dateStr = new Date(r.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+          return `<div class="recent-run-row">
+            <div style="text-align:left">
+              <div style="font-size:13px;font-weight:700;color:${col}">${result}</div>
+              <div style="font-size:11px;color:#606080;margin-top:1px">${r.wins||0}W · ${r.draws||0}D · ${r.losses||0}L · OVR ${r.team_rating||'—'} · ${dateStr}</div>
+            </div>
+          </div>`;
+        }).join('');
+
+        const brResult = bestRun.final_won ? '🏆 WTC Champions' : bestRun.qualified ? '🥈 WTC Finalist' : `${ordinal(bestRun.wtc_pos||9)} in WTC`;
+        const brCol    = bestRun.final_won ? '#f9c846' : bestRun.qualified ? '#c084fc' : '#f87171';
+        const brDate   = new Date(bestRun.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+        const mostUsedHTML = topPlayers.map(([name, count], i) => `
+          <div class="recent-run-row">
+            <div style="display:flex;align-items:center;gap:10px;text-align:left">
+              <div style="font-size:13px;font-weight:800;color:${i===0?'#f9c846':'#606070'};width:16px">${i===0?'⭐':''+(i+1)}</div>
+              <div style="font-size:13px;font-weight:${i===0?'800':'700'};color:${i===0?'#f9c846':'#d0d0e8'}">${name}</div>
+            </div>
+            <div style="font-size:12px;font-weight:800;color:${i===0?'#f9c846':'#8080a0'}">${count}× drafted</div>
+          </div>`).join('');
+
+        return `
+          <div class="stats-grid">
+            <div class="stats-box"><div class="stats-n" style="color:#60a5fa">${total}</div><div class="stats-l">Total cycles</div></div>
+            <div class="stats-box"><div class="stats-n" style="color:#f9c846">${finalWon}</div><div class="stats-l">WTC Wins</div></div>
+            <div class="stats-box"><div class="stats-n" style="color:#60a5fa">${avgWins}</div><div class="stats-l">Avg test wins</div></div>
+            <div class="stats-box"><div class="stats-n" style="color:${ratingColor(avgRating)}">${avgRating||'—'}</div><div class="stats-l">Avg team OVR</div></div>
+          </div>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Best cycle</div>
+          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-bottom:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:15px;font-weight:800;color:${brCol}">${brResult}</div>
+                <div style="font-size:11px;color:#606080;margin-top:3px">OVR ${bestRun.team_rating||'—'} · ${brDate}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:22px;font-weight:900;letter-spacing:-1px">
+                  <span style="color:#4ade80">${bestRun.wins||0}W</span><span style="color:#fbbf24"> ${bestRun.draws||0}D</span><span style="color:#606070"> </span><span style="color:#f87171">${bestRun.losses||0}L</span>
+                </div>
+                <div style="font-size:11px;color:#606080">${ordinal(bestRun.wtc_pos||9)} in WTC · ${bestRun.pct||0}%</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">WTC stage reached</div>
+          <div class="stage-bar">
+            ${stageBarRow('Final reached', qualified, '#c084fc')}
+            ${stageBarRow('WTC Champions', finalWon,  '#f9c846')}
+          </div>
+
+          ${topPlayers.length ? `
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Most drafted players</div>
+          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${mostUsedHTML}</div>` : ''}
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Recent cycles</div>
+          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${recentHTML}</div>`;
     }
 
     function closeSignupNudge() {
@@ -8318,7 +8413,7 @@
     ];
 
     function autoFillXI() {
-      const getEff = p => p.rating + (TS.playerForm[p.id] || 0);
+      const getEff = p => Math.min(99, p.rating + (TS.playerForm[p.id] || 0));
       const isSpin = p => p.canBowl && p.bowlingStyle && /break|orthodox|spin/i.test(p.bowlingStyle);
       const isSeam = p => p.canBowl && p.bowlingStyle && /fast|swing|medium/i.test(p.bowlingStyle);
       const sorted = role => TS.squad.filter(p=>p.role===role && isPlayerAvailable(p)).sort((a,b)=>getEff(b)-getEff(a));
@@ -8649,57 +8744,54 @@
 
         if (p.role === 'batsman' && p.opener) {
           if (!hadBatOpportunity) { delta = 0; }
-          // Openers face the new ball — higher bar for positive form
-          else if (runs >= 150) delta =  2;
-          else if (runs >=  90) delta =  1;
-          else if (runs >=  50) delta =  0;
-          else if (runs >=  25) delta = -1;
+          else if (runs >= 160) delta =  2;
+          else if (runs >= 100) delta =  1;
+          else if (runs >=  45) delta =  0;  // 54 → 0, not negative
+          else if (runs >=  22) delta = -1;
           else                  delta = -2;
 
         } else if (p.role === 'batsman') {
           if (!hadBatOpportunity) { delta = 0; }
           else if (runs >= 120) delta =  2;
-          else if (runs >=  70) delta =  1;
-          else if (runs >=  35) delta =  0;
-          else if (runs >=  15) delta = -1;
+          else if (runs >=  60) delta =  1;  // 61 → +1
+          else if (runs >=  30) delta =  0;
+          else if (runs >=  12) delta = -1;
           else                  delta = -2;
 
         } else if (p.role === 'wicketkeeper') {
           if (!hadBatOpportunity) { delta = 0; }
-          else if (runs >= 80) delta =  2;
-          else if (runs >= 45) delta =  1;
-          else if (runs >= 20) delta =  0;
-          else                 delta = -1;
+          else if (runs >= 100) delta =  2;
+          else if (runs >=  55) delta =  1;
+          else if (runs >=  22) delta =  0;
+          else                  delta = -1;
 
         } else if (p.role === 'allrounder') {
           let batDelta = !hadBatOpportunity ? 0
-            : runs >= 100 ?  2
-            : runs >=  60 ?  1
-            : runs >=  25 ?  0
+            : runs >= 120 ?  2
+            : runs >=  70 ?  1
+            : runs >=  28 ?  0
             : runs >=  10 ? -1 : -2;
 
-          let bowlDelta = wkts >= 6 ?  2
-            : wkts >= 4 ?  1
+          let bowlDelta = wkts >= 8 ?  2
+            : wkts >= 6 ?  1
             : wkts >= 2 ?  0
             : overs >= 20 ? -1 : 0;
 
           delta = Math.max(batDelta, bowlDelta);
 
         } else if (p.role === 'bowler') {
-          if      (wkts >= 7)                          delta =  2;
-          else if (wkts >= 4)                          delta =  1;
+          if      (wkts >= 9)                          delta =  2;
+          else if (wkts >= 7)                          delta =  1;
           else if (wkts >= 2)                          delta =  0;
-          else if (wkts <= 1 && overs >= 30)           delta = -2; // wicketless workhorse
+          else if (wkts <= 1 && overs >= 30)           delta = -2;
           else if (wkts <= 1 && overs >= 15)           delta = -1;
-          else                                         delta =  0; // barely bowled — neutral
+          else                                         delta =  0;
         }
 
-        // Opposition strength modifier — runs/wickets against weak sides count for less
-        // opp.rating ~60 (weak) to ~90 (elite); 75 = neutral baseline
-        // +1 adj vs strong opp (≥83), -1 adj vs weak opp (≤65)
+        // Opposition strength modifier — only softens positive boosts vs weak teams,
+        // does not compound negatives (prevents double-punishing bad scores)
         const oppAdj = opp.rating >= 83 ? 1 : opp.rating <= 65 ? -1 : 0;
-        if (delta > 0) delta = Math.max(0, delta + oppAdj);        // good vs weak → smaller boost
-        else if (delta < 0) delta = Math.min(-2, delta + oppAdj);  // bad vs weak → bigger penalty
+        if (delta > 0) delta = Math.max(0, delta + oppAdj);
 
         // Result modifier — harsh in defeat, honest in victory
         if (result === 'L') {
@@ -8842,8 +8934,18 @@
       if (Math.random() > 0.15) return null; // 15% chance per test (3% per event across 5)
 
       const xi = TS.currentXI.filter(Boolean);
-      const nonKeepers = xi.filter(p => p.role !== 'wicketkeeper');
+      // Exclude already-injured players from any event — can't target someone already out
+      const notInjured = xi.filter(p => !TS.playerInjured[p.id]);
+      const nonKeepers = notInjured.filter(p => p.role !== 'wicketkeeper');
       const bench = TS.squad.filter(p => !xi.some(x => x && x.id === p.id));
+
+      // Helper: would losing this role slot leave us unable to field a team?
+      const ROLE_MIN = { batsman: 5, allrounder: 2, bowler: 3 };
+      const canSpare = (role) => {
+        const available = notInjured.filter(p => p.role === role).length;
+        return available > (ROLE_MIN[role] || 1);
+      };
+      const spareableNonKeepers = nonKeepers.filter(p => canSpare(p.role));
 
       const allTypes = ['birth', 'tabloid', 'drinks', 'confidence', 'nets'];
       const types = allTypes.filter(t => !TS.usedEvents.has(t));
@@ -8851,9 +8953,17 @@
       const type = types[Math.floor(Math.random() * types.length)];
 
       if (type === 'drinks') {
-        if (nonKeepers.length < 2) return null;
-        const shuffled = [...nonKeepers].sort(() => Math.random() - 0.5);
-        return { type, players: [shuffled[0], shuffled[1]] };
+        // Need two players who can both be spared, and not both the same role if that would strip the team
+        if (spareableNonKeepers.length < 2) return null;
+        const shuffled = [...spareableNonKeepers].sort(() => Math.random() - 0.5);
+        let p1 = shuffled[0];
+        // Ensure p2 doesn't share p1's role if sparing both would leave too few of that role
+        const roleCount = notInjured.filter(p => p.role === p1.role).length;
+        const p2pool = roleCount <= (ROLE_MIN[p1.role] || 1) + 1
+          ? shuffled.slice(1).filter(p => p.role !== p1.role)
+          : shuffled.slice(1);
+        if (!p2pool.length) return null;
+        return { type, players: [p1, p2pool[0]] };
       }
       if (type === 'nets') {
         if (!bench.length) return null;
@@ -8861,12 +8971,13 @@
         return { type, players: [p] };
       }
       if (type === 'bustup') {
-        if (nonKeepers.length < 2) return null;
-        const shuffled = [...nonKeepers].sort(() => Math.random() - 0.5);
+        if (spareableNonKeepers.length < 2) return null;
+        const shuffled = [...spareableNonKeepers].sort(() => Math.random() - 0.5);
         return { type, players: [shuffled[0], shuffled[1]] };
       }
-      if (!nonKeepers.length) return null;
-      const p = nonKeepers[Math.floor(Math.random() * nonKeepers.length)];
+      // Single-player events: only pick from players we can spare
+      if (!spareableNonKeepers.length) return null;
+      const p = spareableNonKeepers[Math.floor(Math.random() * spareableNonKeepers.length)];
       return { type, players: [p] };
     }
 
@@ -8953,7 +9064,9 @@
         TS.seriesFormHit[p1.id] = (TS.seriesFormHit[p1.id] || 0) - 3; // track for reversal at series end
       }
       if (ev.type === 'nets') {
-        TS.playerForm[p1.id] = Math.min(10, (TS.playerForm[p1.id] || 0) + 5);
+        const _netsP = TS.squad.find(p => p.id === p1.id);
+        const _netsMax = _netsP ? Math.min(10, 99 - _netsP.rating) : 10;
+        TS.playerForm[p1.id] = Math.min(_netsMax, (TS.playerForm[p1.id] || 0) + 5);
         TS.oneTestBonus[p1.id] = (TS.oneTestBonus[p1.id] || 0) + 5; // track for reversal after next test
       }
       if (ev.type === 'drinks') {
@@ -9586,7 +9699,7 @@
       function simTestInnings(batR, bowlR, oversAvail, target, batNames, bowlPool, keeperName, declareAt, batRatings, conditions) {
         const q = Math.max(0, Math.min(1, (batR - bowlR + 50) / 100));
         // Wicket prob per ball: scales with team quality. Individual batter rating applied per-ball below.
-        const wktProbBase = 0.016 - q * 0.006; // 0.010 (strong bat) → 0.016 (strong bowl)
+        const wktProbBase = 0.020 - q * 0.007; // 0.013 (strong bat) → 0.020 (strong bowl)
 
         const batters = batNames.slice(0, 11).map(n => ({ name:n, runs:0, balls:0, out:false, how:'' }));
 
@@ -9697,11 +9810,11 @@
             const settleM = batters[striker].balls < 12 ? 1.15 : 1.0;
             // Per-batter rating modifier: higher rated batter is harder to dismiss
             const bRat = batRatings ? Math.max(52, Math.min(99, batRatings[striker] || 72)) : 72;
-            const batWktMod = 1.35 - (bRat - 52) / 47 * 0.70; // 52→1.35, 99→0.65
+            const batWktMod = 1.20 - (bRat - 52) / 47 * 0.45; // 52→1.20, 97→0.755
             // Conditions modifier: seam boosts pace, spin boosts spinners, batting flattens all
-            const condWktMod = conditions === 'seam' ? (bowler.isSpin ? 0.72 : 1.35)
-                             : conditions === 'spin' ? (bowler.isSpin ? 1.40 : 0.78)
-                             : conditions === 'batting' ? 0.72 : 1.0;
+            const condWktMod = conditions === 'seam' ? (bowler.isSpin ? 0.78 : 1.30)
+                             : conditions === 'spin' ? (bowler.isSpin ? 1.35 : 0.82)
+                             : conditions === 'batting' ? 0.85 : 1.0;
             // Bat for draw: if target is out of reach (need >7 RPO with few overs left), batters dig in
             const oversLeft = oversAvail - ov;
             const rrNeeded = target !== undefined ? (target - totalRuns) / Math.max(1, oversLeft) : 0;
@@ -9770,6 +9883,7 @@
 
       const innings = [];
       let oversUsed = 0;
+      let inningsWinResult = null;
 
       const ib  = (team) => team==='eng' ? engBat  : oppBat;
       const iw  = (team) => team==='eng' ? engBowl : oppBowl;
@@ -9821,16 +9935,25 @@
 
           if (oversUsed < MAX_OVERS - 20) {
             const inn4Team = inn3Team === inn1Team ? inn2Team : inn1Team;
-            const target = followOn
-              ? Math.max(1, inn1.runs - inn2.runs - inn3.runs + 1)
-              : Math.max(1, inn1.runs + inn3.runs - inn2.runs + 1);
+            const rawTarget = followOn
+              ? inn2.runs + inn3.runs - inn1.runs + 1
+              : inn1.runs + inn3.runs - inn2.runs + 1;
 
-            // Inn4 gets whatever overs remain in the 450-over match — draw if they can't finish
-            const inn4 = simTestInnings(ib(inn4Team), iw(inn4Team), MAX_OVERS - oversUsed, target, ibn(inn4Team), ibp(inn4Team), ikp(inn4Team), undefined, ibr(inn4Team), conditions);
-            inn4.team = inn4Team;
-            inn4.target = target;
-            innings.push(inn4);
-            oversUsed += inn4.oversPlayed;
+            // If the chasing team is still behind (rawTarget <= 0), bowling side wins by an innings
+            if (rawTarget <= 0) {
+              // rawTarget ≤ 0: inn4Team's combined opponents already can't match their score
+              // inn4Team doesn't need to bat — they've already won by an innings
+              const inningsWinFor = inn4Team === 'eng' ? 'eng' : 'opp';
+              inningsWinResult = { inningsWin: true, inningsWinFor, inningsMargin: Math.abs(rawTarget - 1) };
+              // No 4th innings played — innings[] stays at 3 entries
+            } else {
+              // Inn4 gets whatever overs remain in the 450-over match — draw if they can't finish
+              const inn4 = simTestInnings(ib(inn4Team), iw(inn4Team), MAX_OVERS - oversUsed, rawTarget, ibn(inn4Team), ibp(inn4Team), ikp(inn4Team), undefined, ibr(inn4Team), conditions);
+              inn4.team = inn4Team;
+              inn4.target = rawTarget;
+              innings.push(inn4);
+              oversUsed += inn4.oversPlayed;
+            }
           }
         }
       }
@@ -9839,7 +9962,11 @@
       let result, winner, margin;
       const last = innings[innings.length - 1];
 
-      if (innings.length < 4) {
+      if (inningsWinResult) {
+        winner = inningsWinResult.inningsWinFor;
+        result = winner === 'eng' ? 'W' : 'L';
+        margin = `an innings and ${inningsWinResult.inningsMargin} run${inningsWinResult.inningsMargin !== 1 ? 's' : ''}`;
+      } else if (innings.length < 4) {
         // Didn't complete 4 innings — draw (time or overs ran out after 2-3 innings)
         result = 'D'; winner = 'draw'; margin = 'Match drawn';
       } else if (oversUsed >= MAX_OVERS && !last.chaseWon && !last.allOut) {
@@ -9864,7 +9991,7 @@
       }
 
       const sessions = buildTestSessions(innings, oppName);
-      return { winner, result, margin, innings, sessions, oversUsed, conditions };
+      return { winner, result, margin, innings, sessions, oversUsed, conditions, inningsWinResult };
     }
 
     function buildTestSessions(innings, oppName) {
@@ -10025,7 +10152,8 @@
         const nextBtn = document.getElementById('tm-next-btn');
         if (nextBtn) {
           nextBtn.style.display = '';
-          if (currentInn + 1 < innings.length) {
+          const nextInn = innings[currentInn + 1];
+          if (nextInn) {
             nextBtn.textContent = `${ordinals[currentInn + 1]} Innings →`;
             nextBtn.onclick = () => {
               currentInn++;
@@ -10303,9 +10431,9 @@
       updateWTCPoints(result);
       TS.series[TS.currentSeriesIdx].results.push(result);
       TS.lastMatchResult = matchData;
-      // Accumulate for series stats
+      // Accumulate for series stats — snapshot the XI so swapped players are credited correctly
       if (!TS.seriesMatchData) TS.seriesMatchData = [];
-      TS.seriesMatchData.push(matchData);
+      TS.seriesMatchData.push({ ...matchData, _xi: [...TS.currentXI] });
     }
 
 
@@ -10332,18 +10460,30 @@
     }
 
     function simOtherWTCResults() {
-      // Randomly tick a couple of other nations' records
       const nations = Object.keys(TS.wtcTable).filter(k => k !== 'eng');
-      const n1 = nations[Math.floor(Math.random()*nations.length)];
-      const n2 = nations.filter(k=>k!==n1)[Math.floor(Math.random()*(nations.length-1))];
-      if (!n1 || !n2) return;
-      const t1 = TS.wtcTable[n1], t2 = TS.wtcTable[n2];
-      const r = Math.random();
-      t1.p++; t2.p++;
-      if (r < 0.4) { t1.w++; t1.pts+=12; t2.l++; }
-      else if (r < 0.7) { t2.w++; t2.pts+=12; t1.l++; }
-      else { t1.d++; t2.d++; t1.pts+=4; t2.pts+=4; }
-      [t1,t2].forEach(t => { t.pct = t.p > 0 ? (t.pts/(t.p*12))*100 : 0; });
+      const MAX_TEAM_MATCHES = 20;
+      const MATCHES_PER_TEST = 2;
+      for (let i = 0; i < MATCHES_PER_TEST; i++) {
+        const eligible = nations.filter(k => (TS.wtcTable[k].p || 0) < MAX_TEAM_MATCHES);
+        if (eligible.length < 2) break;
+        const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+        const id1 = shuffled[0], id2 = shuffled[1];
+        const t1 = TS.wtcTable[id1], t2 = TS.wtcTable[id2];
+        const r1 = t1.rating || 75, r2 = t2.rating || 75;
+        const total = r1 + r2;
+        const p1win = (r1 / total) * 0.70;
+        const p2win = (r2 / total) * 0.70;
+        const roll = Math.random();
+        t1.p++; t2.p++;
+        if (roll < p1win) {
+          t1.w++; t1.pts += 12; t2.l++;
+        } else if (roll < p1win + p2win) {
+          t2.w++; t2.pts += 12; t1.l++;
+        } else {
+          t1.d++; t2.d++; t1.pts += 4; t2.pts += 4;
+        }
+        [t1,t2].forEach(t => { t.pct = t.p > 0 ? (t.pts/(t.p*12))*100 : 0; });
+      }
     }
 
     function updatePlayerForm(result) {
@@ -10384,9 +10524,10 @@
       const seriesMatches = TS.seriesMatchData || [];
       seriesMatches.forEach(matchData => {
         if (!matchData) return;
+        const matchXI = matchData._xi || TS.currentXI;
         const engBatInns = matchData.innings.filter(i=>i.team==='eng');
         const engBowlInns = matchData.innings.filter(i=>i.team!=='eng');
-        TS.currentXI.forEach((p, idx) => {
+        matchXI.forEach((p, idx) => {
           if (!statMap[p.id]) statMap[p.id] = { id:p.id, name:p.name, role:p.role, runs:0, balls:0, inns:0, dismissed:0, wkts:0, overs:0, runsConceded:0, topScore:0, topScoreOut:false, bestFigW:0, bestFigR:999 };
           engBatInns.forEach(inn => {
             if (inn._batters && inn._batters[idx]) {
@@ -10557,11 +10698,14 @@
       }
       // Captain form modifier based on series result
       const whitewash = serWon && (wins === series.tests || (wins === 3 && series.tests === 3));
+      const seriesLostWithoutWin = !serWon && !serDraw && wins === 0;
       if (TS.captain) {
-        if (!serWon && !serDraw) {
+        if (whitewash) {
+          const _cap = TS.squad.find(p => p.id === TS.captain);
+          const _capMax = _cap ? Math.min(10, 99 - _cap.rating) : 10;
+          TS.playerForm[TS.captain] = Math.min(_capMax, (TS.playerForm[TS.captain] || 0) + 3);
+        } else if (seriesLostWithoutWin) {
           TS.playerForm[TS.captain] = Math.max(-10, (TS.playerForm[TS.captain] || 0) - 2);
-        } else if (whitewash) {
-          TS.playerForm[TS.captain] = Math.min(10, (TS.playerForm[TS.captain] || 0) + 3);
         }
       }
 
@@ -10573,7 +10717,6 @@
           go('s-test-series-result');
         }
       };
-
       if (whitewash && TS.captain) {
         const cap = TS.squad.find(p => p.id === TS.captain);
         const sweepDesc = wins === 5 ? '5-0 series whitewash' : '3-0 series whitewash';
@@ -10581,6 +10724,15 @@
         document.getElementById('cap-boost-desc').textContent = `${cap?.name?.split(' ')[1] || 'The captain'} led England to a ${sweepDesc}. Outstanding captaincy earns a +3 form boost going into the next series.`;
         document.getElementById('cap-boost-btn').onclick = afterCaptain;
         go('s-test-cap-boost');
+      } else if (seriesLostWithoutWin && TS.captain) {
+        const cap = TS.squad.find(p => p.id === TS.captain);
+        const resultDesc = losses === 3 && series.tests === 3 ? '3-0 series defeat'
+          : losses === 5 && series.tests === 5 ? '5-0 series defeat'
+          : `${losses}-0 series defeat`;
+        document.getElementById('cap-penalty-name').textContent = cap?.name || 'Captain';
+        document.getElementById('cap-penalty-desc').textContent = `${cap?.name?.split(' ')[1] || 'The captain'} couldn't win a single match in a ${resultDesc}. The pressure is mounting — a −2 form hit heading into the next series.`;
+        document.getElementById('cap-penalty-btn').onclick = afterCaptain;
+        go('s-test-cap-penalty');
       } else {
         afterCaptain();
       }
@@ -10687,7 +10839,7 @@
       return "A tough WTC cycle. The dressing room will be hungry for more.";
     }
 
-    function showTestEnd(qualified=true, standings=null) {
+    async function showTestEnd(qualified=true, standings=null) {
       if (!standings) {
         standings = Object.entries(TS.wtcTable)
           .map(([id,t]) => ({id,...t}))
@@ -10769,6 +10921,26 @@
 
       const xi = (TS.currentXI && TS.currentXI.length ? TS.currentXI : TS.squad).slice(0, 15);
       const signedIn = !!AUTH_USER;
+
+      // ── Save test run to Supabase ──────────────────────────────────────────
+      if (AUTH_USER) {
+        try {
+          const squadJson = TS.squad ? TS.squad.map(p => ({ n: p.name, r: p.rating, role: p.role })) : [];
+          const avgRating = squadJson.length ? Math.round(squadJson.reduce((s,p)=>s+(p.r||0),0)/squadJson.length) : null;
+          await sb.from('test_runs').insert({
+            user_id:     AUTH_USER.id,
+            wtc_pos:     engPos,
+            wins:        eng.w,
+            draws:       eng.d,
+            losses:      eng.l,
+            pct:         Math.round(eng.pct),
+            qualified:   !!qualified,
+            final_won:   !!won,
+            team_rating: avgRating,
+            squad:       squadJson,
+          });
+        } catch(e) { console.warn('Could not save test run:', e); }
+      }
 
       go('s-test-end');
       if (won) launchConfetti();
@@ -11135,6 +11307,20 @@
       </div>
     </div>
     <button id="cap-boost-btn" class="btn-sim">Continue →</button>
+  </div>
+
+  <div id="s-test-cap-penalty" class="screen">
+    <div style="text-align:center;padding:30px 0 20px">
+      <div style="font-size:56px;margin-bottom:16px">📉</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#f87171;margin-bottom:8px">Captain Struggling</div>
+      <div id="cap-penalty-name" style="font-size:26px;font-weight:900;color:#fff;margin-bottom:8px"></div>
+      <div id="cap-penalty-desc" style="font-size:13px;color:#9090a8;line-height:1.6;margin-bottom:24px"></div>
+      <div style="display:inline-block;background:linear-gradient(135deg,#1a0000,#0a0000);border:2px solid #f87171;border-radius:12px;padding:14px 32px;margin-bottom:28px">
+        <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#f87171;margin-bottom:4px">Form Hit</div>
+        <div style="font-size:32px;font-weight:900;color:#f87171">−2</div>
+      </div>
+    </div>
+    <button id="cap-penalty-btn" class="btn-sim">Continue →</button>
   </div>
 
   <!-- ASHES NEWS SCREEN -->
