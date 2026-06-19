@@ -48,7 +48,7 @@
 
   <!-- ── PRIMARY META ─────────────────────────────────────────────────────── -->
   <title>19-0 | T20 Blast Simulator </title>
-  <meta name="description" content="Draft your ultimate T20 Blast XI from 1,000+ county cricket players. 16 group games, then Quarter-Final, Semi-Final and Final. Can you go 19-0?">
+  <meta name="description" content="The cricket management game. Draft your county XI for the T20 Blast or take England through a full WTC cycle. Free to play.">
   <meta name="keywords" content="T20 Blast, county cricket, cricket draft, cricket simulator, T20 cricket game, Vitality Blast, cricket fantasy, T20 draft game, 19-0 game, cricket game">
   <meta name="author" content="19-0">
   <meta name="robots" content="index, follow">
@@ -57,9 +57,9 @@
   <!-- ── OPEN GRAPH (Facebook, WhatsApp, iMessage link previews) ──────────── -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.19-0.co.uk/">
-  <meta property="og:title" content="19-0 | T20 Blast Draft Simulator">
-  <meta property="og:description" content="Draft your ultimate T20 Blast XI from 1,000+ county cricket players. 16 group games, then Quarter-Final, Semi-Final and Final. Can you go 19-0?">
-  <meta property="og:image" content="https://www.19-0.co.uk/og-image.png">
+  <meta property="og:title" content="19-0 | Cricket Management Game">
+  <meta property="og:description" content="Draft your county XI for the T20 Blast, or take England through a full WTC cycle. Free to play.">
+  <meta property="og:image" content="https://www.19-0.co.uk/og_image.svg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:site_name" content="19-0">
@@ -68,8 +68,8 @@
   <!-- ── TWITTER / X CARD ─────────────────────────────────────────────────── -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://www.19-0.co.uk/">
-  <meta name="twitter:title" content="19-0 | T20 Blast Draft Simulator">
-  <meta name="twitter:description" content="Draft your ultimate T20 Blast XI from 1,000+ county cricket players. Can you go 19-0?">
+  <meta name="twitter:title" content="19-0 | Cricket Management Game">
+  <meta name="twitter:description" content="Draft your county XI for the T20 Blast, or take England through a full WTC cycle. Free to play.">
   <meta name="twitter:image" content="https://www.19-0.co.uk/og-image.png">
 
   <!-- ── ICONS ────────────────────────────────────────────────────────────── -->
@@ -2601,23 +2601,24 @@
     .share-sheet {
       background: #16161f;
       border: 1px solid #252535;
-      border-radius: 20px 20px 0 0;
+      border-radius: 16px 16px 0 0;
       width: 100%;
       max-width: 480px;
-      padding: 24px 20px 36px
+      padding: 16px 16px 24px
     }
     .share-sheet h3 {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 800;
       color: #fff;
       text-align: center;
-      margin-bottom: 16px
+      margin-bottom: 10px
     }
     .share-preview-wrap {
-      border-radius: 12px;
+      border-radius: 8px;
       overflow: hidden;
-      margin-bottom: 16px;
-      border: 1px solid #252535
+      margin-bottom: 10px;
+      border: 1px solid #252535;
+      max-height: 200px
     }
     .share-preview-wrap img {
       width: 100%;
@@ -2626,16 +2627,16 @@
     .share-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 10px
+      gap: 8px;
+      margin-bottom: 8px
     }
     .btn-share-save {
       background: #1e1e2a;
       color: #fff;
       border: 1px solid #252535;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 14px;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       text-align: center
@@ -2660,12 +2661,12 @@
       background: linear-gradient(135deg, #f9c846, #f97316);
       color: #0f0f13;
       border: none;
-      padding: 15px;
-      border-radius: 12px;
-      font-size: 15px;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: 14px;
       font-weight: 900;
       cursor: pointer;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       letter-spacing: -.2px
     }
     .btn-share-close {
@@ -2673,9 +2674,9 @@
       background: transparent;
       color: #606080;
       border: 1px solid #252535;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 14px;
+      padding: 9px;
+      border-radius: 8px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       margin-top: 4px
@@ -2947,19 +2948,6 @@
     <div class="home-badge" id="home-badge">T20 Blast · Draft Simulator</div>
     <div class="auth-bar" id="auth-bar"></div>
 
-    <div id="dev-login-area" style="margin-top:8px;text-align:center">
-      <button onclick="showDevPinPrompt()" style="background:none;border:none;color:#2a2a40;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">Dev Login</button>
-      <div id="dev-pin-box" style="display:none;margin-top:8px;background:#0a0a12;border:1px solid #1a1a2a;border-radius:10px;padding:12px 14px;text-align:left">
-        <div style="font-size:11px;color:#4a4a60;margin-bottom:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Enter PIN</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="dev-pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="······"
-            style="flex:1;background:#060610;border:1px solid #1a1a2a;border-radius:8px;padding:10px 12px;color:#fff;font-size:18px;letter-spacing:6px;outline:none;font-family:monospace"
-            onkeydown="if(event.key==='Enter')checkDevPin()">
-          <button onclick="checkDevPin()" style="padding:10px 16px;background:#1a1a2e;border:1px solid #3a3a50;border-radius:8px;color:#9090c0;font-size:12px;font-weight:700;cursor:pointer">OK</button>
-        </div>
-        <div id="dev-pin-error" style="font-size:11px;color:#f87171;margin-top:6px;height:14px"></div>
-      </div>
-    </div>
     <div class="home-hero">19-0</div>
 
     <!-- Mode selector -->
@@ -2968,9 +2956,10 @@
         <span class="mode-icon">⚡</span>
         <span class="mode-label">T20 Blast</span>
       </button>
-      <button class="mode-btn" id="mode-btn-test" onclick="selectMode('test')" style="display:none">
+      <button class="mode-btn" id="mode-btn-test" onclick="selectMode('test')" style="position:relative">
         <span class="mode-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
         <span class="mode-label">Test Cricket</span>
+        <span style="position:absolute;top:6px;right:6px;background:#f97316;color:#fff;font-size:8px;font-weight:900;letter-spacing:.5px;padding:2px 5px;border-radius:4px;text-transform:uppercase;line-height:1.4">New</span>
       </button>
     </div>
 
@@ -3079,8 +3068,12 @@
         </div>
       </div>
 
-      <button class="btn-start" onclick="startTestDraft()">Spin Your Squad of 15 →</button>
-      <button onclick="autoTestDraft()" style="margin-top:8px;width:100%;padding:10px;background:#1a1a2e;border:1px dashed #404060;border-radius:10px;color:#6060a0;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.5px">⚡ DEV: Auto-Draft Best XI</button>
+      <button id="continue-test-btn" onclick="continueTestGame()" style="display:none;width:100%;margin-bottom:10px;padding:14px 16px;background:#0a1420;border:1px solid #1a4060;border-radius:12px;cursor:pointer;flex-direction:column;align-items:center;gap:3px">
+        <div style="font-size:14px;font-weight:800;color:#60a5fa;letter-spacing:0.5px">▶ Continue Saved Game</div>
+        <div id="continue-test-date" style="font-size:11px;color:#406080;letter-spacing:0.5px"></div>
+      </button>
+      <button class="btn-start" onclick="startTestDraft()">Start New Run →</button>
+      <button id="dev-auto-draft-btn" onclick="autoTestDraft()" style="display:none;margin-top:8px;width:100%;padding:10px;background:#1a1a2e;border:1px dashed #404060;border-radius:10px;color:#6060a0;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.5px">⚡ DEV: Auto-Draft Best XI</button>
 
       <div class="home-stats">
         <div><div class="hs-n">6</div><div class="hs-l">Series</div></div>
@@ -4773,7 +4766,7 @@
     const SETTINGS = { diff: 'easy', rating: 'year', show: 'visible', budget: 'normal', teamName: 'Your XI' };
     const RESPIN_LIMITS = { easy: Infinity, medium: 3, hard: 0 };
     const SETTING_DESCS = {
-      diff: { easy: 'Unlimited re-spins', medium: '3 re-spins per pick', hard: 'No re-spins (unless no players available)' },
+      diff: { easy: 'Unlimited re-spins', medium: '3 re-spins per draft', hard: 'No re-spins (unless no players available)' },
       rating: { year: 'Rating reflects that specific season', prime: "Always uses each player's career-best rating" },
       show: { visible: 'Ratings shown during draft', hidden: 'Ratings revealed only after draft is complete' },
       budget: { normal: 'No budget limit — draft freely', budget: '£1m budget · player prices based on rating' }
@@ -5127,7 +5120,6 @@
         p.price = _pp;
       }
       S.squad.push(p); S.counts[p.county] = (S.counts[p.county] || 0) + 1; S.roleCounts[p.role]++; S.slot++;
-      S.respinsUsed = 0; // reset re-spin count for next pick
       S.spunTeam = null; // mark as fresh pick so first spin isn't counted
       if (S.slot >= 11) { pingEvent('Draft_Completed', { ovr: Math.round(S.squad.reduce((s,p)=>s+p.rating,0)/S.squad.length) }); showSquad(); return; }
       updatePickUI(); document.getElementById("roster-area").innerHTML = ""; doSpin();
@@ -6813,6 +6805,7 @@
       if (prompt) prompt.style.display = AUTH_USER ? 'none' : 'flex';
       // Pop up the sign-up nudge modal after a short delay so user sees their result first
       if (!AUTH_USER) setTimeout(openSignupNudge, 1800);
+      else setTimeout(openCoffeeModal, 2000);
     }
     function genQuote(pos, w, qual, qf, sf, fin) {
       if (fin) return "Lifted the trophy at Edgbaston. A side for the ages.";
@@ -6903,6 +6896,19 @@
       </div>
       <button onclick="openAuthModal();closeSignupNudge()" style="width:100%;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;margin-bottom:10px;font-family:system-ui,-apple-system,sans-serif">Create free account →</button>
       <button onclick="closeSignupNudge()" style="width:100%;background:transparent;color:#606080;border:1px solid #252535;padding:13px;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif">Maybe later</button>
+    </div>
+  </div>
+
+  <!-- ── COFFEE MODAL ──────────────────────────────────────── -->
+  <div id="coffee-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:25000;align-items:flex-end;justify-content:center;padding:0">
+    <div style="background:#16161f;border:1px solid #252535;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:28px 22px 40px">
+      <div style="text-align:center;margin-bottom:22px">
+        <div style="font-size:36px;margin-bottom:10px">☕</div>
+        <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Enjoying 19-0?</div>
+        <div style="font-size:13px;color:#8080a0;line-height:1.7;max-width:300px;margin:0 auto">If you're having fun, consider supporting the game — keeps it free and evolving.</div>
+      </div>
+      <a href="https://buymeacoffee.com/19_0" target="_blank" rel="noopener" onclick="closeCoffeeModal()" style="display:block;width:100%;box-sizing:border-box;background:#FFDD00;color:#000000;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;margin-bottom:10px;font-family:system-ui,-apple-system,sans-serif;text-align:center;text-decoration:none;letter-spacing:0.3px">☕ Buy me a coffee</a>
+      <button onclick="closeCoffeeModal()" style="width:100%;background:transparent;color:#606080;border:1px solid #252535;padding:13px;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif">Maybe next time</button>
     </div>
   </div>
 
@@ -7013,7 +7019,7 @@
     <div class="share-sheet">
       <h3>Share your season</h3>
       <div class="share-preview-wrap" id="share-preview-wrap"></div>
-      <div id="share-text-preview" style="background:#0d0d12;border:1px solid #252535;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#c0c0d8;line-height:1.5"></div>
+      <div id="share-text-preview" style="background:#0d0d12;border:1px solid #252535;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:#c0c0d8;line-height:1.4"></div>
       <button class="btn-share-native" id="btn-native-share" onclick="nativeShare()" style="display:none">📤 Share</button>
       <div class="share-actions">
         <button class="btn-share-save" onclick="saveShareImage()">⬇ Save image</button>
@@ -7213,7 +7219,7 @@
       card.style.left = '';
       const nativeBtn = document.getElementById('btn-native-share');
       if (nativeBtn) nativeBtn.style.display = navigator.share ? '' : 'none';
-      document.getElementById('share-modal').style.display = 'flex';
+      document.getElementById('share-modal').classList.add('open');
     }
 
     async function openShareModal() {
@@ -7379,9 +7385,13 @@
         bar.innerHTML = `
           <div style="min-width:0;flex:1">
             <div class="auth-bar-user">${AUTH_USER.username}</div>
-            <div class="auth-bar-sub">Signed in · <span style="cursor:pointer;text-decoration:underline;color:#8080a0" onclick="showStats()">View stats</span></div>
+            <div class="auth-bar-sub">Signed in</div>
           </div>
-          <button class="btn-auth-small" onclick="signOut()">Sign out</button>`;
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn-auth-small" onclick="showStats()" style="border-color:#3a5a9a;color:#60a5fa">Stats</button>
+            <button class="btn-auth-small" onclick="showLeaderboard()" style="border-color:#5a3a8a;color:#c084fc">Leaderboard</button>
+            <button class="btn-auth-small" onclick="signOut()" style="border-color:#8a2a2a;color:#f87171">Sign out</button>
+          </div>`;
       } else {
         bar.innerHTML = `
           <div>
@@ -7580,6 +7590,206 @@
       }
     }
 
+    // ── LEADERBOARD ───────────────────────────────────────────────────────────
+    let _lbMode = 't20';
+
+    async function showLeaderboard() {
+      go('s-leaderboard');
+      document.getElementById('lb-loading').style.display = 'block';
+      document.getElementById('lb-content').style.display = 'none';
+
+      try {
+        const userQueries = AUTH_USER ? [
+          sb.from('runs').select('user_id,qualified,qf_won,sf_won,final_won,team_rating,group_wins,squad').eq('user_id', AUTH_USER.id),
+          sb.from('test_runs').select('user_id,qualified,final_won,wins,draws,losses,pct,wtc_pos,team_rating,squad').eq('user_id', AUTH_USER.id),
+        ] : [Promise.resolve({data:[]}), Promise.resolve({data:[]})];
+
+        const [{ data: allRuns }, { data: allTestRuns }, { data: allUsers }, { data: myRuns }, { data: myTestRuns }] = await Promise.all([
+          sb.from('runs').select('user_id,qualified,qf_won,sf_won,final_won,team_rating,group_wins,squad,created_at').order('created_at', { ascending: false }),
+          sb.from('test_runs').select('user_id,qualified,final_won,wins,draws,losses,pct,wtc_pos,team_rating,squad,created_at').order('created_at', { ascending: false }),
+          sb.from('users').select('id,username'),
+          ...userQueries,
+        ]);
+
+        const userMap = {};
+        (allUsers || []).forEach(u => { userMap[u.id] = u.username; });
+
+        const topRating = squad => squad && squad.length ? Math.max(...squad.map(p => p.r || 0)) : 0;
+
+        // Best run for current user from their own dedicated query
+        const myT20Best = AUTH_USER && (myRuns||[]).length ? (() => {
+          return (myRuns||[]).map(r => {
+            const koWins = (r.qf_won?1:0) + (r.sf_won?1:0) + (r.final_won?1:0);
+            const totalWins = (r.group_wins||0) + koWins;
+            const koPlayed = r.qualified ? (r.qf_won ? (r.sf_won ? (r.final_won?3:2) : 1) : 1) : 0;
+            const totalLosses = (16 + koPlayed) - totalWins;
+            return { username: AUTH_USER.username, uid: AUTH_USER.id, totalWins, totalLosses, rating: r.team_rating||0, topPlayer: topRating(r.squad), isMe: true };
+          }).sort((a,b) => b.totalWins - a.totalWins || b.rating - a.rating || b.topPlayer - a.topPlayer)[0];
+        })() : null;
+
+        const myTestBest = AUTH_USER && (myTestRuns||[]).length ? (() => {
+          return (myTestRuns||[]).map(r => ({ username: AUTH_USER.username, uid: AUTH_USER.id, wins: r.wins||0, losses: r.losses||0, rating: r.team_rating||0, topPlayer: topRating(r.squad), isMe: true }))
+            .sort((a,b) => b.wins - a.wins || b.rating - a.rating || b.topPlayer - a.topPlayer)[0];
+        })() : null;
+
+        // T20: winners only (final_won), 19 games total, sort by wins → team_rating → top player
+        const fmtDate = iso => {
+          if (!iso) return '';
+          return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        };
+
+        const t20Board = (allRuns || [])
+          .filter(r => r.final_won && userMap[r.user_id])
+          .map(r => {
+            const totalWins = (r.group_wins || 0) + 3; // QF + SF + Final
+            const totalLosses = 19 - totalWins;
+            return {
+              username: userMap[r.user_id],
+              uid: r.user_id,
+              totalWins,
+              totalLosses,
+              rating: r.team_rating || 0,
+              topPlayer: topRating(r.squad),
+              isMe: AUTH_USER && r.user_id === AUTH_USER.id,
+              date: fmtDate(r.created_at),
+            };
+          })
+          .sort((a,b) => b.totalWins - a.totalWins || b.rating - a.rating || b.topPlayer - a.topPlayer);
+
+        // Test: WTC Champions only (final_won), sort by wins → team_rating → top player
+        const testBoard = (allTestRuns || [])
+          .filter(r => r.final_won && userMap[r.user_id])
+          .map(r => {
+            let wins = r.wins || 0;
+            const draws = r.draws || 0;
+            const losses = r.losses || 0;
+            // Old records missing the WTC Final win — normalise to 21 games
+            if (wins + draws + losses < 21) wins += 1;
+            return {
+              username: userMap[r.user_id],
+              uid: r.user_id,
+              wins,
+              losses,
+              rating: r.team_rating || 0,
+              topPlayer: topRating(r.squad),
+              isMe: AUTH_USER && r.user_id === AUTH_USER.id,
+              date: fmtDate(r.created_at),
+            };
+          })
+          .sort((a,b) => b.wins - a.wins || b.rating - a.rating || b.topPlayer - a.topPlayer);
+
+        document.getElementById('lb-loading').style.display = 'none';
+        document.getElementById('lb-content').style.display = 'block';
+
+        function renderLbTab(mode) {
+          _lbMode = mode;
+          document.getElementById('lb-tab-t20').classList.toggle('stats-tab-active', mode === 't20');
+          document.getElementById('lb-tab-test').classList.toggle('stats-tab-active', mode === 'test');
+          document.getElementById('lb-tab-t20').classList.toggle('stats-tab-inactive', mode !== 't20');
+          document.getElementById('lb-tab-test').classList.toggle('stats-tab-inactive', mode !== 'test');
+
+          const board = mode === 't20' ? t20Board : testBoard;
+          if (!board.length) {
+            document.getElementById('lb-panel').innerHTML = `<div style="text-align:center;color:#606080;font-size:13px;padding:40px 0">No winning runs yet.</div>`;
+            return;
+          }
+
+          const top100 = board.slice(0, 100);
+
+          const wl = (entry, big) => {
+            const w = mode === 't20' ? entry.totalWins : entry.wins;
+            const l = mode === 't20' ? entry.totalLosses : entry.losses;
+            const ws = big ? '28px' : '16px';
+            const ds = big ? '16px' : '13px';
+            return `<span style="font-size:${ws};font-weight:900;color:#4ade80">${w}</span><span style="font-size:${ds};font-weight:700;color:#606080">-</span><span style="font-size:${ws};font-weight:900;color:#f87171">${l}</span>`;
+          };
+
+          // Podium
+          const podiumCard = (entry, rank, big) => {
+            if (!entry) return `<div style="flex:1"></div>`;
+            const rankLabel = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
+            const border = rank === 1 ? '#f9c846' : rank === 2 ? '#a0a0c0' : '#cd7f32';
+            const pad = big ? '16px 12px' : '12px 10px';
+            const nameSize = big ? '15px' : '12px';
+            const meHighlight = entry.isMe ? ';outline:2px solid #4040a0' : '';
+            return `<div style="flex:1;background:#111118;border:1px solid ${border};border-radius:12px;padding:${pad};text-align:center${meHighlight}">
+              <div style="font-size:${big?'22px':'16px'};margin-bottom:4px">${rankLabel}</div>
+              <div style="font-size:${nameSize};font-weight:800;color:${entry.isMe?'#f9c846':'#e0e0f0'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${entry.username}${entry.isMe?' ✦':''}</div>
+              <div style="font-size:10px;color:#606080;margin:3px 0">OVR ${entry.rating||'—'}</div>
+              <div style="margin-top:4px">${wl(entry, big)}</div>
+              ${entry.date ? `<div style="font-size:9px;color:#404060;margin-top:4px">${entry.date}</div>` : ''}
+            </div>`;
+          };
+
+          const podiumHTML = `<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:16px">
+            ${podiumCard(board[1], 2, false)}
+            ${podiumCard(board[0], 1, true)}
+            ${podiumCard(board[2], 3, false)}
+          </div>`;
+
+          const makeRow = (entry, i, highlight) => {
+            const pos = i + 1;
+            const posLabel = `<span style="font-size:12px;color:#606080;font-weight:700">${pos}</span>`;
+            const meStyle = highlight ? ';background:#0a0a18;border:1px solid #2a2a50;border-radius:8px' : '';
+            return `<div style="display:flex;align-items:center;gap:10px;padding:9px 8px${meStyle};margin-bottom:2px">
+              <div style="width:28px;text-align:center;flex-shrink:0">${posLabel}</div>
+              <div style="flex:1;min-width:0;text-align:left">
+                <div style="font-size:13px;font-weight:${highlight?'900':'700'};color:${highlight?'#f9c846':'#e0e0f0'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${entry.username}${highlight?' ✦':''}</div>
+                <div style="font-size:10px;color:#606080;margin-top:1px">OVR ${entry.rating||'—'}${entry.date ? ` · ${entry.date}` : ''}</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">${wl(entry, false)}</div>
+            </div>`;
+          };
+
+          // Show positions 4–100 in list (1–3 are in podium)
+          const listEntries = top100.slice(3);
+          const rows = listEntries.map((entry, i) => makeRow(entry, i + 3, entry.isMe)).join('');
+
+          // User's best run — show if not in top 100 of winners board
+          let myRankRow = '';
+          if (AUTH_USER) {
+            const myWinnerIdx = board.findIndex(e => e.isMe);
+            if (myWinnerIdx >= 100) {
+              // They're on the winners board but outside top 100 — show their actual board entry
+              myRankRow = `<div style="margin-top:10px;background:#0a0a14;border:1px solid #2a2a50;border-radius:10px;padding:6px">
+                <div style="font-size:10px;color:#6060a0;text-align:center;margin-bottom:4px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Your best winning run · #${myWinnerIdx + 1} on leaderboard</div>
+                ${makeRow(board[myWinnerIdx], myWinnerIdx, true)}
+              </div>`;
+            } else if (myWinnerIdx === -1) {
+              // No winning run at all — show their all-time best from any run
+              const myBest = mode === 't20' ? myT20Best : myTestBest;
+              if (myBest) {
+                myRankRow = `<div style="margin-top:10px;background:#0a0a14;border:1px solid #2a2a50;border-radius:10px;padding:6px">
+                  <div style="font-size:10px;color:#6060a0;text-align:center;margin-bottom:4px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Your best run · Not yet on leaderboard</div>
+                  ${makeRow(myBest, board.length, true)}
+                </div>`;
+              }
+            }
+          }
+
+          document.getElementById('lb-panel').innerHTML = `
+            ${podiumHTML}
+            <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:8px 6px">${rows || '<div style="text-align:center;color:#606080;font-size:12px;padding:10px">No more entries</div>'}</div>
+            ${myRankRow}
+            <div style="font-size:10px;color:#3a3a50;text-align:center;margin-top:10px">Winners only · top 100 · ranked by wins → OVR → top player</div>`;
+        }
+
+        window.renderLbTab = renderLbTab;
+        document.getElementById('lb-content').innerHTML = `
+          <div style="display:flex;gap:6px;margin-bottom:18px">
+            <button id="lb-tab-t20"  class="stats-tab stats-tab-active"  onclick="renderLbTab('t20')">T20 Blast</button>
+            <button id="lb-tab-test" class="stats-tab stats-tab-inactive" onclick="renderLbTab('test')">Test Cricket</button>
+          </div>
+          <div id="lb-panel"></div>`;
+
+        renderLbTab(_lbMode);
+
+      } catch(e) {
+        document.getElementById('lb-loading').textContent = 'Could not load leaderboard.';
+        console.error(e);
+      }
+    }
+
     function buildT20Stats(runs) {
         if (!runs.length) {
           return `<div style="text-align:center;color:#606080;font-size:13px;padding:40px 0">
@@ -7712,7 +7922,7 @@
         });
         const topPlayers = Object.entries(playerCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
 
-        const resultRank = r => r.final_won ? 3 : r.qualified ? 2 : (10 - (r.wtc_pos||9));
+        const resultRank = r => r.final_won ? 1000 : r.qualified ? 100 : (10 - (r.wtc_pos||9));
         const bestRun = [...runs].sort((a,b) => {
           const rd = resultRank(b) - resultRank(a);
           return rd !== 0 ? rd : (b.wins||0) - (a.wins||0);
@@ -7812,7 +8022,27 @@
     document.addEventListener('click', function(e) {
       const m = document.getElementById('signup-nudge-modal');
       if (m && e.target === m) closeSignupNudge();
+      const c = document.getElementById('coffee-modal');
+      if (c && e.target === c) closeCoffeeModal();
     });
+
+    function closeCoffeeModal() {
+      const m = document.getElementById('coffee-modal');
+      if (m) { m.style.display = 'none'; m.style.opacity = '0'; }
+    }
+
+    function openCoffeeModal() {
+      if (!AUTH_USER) return;
+      const key = 'coffee_shown_' + AUTH_USER.id;
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, '1');
+      const m = document.getElementById('coffee-modal');
+      if (!m) return;
+      m.style.display = 'flex';
+      m.style.opacity = '0';
+      m.style.transition = 'opacity .3s';
+      requestAnimationFrame(() => requestAnimationFrame(() => { m.style.opacity = '1'; }));
+    }
 
     // Initialise session on load
     document.addEventListener('DOMContentLoaded', loadSession);
@@ -7831,6 +8061,56 @@
       document.getElementById('home-t20-content').style.display = mode === 't20' ? '' : 'none';
       document.getElementById('home-test-content').style.display = mode === 'test' ? '' : 'none';
       document.getElementById('home-badge').textContent = mode === 't20' ? 'T20 Blast · Draft Simulator' : 'Test Cricket · WTC Simulator';
+      if (mode === 'test') checkForSavedTestGame();
+    }
+
+    async function checkForSavedTestGame() {
+      const btn = document.getElementById('continue-test-btn');
+      if (!btn) return;
+      if (!AUTH_USER) { btn.style.display = 'none'; return; }
+      const devBtn = document.getElementById('dev-auto-draft-btn');
+      if (devBtn) devBtn.style.display = AUTH_USER.username === 'ghughesy' ? 'block' : 'none';
+      const { data } = await sb.from('test_saves').select('updated_at').eq('user_id', AUTH_USER.id).single();
+      if (data) {
+        const d = new Date(data.updated_at);
+        btn.querySelector('#continue-test-date').textContent = 'Last saved ' + d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+        btn.style.display = 'flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
+    async function continueTestGame() {
+      if (!AUTH_USER) { openAuthModal(); return; }
+      const { data, error } = await sb.from('test_saves').select('state').eq('user_id', AUTH_USER.id).single();
+      if (error || !data) { alert('No saved game found.'); return; }
+      try {
+        Object.assign(TS, data.state);
+        if (Array.isArray(TS.usedEvents)) TS.usedEvents = new Set(TS.usedEvents);
+        else if (!(TS.usedEvents instanceof Set)) TS.usedEvents = new Set();
+        go('s-test-hub');
+        buildTestHub();
+      } catch(e) {
+        alert('Could not load saved game. It may be corrupted.');
+      }
+    }
+
+    async function saveTestGame() {
+      if (!AUTH_USER) {
+        // Show nudge instead of auth modal
+        const el = document.getElementById('save-test-nudge');
+        if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 4000); }
+        return;
+      }
+      const btn = document.getElementById('save-test-btn');
+      if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+      const saveState = JSON.parse(JSON.stringify(TS, (k, v) => v instanceof Set ? [...v] : v));
+      const { error } = await sb.from('test_saves').upsert({ user_id: AUTH_USER.id, state: saveState, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      if (btn) {
+        btn.disabled = false;
+        if (error) { btn.textContent = '💾 Save Game'; alert('Save failed. Please try again.'); }
+        else { btn.textContent = '✓ Saved!'; setTimeout(() => btn.textContent = '💾 Save Game', 2000); }
+      }
     }
 
     // ── TEST SETTINGS ──────────────────────────────────────────────────────
@@ -7842,7 +8122,7 @@
       if (container) container.querySelectorAll('.sopt').forEach(b => b.classList.remove('on'));
       btn.classList.add('on');
       const descs = {
-        diff: { easy: 'Unlimited re-spins', medium: '3 re-spins per pick', hard: 'No re-spins' },
+        diff: { easy: 'Unlimited re-spins', medium: '3 re-spins per draft', hard: 'No re-spins' },
         show: { visible: 'Ratings shown during draft', hidden: 'Ratings revealed after draft' }
       };
       const el = document.getElementById('desc-test-' + key);
@@ -8028,14 +8308,14 @@
 
     // ── WTC NATIONS ───────────────────────────────────────────────────────
     const WTC_NATIONS = [
-      { id:"aus", name:"Australia",    flag:"🇦🇺", rating:88, spinAffinity:false },
-      { id:"ind", name:"India",        flag:"🇮🇳", rating:87, spinAffinity:true  },
-      { id:"nz",  name:"New Zealand",  flag:"🇳🇿", rating:82, spinAffinity:false },
-      { id:"pak", name:"Pakistan",     flag:"🇵🇰", rating:80, spinAffinity:true  },
-      { id:"sa",  name:"South Africa", flag:"🇿🇦", rating:83, spinAffinity:false },
-      { id:"sl",  name:"Sri Lanka",    flag:"🇱🇰", rating:75, spinAffinity:true  },
-      { id:"wi",  name:"West Indies",  flag:"🏝️",  rating:72, spinAffinity:false },
-      { id:"ban", name:"Bangladesh",   flag:"🇧🇩", rating:68, spinAffinity:true  },
+      { id:"aus", name:"Australia",    flag:"🇦🇺", rMin:85, rMax:90, spinAffinity:false },
+      { id:"ind", name:"India",        flag:"🇮🇳", rMin:83, rMax:88, spinAffinity:true  },
+      { id:"sa",  name:"South Africa", flag:"🇿🇦", rMin:80, rMax:85, spinAffinity:false },
+      { id:"nz",  name:"New Zealand",  flag:"🇳🇿", rMin:80, rMax:85, spinAffinity:false },
+      { id:"pak", name:"Pakistan",     flag:"🇵🇰", rMin:73, rMax:78, spinAffinity:true  },
+      { id:"sl",  name:"Sri Lanka",    flag:"🇱🇰", rMin:75, rMax:80, spinAffinity:true  },
+      { id:"wi",  name:"West Indies",  flag:"🏝️",  rMin:72, rMax:77, spinAffinity:false },
+      { id:"ban", name:"Bangladesh",   flag:"🇧🇩", rMin:65, rMax:70, spinAffinity:true  },
     ];
 
     // Ground/conditions modifiers
@@ -8084,7 +8364,12 @@
         seriesFormHit: {},       // { playerId: delta } — applied until series ends
       };
       // Initialise WTC table with all 9 teams
-      const allNations = [{ id:'eng', name:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', rating:80 }, ...WTC_NATIONS];
+      // Generate per-cycle ratings for each opposition nation
+      TS.cycleRatings = {};
+      WTC_NATIONS.forEach(n => {
+        TS.cycleRatings[n.id] = n.rMin + Math.floor(Math.random() * (n.rMax - n.rMin + 1));
+      });
+      const allNations = [{ id:'eng', name:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', rating:80 }, ...WTC_NATIONS.map(n => ({...n, rating: TS.cycleRatings[n.id]}))];
       allNations.forEach(n => {
         TS.wtcTable[n.id] = { name: n.name, flag: n.flag, p:0,w:0,l:0,d:0, pts:0, pct:0, rating: n.rating };
       });
@@ -8096,9 +8381,11 @@
     function buildTestFixtures() {
       // Ashes always included — randomly home or away
       const ashesHome = Math.random() < 0.5;
-      const opponents = [...WTC_NATIONS];
-      // Remove Australia — it's reserved for Ashes
+      // Clone nations with this cycle's ratings
+      const opponents = WTC_NATIONS.map(n => ({...n, rating: TS.cycleRatings[n.id] ?? n.rMin}));
+      // Remove Australia — it's reserved for Ashes (save reference first)
       const ausIdx = opponents.findIndex(n => n.id === 'aus');
+      const ausNation = opponents[ausIdx];
       opponents.splice(ausIdx, 1);
       // Shuffle remaining, pick 5
       for (let i = opponents.length - 1; i > 0; i--) {
@@ -8114,7 +8401,7 @@
         if (isHome) homeLeft--;
         return { nation: n, home: isHome, tests: 3, results: [], completed: false };
       });
-      const ashesEntry = { nation: WTC_NATIONS.find(n=>n.id==='aus'), home: ashesHome, tests: 5, results: [], completed: false, isAsches: true };
+      const ashesEntry = { nation: ausNation, home: ashesHome, tests: 5, results: [], completed: false, isAsches: true };
       // Interleave: Ashes first or second
       const ashesPos = Math.floor(Math.random() * 3); // 0,1,2
       TS.series = [...others.slice(0,ashesPos), ashesEntry, ...others.slice(ashesPos)];
@@ -8127,6 +8414,7 @@
 
     function startTestDraft() {
       resetTestState();
+      if (AUTH_USER) sb.from('test_saves').delete().eq('user_id', AUTH_USER.id);
       go('s-test-intro');
     }
 
@@ -8302,7 +8590,7 @@
         return;
       }
 
-      const showR = TEST_SETTINGS.show === 'visible';
+      const showR = TEST_SETTINGS.show === 'visible' || (TS.squad && TS.squad.length >= 15);
       const roleOrder = ['batsman','wicketkeeper','allrounder','bowler'];
       const roleMeta = {
         batsman:     { label:'Batters',      css:'bat' },
@@ -8366,7 +8654,6 @@
         return;
       }
       pingEvent('Test_Spin_Completed', { league: 'WTC', slot: TS.slot, role: player.role, year: player.year || year, rating: player.yearRatings[year] });
-      TS.respinsUsed = 0;
       TS.spunYear = null;
       updateDraftProgress();
       resetSpinDrum();
@@ -8398,19 +8685,48 @@
     }
 
     // ── XI PICKER ─────────────────────────────────────────────────────────
+    const _topEight = p => ['batsman','allrounder','wicketkeeper'].includes(p.role);
     const XI_POS_DEFS = [
-      { pos:1,  label:'Opener',      sublabel:'Opening bat',   test: p => p.role==='batsman' && p.opener },
-      { pos:2,  label:'Opener',      sublabel:'Opening bat',   test: p => p.role==='batsman' && p.opener },
-      { pos:3,  label:'No. 3',       sublabel:'Top order',     test: p => p.role==='batsman' && !p.opener },
-      { pos:4,  label:'No. 4',       sublabel:'Middle order',  test: p => p.role==='batsman' && !p.opener },
-      { pos:5,  label:'No. 5',       sublabel:'Middle order',  test: p => p.role==='batsman' && !p.opener },
-      { pos:6,  label:'All-rounder', sublabel:'Batting AR',    test: p => p.role==='allrounder' },
-      { pos:7,  label:'Keeper',      sublabel:'Wicket-keeper', test: p => p.role==='wicketkeeper' },
-      { pos:8,  label:'All-rounder', sublabel:'Bowling AR',    test: p => p.role==='allrounder' },
-      { pos:9,  label:'Bowler',      sublabel:'Spin / Seam',   test: p => p.role==='bowler' },
-      { pos:10, label:'Bowler',      sublabel:'Seamer',        test: p => p.role==='bowler' },
-      { pos:11, label:'Bowler',      sublabel:'Seamer',        test: p => p.role==='bowler' },
+      { pos:1,  label:'No. 1',  sublabel:'Opener',       test: _topEight },
+      { pos:2,  label:'No. 2',  sublabel:'Opener',       test: _topEight },
+      { pos:3,  label:'No. 3',  sublabel:'Top order',    test: _topEight },
+      { pos:4,  label:'No. 4',  sublabel:'Middle order', test: _topEight },
+      { pos:5,  label:'No. 5',  sublabel:'Middle order', test: _topEight },
+      { pos:6,  label:'No. 6',  sublabel:'Middle order', test: _topEight },
+      { pos:7,  label:'No. 7',  sublabel:'Keeper / AR',  test: _topEight },
+      { pos:8,  label:'No. 8',  sublabel:'Lower order',  test: _topEight },
+      { pos:9,  label:'No. 9',  sublabel:'Bowler',       test: p => p.role==='bowler' },
+      { pos:10, label:'No. 10', sublabel:'Bowler',       test: p => p.role==='bowler' },
+      { pos:11, label:'No. 11', sublabel:'Bowler',       test: p => p.role==='bowler' },
     ];
+
+    // Returns batting rating penalty for a player placed out of their natural position.
+    // posIdx is 0-based (0 = batting pos 1).
+    function posBatPenalty(p, posIdx) {
+      const pos = posIdx + 1;
+      if (p.role === 'batsman') {
+        if (p.opener) {
+          if (pos <= 2) return 0;
+          if (pos === 3) return 3;
+          if (pos <= 5) return 5;
+          return 8;           // pos 6-8: opener batting low
+        } else {
+          if (pos <= 2) return 7;  // middle-order batter opening
+          if (pos <= 5) return 0;  // natural zone
+          return 3;                // pos 6-8: slightly lower
+        }
+      } else if (p.role === 'allrounder') {
+        if (pos <= 2) return 12;
+        if (pos === 3) return 8;
+        if (pos <= 5) return 5;
+        return 0;             // pos 6-8: natural zone
+      } else if (p.role === 'wicketkeeper') {
+        if (pos <= 2) return 5;
+        if (pos === 3) return 3;
+        return 0;             // pos 4-8: fine
+      }
+      return 0;
+    }
 
     function autoFillXI() {
       const getEff = p => Math.min(99, p.rating + (TS.playerForm[p.id] || 0));
@@ -8434,13 +8750,21 @@
       const bowl10 = prefBowl.find(b => b.id !== bowl9?.id);
       const bowl11 = prefBowl.find(b => b.id !== bowl9?.id && b.id !== bowl10?.id);
 
+      // Fill naturally — openers at 1-2, batters at 3-5, ARs at 6+8, keeper at 7
+      // If short on openers/batters, fall back to next available batter/AR to avoid nulls
+      const op1 = openers.shift(), op2 = openers.shift() || batters.shift() || allrounders.shift();
+      const bat3 = batters.shift() || allrounders.shift();
+      const bat4 = batters.shift() || allrounders.shift();
+      const bat5 = batters.shift() || allrounders.shift();
+      const ar6  = allrounders.shift() || batters.shift();
+      const ar8  = allrounders.shift() || batters.shift();
       const picks = [
-        openers[0], openers[1],               // 1, 2
-        batters[0], batters[1], batters[2],   // 3, 4, 5
-        allrounders[0],                        // 6
-        keepers[0],                            // 7
-        allrounders[1],                        // 8
-        bowl9, bowl10, bowl11,                 // 9, 10, 11
+        op1, op2,          // 1, 2
+        bat3, bat4, bat5,  // 3, 4, 5
+        ar6,               // 6
+        keepers[0],        // 7
+        ar8,               // 8
+        bowl9, bowl10, bowl11, // 9, 10, 11
       ];
       const used = new Set();
       TS.xiSlots = picks.map(p => {
@@ -8530,7 +8854,7 @@
     function renderXIPickerUI() {
       const xiEl = document.getElementById('test-xi-list');
       const benchEl = document.getElementById('test-bench-list');
-      const showR = TEST_SETTINGS.show === 'visible';
+      const showR = true; // ratings always visible post-draft
       const state = TS.xiState;
       const placingPlayer = state && state.mode === 'placing' ? TS.bench.find(b=>b.id===state.benchId) : null;
 
@@ -8550,6 +8874,8 @@
         }
         const form = TS.playerForm[p.id] || 0;
         const eff = p.rating + form;
+        const penalty = posBatPenalty(p, idx);
+        const effWithPos = Math.max(52, eff - penalty);
         const formStr = form > 0 ? `<span class="form-up">▲${form}</span>` : form < 0 ? `<span class="form-down">▼${Math.abs(form)}</span>` : '<span style="color:#4a4a60">—</span>';
         const isSource = state && state.mode === 'swapping' && state.slotIdx === idx;
         const isXISwapTarget = state && state.mode === 'swapping' && idx !== state.slotIdx && canXISwap(state.slotIdx, idx);
@@ -8562,7 +8888,12 @@
         const clickHandler = isXISwapTarget ? `onclick="completeSwap(${idx})"` : isBenchSwapTarget ? `onclick="placeInSlot(${idx})"` : '';
         const boostCol = _boostColor(p);
         const ratingHtml = showR
-          ? `<div class="smr-rating${boostCol ? ' rating-boost' : ''}" style="color:${boostCol || ratingColor(eff)}">${eff}</div>`
+          ? penalty > 0
+            ? `<div style="text-align:right;line-height:1.2">
+                <div class="smr-rating" style="color:#fbbf24">${effWithPos}</div>
+                <div style="font-size:9px;color:#f97316;font-weight:700">−${penalty} pos</div>
+               </div>`
+            : `<div class="smr-rating${boostCol ? ' rating-boost' : ''}" style="color:${boostCol || ratingColor(eff)}">${eff}</div>`
           : '';
         const ctag = captainTag(p);
         const ctagHtml = ctag ? ` <span style="color:${ctag==='C'?'#f9c846':'#9090b8'};font-weight:700">(${ctag})</span>` : '';
@@ -8665,6 +8996,14 @@
       if (TS.xiSlots.some(p => !p)) {
         const hint = document.getElementById('xi-confirm-hint');
         if (hint) { hint.textContent = 'Select all 11 players first'; hint.style.display = 'block'; }
+        return;
+      }
+
+      // Block if no wicketkeeper in XI
+      const hasKeeper = TS.xiSlots.some(p => p && p.role === 'wicketkeeper');
+      if (!hasKeeper) {
+        const hint = document.getElementById('xi-confirm-hint');
+        if (hint) { hint.textContent = 'XI must include a wicket-keeper'; hint.style.display = 'block'; }
         return;
       }
 
@@ -9370,21 +9709,46 @@
           <span style="font-size:10px;color:${s.home?'#4ade80':'#fb923c'};font-weight:700">${s.home?'HOME':'AWAY'}</span>
         </div>`).join('');
 
-      // WTC odds — loosely based on ratings
-      const allNations = [{ id:'eng', name:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', rating: Math.round(TS.squad.reduce((s,p)=>s+p.rating,0)/15) }, ...WTC_NATIONS];
-      const totalRating = allNations.reduce((s,n)=>s+n.rating,0);
-      const oddsRows = [...allNations].sort((a,b)=>b.rating-a.rating).map(n => {
-        const prob = n.rating / totalRating;
-        // Convert to rough fractional odds
-        const decimal = 1 / prob;
-        let frac;
-        if (decimal < 4) frac = `${Math.round((decimal-1)*2)}/2`;
-        else if (decimal < 8) frac = `${Math.round(decimal-1)}/1`;
-        else frac = `${Math.round(decimal/2)*2}/1`;
+      // WTC odds — exponential weighting so rating gaps create realistic spread
+      const engRating = Math.round(TS.squad.reduce((s,p)=>s+p.rating,0)/15);
+      // Build full 9-nation list using cycle ratings already on TS.series nations
+      const seriesNations = TS.series.filter(s=>!s.isWTCFinal).map(s=>s.nation);
+      const allSeriesNationIds = new Set(seriesNations.map(n=>n.id));
+      // Include all WTC nations (some may not be in England's schedule)
+      const allNations = [
+        { id:'eng', name:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', rating: engRating },
+        ...WTC_NATIONS.map(n => ({...n, rating: TS.cycleRatings[n.id] ?? n.rMin})),
+      ];
+
+      // Predicted WTC table position (by rating rank)
+      const rankedNations = [...allNations].sort((a,b)=>b.rating-a.rating);
+      const predWTCPos = rankedNations.findIndex(n=>n.id==='eng') + 1;
+      const predTier = predWTCPos === 1 ? 4 : predWTCPos <= 2 ? 3 : predWTCPos <= 5 ? 2 : 1;
+      const predLabel = predWTCPos <= 2 ? 'WTC Final contenders' : predWTCPos <= 5 ? 'Top-half expected' : predWTCPos <= 7 ? 'Mid-table' : 'Outsiders';
+      TS.preview = { predPos: predWTCPos, predTier, predLabel };
+
+      // Exponential weight: differences between e.g. 68 and 88 produce realistic odds gaps
+      const oddsWeight = r => Math.pow(Math.max(1, r - 50), 3);
+      const totalWeight = allNations.reduce((s,n)=>s+oddsWeight(n.rating),0);
+      const toFrac = decimal => {
+        if (decimal < 2)  { const n=Math.round((decimal-1)*4); return n%4===0?`${n/4}/1`:n%2===0?`${n/2}/2`:`${n}/4`; }
+        if (decimal < 5)  { const n=Math.round((decimal-1)*2); return n%2===0?`${n/2}/1`:`${n}/2`; }
+        if (decimal < 12) return `${Math.round(decimal-1)}/1`;
+        if (decimal < 30) return `${Math.round((decimal-1)/5)*5}/1`;
+        return `${Math.round((decimal-1)/10)*10}/1`;
+      };
+
+      const engWeight = oddsWeight(engRating);
+      const engDecimal = totalWeight / engWeight;
+      const engOdds = toFrac(engDecimal);
+
+      const oddsRows = rankedNations.map(n => {
+        const decimal = totalWeight / oddsWeight(n.rating);
+        const frac = toFrac(decimal);
         const isEng = n.id === 'eng';
         return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a2a${isEng?';background:#0a0a0f':''}">
           <span style="font-size:14px">${n.flag}</span>
-          <span style="font-size:12px;font-weight:${isEng?'900':'600'};color:${isEng?'#f9c846':'#c0c0d8'};flex:1">${n.name}</span>
+          <span style="font-size:12px;font-weight:${isEng?'900':'600'};color:${isEng?'#f9c846':'#c0c0d8'};flex:1">${n.name} (${n.rating} ovr)</span>
           <span style="font-size:12px;font-weight:700;color:${isEng?'#f9c846':'#9090a8'}">${frac}</span>
         </div>`;
       }).join('');
@@ -9406,7 +9770,7 @@
 
       const hussainQuote = avgBat >= 82
         ? `"The batting lineup looks ${batVerdict} on paper — ${bestBat?.name} at ${bestBat?.year} could be the cornerstone of this whole campaign. If ${cap?.name.split(' ')[1]} gets the best out of them, England are genuine contenders."`
-        : `"I'll be honest, the batting worries me. ${avgBat} average rating across the top order — that's not going to cut it against ${WTC_NATIONS.find(n=>n.rating===Math.max(...WTC_NATIONS.map(x=>x.rating)))?.name}. They need runs, and they need them quickly."`;
+        : `"I'll be honest, the batting worries me. ${avgBat} average rating across the top order — that's not going to cut it against ${[...allNations].filter(n=>n.id!=='eng').sort((a,b)=>b.rating-a.rating)[0]?.name}. They need runs, and they need them quickly."`;
 
       const vaughanQuote = pick([
         `"I love this squad. ${cap?.name} as captain, ${vc?.name} as vice — experience and energy in equal measure. With ${awayCount} away series, it won't be easy, but this England side has shown they can adapt. I fancy them."`,
@@ -9428,6 +9792,22 @@
         <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">🏏 World Test Championship</div>
         <div style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px">${cap?.name} named England captain for WTC cycle</div>
         <div style="font-size:12px;color:#6060a0;margin-bottom:20px">${vc?.name} to serve as vice-captain · Squad of 15 confirmed</div>
+
+        <div style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 16px;margin-bottom:18px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px">Predicted finish</div>
+              <div style="font-size:36px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px">${ordinal(predWTCPos)}</div>
+              <div style="font-size:12px;color:#8080a0">${predLabel}</div>
+            </div>
+            <div style="width:1px;background:#252535;margin:4px 0"></div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px">Bookies Odds</div>
+              <div style="font-size:36px;font-weight:900;color:#ffd700;line-height:1;margin-bottom:4px">${engOdds}</div>
+              <div style="font-size:12px;color:#8080a0">to win the WTC</div>
+            </div>
+          </div>
+        </div>
 
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Series Schedule</div>
         <div style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:10px 14px;margin-bottom:18px">${seriesLines}</div>
@@ -9648,9 +10028,9 @@
         : ["Z. Crawley","B. Duckett","O. Pope","J. Root","H. Brook","B. Stokes","J. Bairstow","J. Anderson","S. Broad","O. Robinson","J. Leach"];
       const oppBatNames = OPP_BAT_POOLS[oppId] || OPP_BAT_POOLS['aus'];
 
-      // Individual batter ratings — England from XI, opp derived from team rating by position
+      // Individual batter ratings — England from XI with position penalty, opp derived from team rating
       const engBatRatings = (TS.currentXI && TS.currentXI.length === 11)
-        ? TS.currentXI.map(p => p.rating)
+        ? TS.currentXI.map((p, idx) => Math.max(52, p.rating - posBatPenalty(p, idx)))
         : [78,78,82,93,88,82,75,62,62,58,55];
       const oppBatRatings = [oppBat+5, oppBat+3, oppBat+6, oppBat+8, oppBat+3, oppBat, oppBat-3, oppBat-10, oppBat-18, oppBat-22, oppBat-25]
         .map(r => Math.max(52, Math.min(99, r)));
@@ -10927,7 +11307,7 @@
         try {
           const squadJson = TS.squad ? TS.squad.map(p => ({ n: p.name, r: p.rating, role: p.role })) : [];
           const avgRating = squadJson.length ? Math.round(squadJson.reduce((s,p)=>s+(p.r||0),0)/squadJson.length) : null;
-          await sb.from('test_runs').insert({
+          const { error: trErr } = await sb.from('test_runs').insert({
             user_id:     AUTH_USER.id,
             wtc_pos:     engPos,
             wins:        eng.w,
@@ -10939,11 +11319,15 @@
             team_rating: avgRating,
             squad:       squadJson,
           });
-        } catch(e) { console.warn('Could not save test run:', e); }
+          if (trErr) console.error('test_runs insert failed:', trErr.message, trErr);
+          // Clear saved game — run is complete, nothing to continue
+          sb.from('test_saves').delete().eq('user_id', AUTH_USER.id);
+        } catch(e) { console.error('Could not save test run:', e); }
       }
 
       go('s-test-end');
       if (won) launchConfetti();
+      setTimeout(openCoffeeModal, 2000);
 
       document.getElementById('test-end-content').innerHTML = `
         <div class="${headerClass}">
@@ -11111,22 +11495,27 @@
 
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Your Squad</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">You'll draft a <span style="color:#f9c846;font-weight:800">squad of 15</span> players — spinning a county and year for each pick. From your squad you pick an <span style="color:#f9c846;font-weight:800">XI for every Test match</span>, so depth and variety matter.</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Spin a <span style="color:#f9c846;font-weight:800">squad of 15</span> England Test players — each spin picks a player and their era. From your squad you select an <span style="color:#f9c846;font-weight:800">XI for every Test match</span>, so depth and balance across roles matters.</div>
       </div>
 
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
-        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Form System</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Players gain and lose form as the series progresses. A batter who scores runs or a bowler who takes wickets sees their rating <span style="color:#4ade80;font-weight:800">rise</span>. A poor performance means their rating <span style="color:#f87171;font-weight:800">drops</span>. Manage your XI carefully — don't persist with out-of-form players.</div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Form &amp; Events</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Player ratings shift throughout the cycle — runs and wickets boost form, poor performances drag it down. Off-pitch events can also land at any time: <span style="color:#f9c846;font-weight:800">tabloid storms, injuries, bust-ups</span>. Your call how to handle them.</div>
       </div>
 
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
-        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Location Boosts</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Home and away conditions affect performance. Seam bowlers thrive in England, spinners dominate in South Asia, and flat pitches suit batters in certain regions. <span style="color:#f9c846;font-weight:800">E.g.</span> a spinner drafted from Yorkshire may be lethal at home but struggles at pace-friendly venues abroad.</div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Conditions</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Home and away conditions matter. Seamers thrive in England, spinners dominate in South Asia, flat pitches suit batters in the subcontinent. Pick your XI to match the conditions — the same XI won't work everywhere.</div>
       </div>
 
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
-        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">The WTC Campaign</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">You play <span style="color:#f9c846;font-weight:800">6 series</span> across the WTC cycle — home and away against the world's best nations. Win enough to top the table and reach the <span style="color:#f9c846;font-weight:800">WTC Final</span>. Every Test point counts.</div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">The WTC Cycle</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">You play <span style="color:#f9c846;font-weight:800">6 series</span> including a 5-match Ashes — home and away against the world's best. Top the table to reach the <span style="color:#f9c846;font-weight:800">WTC Final at Lord's</span>. Win there and you're World Test Champions. Every point counts.</div>
+      </div>
+
+      <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Save &amp; Continue</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Sign in and hit <span style="color:#f9c846;font-weight:800">Save Game</span> at any point from the WTC Hub to pick up where you left off. Your progress is stored — come back any time and continue your run.</div>
       </div>
 
     </div>
@@ -11169,7 +11558,7 @@
     <div style="padding:16px 0 8px;max-width:420px;margin:0 auto">
       <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6060a0;margin-bottom:2px">BREAKING NEWS</div>
       <div style="height:1px;background:linear-gradient(90deg,#f9c846,transparent);margin-bottom:16px"></div>
-      <div id="news-content" style="font-size:13px;color:#c0c0d8;line-height:1.6"></div>
+      <div id="news-content" style="font-size:13px;color:#c0c0d8;line-height:1.6;text-align:left;width:100%"></div>
       <!-- Ad slot: test news / pre-hub -->
       <ins class="adsbygoogle" style="display:block;margin:16px 0" data-ad-client="ca-pub-7657213088817585" data-ad-slot="5497176746" data-ad-format="auto" data-full-width-responsive="true"></ins>
       <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
@@ -11209,6 +11598,9 @@
     <div id="test-series-list" style="width:100%"></div>
 
     <button class="btn-sim" id="hub-next-btn" onclick="startNextSeries()" style="margin-top:8px">Next Series →</button>
+
+    <button id="save-test-btn" onclick="saveTestGame()" style="margin-top:10px;width:100%;padding:12px;background:#0a0a18;border:1px solid #2a2a50;border-radius:10px;color:#8080c0;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px">💾 Save Game</button>
+    <div id="save-test-nudge" style="display:none;margin-top:8px;padding:10px 14px;background:#1a1010;border:1px solid #4a2020;border-radius:8px;font-size:12px;color:#f87171;text-align:center">Sign in to save your game and continue later</div>
   </div>
 
   <!-- TEST MATCH SIM -->
@@ -11359,13 +11751,28 @@
   </div>
 
   <!-- STATS SCREEN -->
+  <div id="s-leaderboard" class="screen">
+    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="text-align:left;min-width:0;flex:1">
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">Global</div>
+        <div style="font-size:24px;font-weight:900;color:#fff">Leaderboard</div>
+      </div>
+      <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
+    </div>
+    <div id="lb-loading" style="text-align:center;color:#606080;font-size:13px;padding:40px 0">Loading…</div>
+    <div id="lb-content" style="width:100%;display:none"></div>
+  </div>
+
   <div id="s-stats" class="screen">
     <div style="width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div style="text-align:left;min-width:0;flex:1">
         <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">Your Stats</div>
         <div style="font-size:24px;font-weight:900;color:#fff" id="stats-username-title">—</div>
       </div>
-      <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-auth-small" onclick="showLeaderboard()" style="background:#1a1a2e;border-color:#3a3a60;color:#a0a0d0">🏅 Board</button>
+        <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
+      </div>
     </div>
     <div id="stats-loading" style="text-align:center;color:#606080;font-size:13px;padding:40px 0">Loading stats…</div>
     <div id="stats-content" style="width:100%;display:none"></div>
