@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ODI Engine Test — 100 games per rating tier</title>
+<style>
+  body { font-family: monospace; background: #0d0d12; color: #c0c0d8; padding: 20px; font-size: 13px; }
+  h1 { color: #f9c846; margin-bottom: 4px; }
+  h2 { color: #9090b8; font-size: 14px; margin: 24px 0 8px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+  th { background: #1a1a2a; color: #6060a0; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 10px; text-align: left; border-bottom: 1px solid #252535; }
+  td { padding: 5px 10px; border-bottom: 1px solid #151520; }
+  tr:hover td { background: #111118; }
+  .good { color: #4ade80; }
+  .warn { color: #f9c846; }
+  .bad  { color: #f87171; }
+  .section { background: #0a0a0f; border: 1px solid #1a1a2a; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+  .label { color: #f9c846; font-weight: bold; }
+  pre { color: #9090b8; font-size: 11px; white-space: pre-wrap; }
+  .tag { display:inline-block; background:#1a1a2a; border-radius:4px; padding:2px 8px; margin-right:4px; font-size:11px; }
+</style>
+</head>
+<body>
+<h1>ODI Match Engine — Simulation Audit</h1>
+<p style="color:#6060a0">100 innings per rating bucket · batting vs bowling pairings · batter/bowler breakdowns</p>
+<div id="output"></div>
+
+<script>
+// ── ENGINE (copied from index.html) ─────────────────────────────────────────
+
+function shortName(n) {
+  if (!n) return '';
+  const parts = n.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return parts[0][0] + '. ' + parts[parts.length - 1];
+}
+
+function simODIInnings(batR, bowlR, oversMax, target, batNames, bowlPool, keeperName, batRatings) {
+  const q = Math.max(0, Math.min(1, (batR - bowlR + 50) / 100));
+  const wktProbBase = 0.028 - q * 0.016;
+  const batters = batNames.slice(0, 11).map(n => ({ name: n, runs: 0, balls: 0, out: false, how: '' }));
+  const bwlrs = bowlPool.map(b => {
+    const bRat = Math.max(55, Math.min(97, b.rating || 72));
+    return {
+      name: b.n, type: b.t, isSpin: !!b.sp,
+      maxOvers: b.maxOv || (b.t === 's' ? 10 : b.t === 'a' ? 8 : 5),
+      overs: 0, runs: 0, wickets: 0, maidens: 0,
+      ratingFactor: 0.82 + (bRat - 55) / 42 * 0.33,
+      hotFactor: 0.88 + Math.random() * 0.30
+    };
+  });
+  const fieldNames = bowlPool.map(b => b.n);
+  const makeHow = bn => {
+    const r = Math.random();
+    const of = () => { const o = fieldNames.filter(n => n !== bn); return o[Math.floor(Math.random() * o.length)] || fieldNames[0]; };
+    if (r < 0.22) return `b ${bn}`; if (r < 0.44) return `c ${of()} b ${bn}`; if (r < 0.58) return `lbw b ${bn}`;
+    if (r < 0.66) return `c ${keeperName} b ${bn}`; if (r < 0.74) return `c & b ${bn}`; if (r < 0.82) return `run out (${of()})`; return `b ${bn}`;
+  };
+  let lastBowlerIdx = -1, activeBowlerIdx = -1, activeBowlerOvs = 0;
+  function nextBowler(ov) {
+    if (activeBowlerIdx >= 0 && activeBowlerIdx !== lastBowlerIdx) {
+      const ab = bwlrs[activeBowlerIdx];
+      if (ab.overs < ab.maxOvers && activeBowlerOvs < 4 && !(ov < 10 && ab.isSpin)) return activeBowlerIdx;
+    }
+    let best = -1, bestScore = -Infinity;
+    bwlrs.forEach((b, i) => {
+      if (i === lastBowlerIdx || b.overs >= b.maxOvers || (ov < 10 && b.isSpin)) return;
+      let sc = b.type === 's' ? 3 : b.type === 'a' ? 1.5 : 0.5;
+      sc -= (b.overs / b.maxOvers) * 3; if (b.overs === 0) sc += 0.8;
+      if (sc > bestScore) { bestScore = sc; best = i; }
+    });
+    if (best < 0) best = bwlrs.findIndex((b, i) => i !== lastBowlerIdx && b.overs < b.maxOvers && !(ov < 10 && b.isSpin));
+    if (best < 0) best = bwlrs.findIndex((b, i) => i !== lastBowlerIdx && b.overs < b.maxOvers);
+    if (best >= 0) activeBowlerOvs = 0; return best >= 0 ? best : 0;
+  }
+  let striker = 0, nonStriker = 1, nextIn = 2, wkts = 0, totalRuns = 0, ovCount = 0;
+  for (let ov = 0; ov < oversMax && wkts < 10; ov++) {
+    if (target !== undefined && totalRuns >= target) break;
+    const isPP = ov < 10, isDeath = ov >= 40;
+    lastBowlerIdx = activeBowlerIdx;
+    const nb = nextBowler(ov); if (nb !== activeBowlerIdx) { activeBowlerIdx = nb; activeBowlerOvs = 0; }
+    const bowler = bwlrs[activeBowlerIdx]; let overRuns = 0, dotBalls = 0;
+    for (let b = 0; b < 6 && wkts < 10; b++) {
+      if (target !== undefined && totalRuns >= target) break; if (striker >= batters.length) break;
+      const posM = striker <= 1 ? 0.72 : striker <= 4 ? 1.0 : striker <= 7 ? 1.6 : 2.5;
+      const settleM = batters[striker].balls < 8 ? 1.12 : 1.0;
+      const bRat = batRatings ? Math.max(52, Math.min(99, batRatings[striker] || 70)) : 70;
+      const batWktMod = 1.18 - (bRat - 52) / 47 * 0.42;
+      const wktP = wktProbBase * posM * settleM * bowler.ratingFactor * bowler.hotFactor * batWktMod;
+      batters[striker].balls++;
+      if (Math.random() < wktP) {
+        batters[striker].out = true; batters[striker].how = makeHow(bowler.name);
+        bowler.wickets++; wkts++; striker = nextIn++;
+      } else {
+        const batScMod = 0.68 + (bRat - 52) / 47 * 0.55;
+        const phaseMult = isPP ? 1.18 : isDeath ? 1.55 : 1.0;
+        const sc = (0.88 + q * 0.22) * batScMod * phaseMult;
+        const p1 = 0.22 * sc, p2 = 0.07 * sc, p3 = 0.005 * sc, p4 = 0.09 * sc, p6 = 0.025 * sc;
+        const p0 = Math.max(0.38, 1 - (p1 + p2 + p3 + p4 + p6)); const r = Math.random();
+        let runs = r < p0 ? 0 : r < p0 + p1 ? 1 : r < p0 + p1 + p2 ? 2 : r < p0 + p1 + p2 + p3 ? 3 : r < p0 + p1 + p2 + p3 + p4 ? 4 : 6;
+        batters[striker].runs += runs; overRuns += runs; totalRuns += runs;
+        if (runs === 0) dotBalls++; if (runs % 2 === 1) { const t = striker; striker = nonStriker; nonStriker = t; }
+      }
+    }
+    const tmp = striker; striker = nonStriker; nonStriker = tmp;
+    bowler.overs++; activeBowlerOvs++; bowler.runs += overRuns; if (dotBalls === 6) bowler.maidens++;
+    ovCount++;
+  }
+  return { runs: totalRuns, wkts, oversPlayed: ovCount, allOut: wkts >= 10, chaseWon: target !== undefined && totalRuns >= target, _batters: batters, _bowlers: bwlrs.filter(b => b.overs > 0) };
+}
+
+// ── TEST HARNESS ─────────────────────────────────────────────────────────────
+
+const N = 100; // innings per scenario
+
+function makeBatNames(prefix, n = 11) {
+  return Array.from({length: n}, (_, i) => `${prefix}${i+1}`);
+}
+
+function makeBowlPool(bowlR, specs = 5) {
+  const pool = [];
+  for (let i = 0; i < specs; i++) {
+    pool.push({ n: `Bowler${i+1}`, t: i < 3 ? 's' : 'a', sp: false, maxOv: i < 3 ? 10 : 8, rating: bowlR });
+  }
+  return pool;
+}
+
+function makeBatRatings(baseR, n = 11) {
+  // Realistic ODI lineup: top 4 above avg, tail below
+  const offsets = [+6, +4, +8, +5, +2, -2, -8, -16, -22, -26, -30];
+  return offsets.slice(0, n).map(d => Math.max(50, Math.min(99, baseR + d)));
+}
+
+function runScenario(batR, bowlR, n = N) {
+  const totalRuns = [], wkts = [], overs = [], sr100s = [], sr50s = [];
+  const batPos = Array.from({length: 11}, () => ({ runs: 0, balls: 0, outs: 0, innings: 0 }));
+  const bowlerStats = Array.from({length: 5}, () => ({ overs: 0, runs: 0, wickets: 0, maidens: 0 }));
+
+  for (let g = 0; g < n; g++) {
+    const batNames = makeBatNames('B', 11);
+    const bowlPool = makeBowlPool(bowlR, 5);
+    const batRatings = makeBatRatings(batR);
+    const inn = simODIInnings(batR, bowlR, 50, undefined, batNames, bowlPool, 'B7', batRatings);
+
+    totalRuns.push(inn.runs);
+    wkts.push(inn.wkts);
+    overs.push(inn.oversPlayed);
+
+    inn._batters.forEach((b, i) => {
+      if (b.balls > 0 || b.out) {
+        batPos[i].innings++;
+        batPos[i].runs += b.runs;
+        batPos[i].balls += b.balls;
+        if (b.out) batPos[i].outs++;
+        if (b.runs >= 100) sr100s.push(b);
+        if (b.runs >= 50 && b.runs < 100) sr50s.push(b);
+      }
+    });
+    inn._bowlers.forEach((b, bi) => {
+      if (bi < 5) {
+        bowlerStats[bi].overs += b.overs;
+        bowlerStats[bi].runs += b.runs;
+        bowlerStats[bi].wickets += b.wickets;
+        bowlerStats[bi].maidens += b.maidens;
+      }
+    });
+  }
+
+  const avg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+  const min = arr => Math.min(...arr);
+  const max = arr => Math.max(...arr);
+
+  return {
+    batR, bowlR,
+    avgScore: avg(totalRuns).toFixed(1),
+    minScore: min(totalRuns),
+    maxScore: max(totalRuns),
+    avgWkts: avg(wkts).toFixed(2),
+    avgOvers: avg(overs).toFixed(1),
+    allOuts: wkts.filter(w => w >= 10).length,
+    hundreds: sr100s.length,
+    fifties: sr50s.length,
+    batPos: batPos.map(p => ({
+      inns: p.innings,
+      avg: p.outs ? (p.runs / p.outs).toFixed(1) : p.runs ? `${p.runs}*` : '—',
+      sr: p.balls ? (p.runs / p.balls * 100).toFixed(0) : '—',
+    })),
+    bowlAvg: bowlerStats.map(b => ({
+      overs: (b.overs / n).toFixed(1),
+      avg: b.wickets ? (b.runs / b.wickets).toFixed(1) : '—',
+      econ: b.overs ? (b.runs / b.overs).toFixed(2) : '—',
+      maidens: (b.maidens / n).toFixed(2),
+    }))
+  };
+}
+
+// ── RUN SCENARIOS ─────────────────────────────────────────────────────────────
+
+const scenarios = [
+  // [batR, bowlR, label]
+  [55, 55, 'Low vs Low'],
+  [65, 65, 'Mid vs Mid'],
+  [75, 75, 'Good vs Good'],
+  [85, 85, 'Elite vs Elite'],
+  [95, 95, 'World Class vs World Class'],
+  [85, 65, 'Elite bat vs Weak bowl'],
+  [65, 85, 'Weak bat vs Elite bowl'],
+  [75, 85, 'Good bat vs Elite bowl'],
+  [85, 75, 'Elite bat vs Good bowl'],
+  [90, 80, 'Star bat vs Strong bowl'],
+];
+
+const results = scenarios.map(([b, w, l]) => ({ label: l, ...runScenario(b, w) }));
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+
+function colorScore(s) {
+  const n = parseFloat(s);
+  if (n >= 320) return 'good';
+  if (n >= 260) return 'warn';
+  return 'bad';
+}
+function colorWkts(w) {
+  const n = parseFloat(w);
+  if (n >= 8) return 'bad';
+  if (n >= 6) return 'warn';
+  return 'good';
+}
+
+let html = `
+<div class="section">
+  <h2>Summary — Average Score per Scenario (${N} innings each)</h2>
+  <table>
+    <tr>
+      <th>Scenario</th><th>Bat R</th><th>Bowl R</th>
+      <th>Avg Score</th><th>Min</th><th>Max</th>
+      <th>Avg Wkts</th><th>Avg Overs</th>
+      <th>All Outs</th><th>100s</th><th>50s</th>
+    </tr>
+`;
+
+results.forEach(r => {
+  html += `<tr>
+    <td class="label">${r.label}</td>
+    <td>${r.batR}</td><td>${r.bowlR}</td>
+    <td class="${colorScore(r.avgScore)}">${r.avgScore}</td>
+    <td>${r.minScore}</td><td>${r.maxScore}</td>
+    <td class="${colorWkts(r.avgWkts)}">${r.avgWkts}</td>
+    <td>${r.avgOvers}</td>
+    <td>${r.allOuts}/${N}</td>
+    <td>${r.hundreds}</td><td>${r.fifties}</td>
+  </tr>`;
+});
+html += `</table></div>`;
+
+// Batter position breakdown for key scenarios
+const posScenarios = results.filter(r => ['Low vs Low','Mid vs Mid','Good vs Good','Elite vs Elite','World Class vs World Class'].includes(r.label));
+
+html += `<div class="section"><h2>Batter Position Averages (top-5 scenarios)</h2><table>
+  <tr><th>Pos</th>`;
+posScenarios.forEach(r => html += `<th colspan="2">${r.label}<br><small style="color:#4a4a60">avg / SR</small></th>`);
+html += `</tr>`;
+
+for (let i = 0; i < 11; i++) {
+  html += `<tr><td>${i + 1}</td>`;
+  posScenarios.forEach(r => {
+    const p = r.batPos[i];
+    html += `<td>${p.avg}</td><td style="color:#4a4a60">${p.sr}</td>`;
+  });
+  html += `</tr>`;
+}
+html += `</table></div>`;
+
+// Bowler breakdown for key scenarios
+html += `<div class="section"><h2>Bowling Economy / Average (top-5 scenarios)</h2><table>
+  <tr><th>Bowler</th>`;
+posScenarios.forEach(r => html += `<th colspan="3">${r.label}<br><small style="color:#4a4a60">avg / econ / maidens</small></th>`);
+html += `</tr>`;
+
+for (let i = 0; i < 5; i++) {
+  html += `<tr><td>${i < 3 ? 'Seamer' : 'Allrounder'} ${i + 1}</td>`;
+  posScenarios.forEach(r => {
+    const b = r.bowlAvg[i];
+    html += `<td>${b.avg}</td><td style="color:#4a4a60">${b.econ}</td><td style="color:#4a4a60">${b.maidens}/g</td>`;
+  });
+  html += `</tr>`;
+}
+html += `</table></div>`;
+
+// Edge check: bat vs bowl mismatch
+const mismatch = results.filter(r => r.batR !== r.bowlR);
+html += `<div class="section"><h2>Mismatch Scenarios — does skill gap show?</h2><table>
+  <tr><th>Scenario</th><th>Avg Score</th><th>Avg Wkts</th><th>All Outs/${N}</th><th>100s</th><th>Verdict</th></tr>`;
+mismatch.forEach(r => {
+  const gap = r.batR - r.bowlR;
+  const expected = gap > 0 ? 'bat favoured' : 'bowl favoured';
+  const score = parseFloat(r.avgScore);
+  const wkts = parseFloat(r.avgWkts);
+  const verdict = (gap > 0 && score >= 290) || (gap < 0 && wkts >= 7) ? '✓ Makes sense' : '⚠ Check';
+  html += `<tr>
+    <td class="label">${r.label}</td>
+    <td class="${colorScore(r.avgScore)}">${r.avgScore}</td>
+    <td class="${colorWkts(r.avgWkts)}">${r.avgWkts}</td>
+    <td>${r.allOuts}/${N}</td><td>${r.hundreds}</td>
+    <td>${verdict} <span style="color:#4a4a60">(${expected})</span></td>
+  </tr>`;
+});
+html += `</table></div>`;
+
+html += `<div class="section"><pre>`;
+html += `Reference ranges for ODI cricket:\n`;
+html += `  Competitive score:  240–320  |  Dominant score: 320+  |  Poor score: <220\n`;
+html += `  Reasonable wkts:   5–8      |  All-out common if bowl R >> bat R\n`;
+html += `  Centuries per 100 innings: 3–8 for top teams\n`;
+html += `  Fifties per 100 innings:   8–18 for top teams\n`;
+html += `  Economy rate:       4.5–6.5 normal ODI range\n`;
+html += `  Bowler avg:         25–40 normal range\n`;
+html += `</pre></div>`;
+
+document.getElementById('output').innerHTML = html;
+</script>
+</body>
+</html>

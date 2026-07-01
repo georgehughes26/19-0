@@ -94,7 +94,7 @@
     "@type": "WebApplication",
     "name": "19-0",
     "url": "https://www.19-0.co.uk/",
-    "description": "Draft your ultimate T20 Blast XI from over 1,000 county cricket players across all 18 counties. Play through a full 16-game group stage, qualify for the knockouts, and try to go 19-0.",
+    "description": "Draft your ultimate T20 Blast XI from 1,305 county cricket players across all 18 counties. Play through a full 16-game group stage, qualify for the knockouts, and try to go 19-0.",
     "applicationCategory": "GameApplication",
     "operatingSystem": "Any",
     "browserRequirements": "Requires JavaScript",
@@ -2816,7 +2816,7 @@
     }
     .series-card.ashes { border-color: #c8860a; background: #1a1200 }
     .series-card.completed { opacity: .6 }
-    .series-card.upcoming { border-color: #1a5a28; background: #0a1e0e }
+    .series-card.upcoming { border-color: #1a5a28; background: #0a1e0e; pointer-events: auto; cursor: pointer }
     .series-card.active { border-color: #4040a0; background: #0a0a1a }
     .sc-flag { font-size: 22px; margin-right: 10px }
     .sc-country { font-size: 15px; font-weight: 800; color: #fff }
@@ -3025,7 +3025,7 @@
         <div class="hs-l">Games to win</div>
       </div>
       <div>
-        <div class="hs-n">1000+</div>
+        <div class="hs-n">1,305</div>
         <div class="hs-l">Players</div>
       </div>
     </div>
@@ -5436,6 +5436,14 @@
   <script>
     // Append footer to home screen
     document.addEventListener('DOMContentLoaded', function() {
+      // World Cup mode is dev-only for now — unlock via ?wctest=1905 once, then it persists for this browser only.
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('wctest') === '1905') localStorage.setItem('wc_unlocked', '1');
+      if (localStorage.getItem('wc_unlocked') === '1') {
+        var wcBtn = document.getElementById('mode-btn-wc');
+        if (wcBtn) wcBtn.style.display = '';
+      }
+
       var home = document.getElementById('s-home');
       if (home) {
         var footer = document.createElement('div');
@@ -9921,22 +9929,125 @@
       WCS.bench=WCS.squad.filter(p=>!WCS.currentXI.find(q=>q&&q.id===p.id));
     }
 
+    function _wcStatsHtml(p){
+      const ps=WCS.playerStats[p.id]||{runs:0,inns:0,dismissed:0,wickets:0,runsConceded:0};
+      const batAvg=ps.dismissed?(ps.runs/ps.dismissed).toFixed(1):'—';
+      const bowlAvg=ps.wickets?(ps.runsConceded/ps.wickets).toFixed(1):'—';
+      const runsDisp=ps.inns?ps.runs:'—';
+      const wktsDisp=ps.wickets||'—';
+      return`<div class="smr-stat-block"><div class="smr-stat-val">${runsDisp}</div><div class="smr-stat-lbl">avg ${batAvg}</div></div>
+        <div class="smr-stat-block"><div class="smr-stat-val">${wktsDisp}</div><div class="smr-stat-lbl">avg ${bowlAvg}</div></div>`;
+    }
+
     function renderWCXIPickerUI(){
       const xiEl=document.getElementById('wc-xi-list');const benchEl=document.getElementById('wc-bench-list');if(!xiEl||!benchEl)return;
+      const state=WCS.xiState;
+      const placingPlayer=state&&state.mode==='placing'?WCS.bench.find(b=>b.id===state.benchId):null;
+
       xiEl.innerHTML=XI_POS_DEFS.map((def,idx)=>{
         const p=WCS.xiSlots[idx];
-        if(!p)return`<div class="squad-mgmt-row" style="opacity:0.35"><div class="smr-num" style="color:#282838;font-size:11px">${def.pos}</div><div style="flex:1;min-width:0"><div class="smr-name" style="color:#2a2a3a">${def.label}</div></div></div>`;
+        const canPlace=placingPlayer&&def.test(placingPlayer);
+        if(!p){
+          return`<div class="squad-mgmt-row" style="${canPlace?'border-color:#4ade80;cursor:pointer;':'opacity:0.35;'}" ${canPlace?`onclick="wcPlaceInSlot(${idx})"`:''}>
+            <div class="smr-num" style="color:${canPlace?'#4ade80':'#282838'};font-size:11px">${def.pos}</div>
+            <div style="flex:1;min-width:0">
+              <div class="smr-name" style="color:${canPlace?'#c0c0d8':'#2a2a3a'}">${def.label}</div>
+              <div style="font-size:10px;color:${canPlace?'#4a6050':'#1e1e2e'}">${def.sublabel}</div>
+            </div>
+            ${canPlace?`<div style="font-size:10px;color:#4ade80;font-weight:700;padding:2px 8px;border:1px solid #1a4028;border-radius:5px;background:#081a08">PLACE</div>`:''}
+          </div>`;
+        }
         const form=WCS.playerForm[p.id]||0;const eff=p.rating+form;
+        const penalty=posBatPenalty(p,idx);
+        const effWithPos=Math.max(52,eff-penalty);
         const formStr=form>0?`<span class="form-up">▲${form}</span>`:form<0?`<span class="form-down">▼${Math.abs(form)}</span>`:'<span style="color:#4a4a60">—</span>';
         const ctag=wcCaptainTag(p);const ctagHtml=ctag?` <span style="color:${ctag==='C'?'#f9c846':'#9090b8'};font-weight:700">(${ctag})</span>`:'';
-        return`<div class="squad-mgmt-row smr-in"><div class="smr-num" style="color:#f9c846">${def.pos}</div><div style="flex:1;min-width:0;text-align:left"><div class="smr-name">${p.name}${ctagHtml}</div><div style="font-size:10px;color:#6060a0">${_rl(p)} · ${p.year}</div></div><div style="font-size:11px;font-weight:700;min-width:28px;text-align:right">${formStr}</div><div class="smr-rating" style="color:${ratingColor(eff)}">${eff}</div></div>`;
+        const isSource=state&&state.mode==='swapping'&&state.slotIdx===idx;
+        const isXISwapTarget=state&&state.mode==='swapping'&&idx!==state.slotIdx&&wcCanXISwap(state.slotIdx,idx);
+        const isBenchSwapTarget=canPlace;
+        const isDimmed=state&&!isSource&&!isXISwapTarget&&!(state.mode==='placing'&&canPlace);
+        let rowStyle='';
+        if(isSource)rowStyle='border-color:#f9c846;background:#1a1400;';
+        else if(isXISwapTarget||isBenchSwapTarget)rowStyle='border-color:#4ade80;cursor:pointer;';
+        else if(isDimmed)rowStyle='opacity:0.3;';
+        const clickHandler=isXISwapTarget?`onclick="wcCompleteSwap(${idx})"`:isBenchSwapTarget?`onclick="wcPlaceInSlot(${idx})"`:'' ;
+        const ratingHtml=penalty>0
+          ?`<div style="text-align:right;line-height:1.2"><div class="smr-rating" style="color:#fbbf24">${effWithPos}</div><div style="font-size:9px;color:#f97316;font-weight:700">−${penalty} pos</div></div>`
+          :`<div class="smr-rating" style="color:${ratingColor(eff)}">${eff}</div>`;
+        return`<div class="squad-mgmt-row smr-in" style="${rowStyle}" ${clickHandler}>
+          <div class="smr-num" style="color:#f9c846">${def.pos}</div>
+          <div style="flex:1;min-width:0;text-align:left">
+            <div class="smr-name">${p.name}${ctagHtml}</div>
+            <div style="font-size:10px;color:#6060a0">${_rl(p)} · ${p.year}</div>
+          </div>
+          ${_wcStatsHtml(p)}
+          <div style="font-size:11px;font-weight:700;min-width:28px;text-align:right">${formStr}</div>
+          ${ratingHtml}
+          ${isSource
+            ?`<button onclick="WCS.xiState=null;renderWCXIPickerUI()" style="padding:2px 7px;background:#1a1400;border:1px solid #f9c846;border-radius:5px;color:#f9c846;font-size:11px;cursor:pointer">✕</button>`
+            :(isXISwapTarget||isBenchSwapTarget)
+              ?`<button onclick="${isXISwapTarget?`wcCompleteSwap(${idx})`:`wcPlaceInSlot(${idx})`}" style="padding:2px 7px;background:#0a2a0a;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:10px;font-weight:700;cursor:pointer">SWAP</button>`
+              :`<button onclick="event.stopPropagation();wcInitiateSwap(${idx})" style="padding:2px 7px;background:#0d0d18;border:1px solid #252540;border-radius:5px;color:#6060a0;font-size:11px;cursor:pointer" title="Swap position">⇄</button>`}
+        </div>`;
       }).join('');
-      benchEl.innerHTML=WCS.bench.map(p=>{const eff=p.rating+(WCS.playerForm[p.id]||0);return`<div class="squad-mgmt-row"><div style="flex:1;min-width:0"><div class="smr-name" style="color:#6060a0">${p.name}</div><div style="font-size:10px;color:#404060">${_rl(p)} · ${p.year}</div></div><div class="smr-rating" style="color:#6060a0">${eff}</div></div>`;}).join('');
+
+      if(state&&state.mode==='placing'){
+        xiEl.innerHTML+=`<button onclick="WCS.xiState=null;renderWCXIPickerUI()" style="width:100%;margin-top:6px;padding:7px;background:#0d0d12;border:1px solid #1a1a24;border-radius:8px;color:#6060a0;font-size:11px;cursor:pointer">Cancel</button>`;
+      }
+
+      benchEl.innerHTML=WCS.bench.length===0
+        ?`<div style="font-size:12px;color:#4a4a60;padding:8px 0">All players in XI</div>`
+        :WCS.bench.map(p=>{
+          const form=WCS.playerForm[p.id]||0;const eff=p.rating+form;
+          const isActive=state&&state.mode==='placing'&&state.benchId===p.id;
+          const hasSlot=XI_POS_DEFS.some(def=>def.test(p));
+          const ctag=wcCaptainTag(p);const ctagHtml=ctag?` <span style="color:${ctag==='C'?'#f9c846':'#9090b8'};font-weight:700">(${ctag})</span>`:'';
+          return`<div class="squad-mgmt-row" style="${isActive?'border-color:#4ade80;background:#061206;':''}">
+            <div style="flex:1;min-width:0;text-align:left">
+              <div class="smr-name" style="color:#9090a8">${p.name}${ctagHtml}</div>
+              <div style="font-size:10px;color:#4a4a60">${_rl(p)} · ${p.year}</div>
+            </div>
+            ${_wcStatsHtml(p)}
+            <div class="smr-rating" style="color:#6060a0;opacity:0.7">${eff}</div>
+            ${hasSlot
+              ?`<button onclick="wcStartPlacing('${p.id}')" style="padding:3px 9px;background:${isActive?'#0a2a0a':'#081a08'};border:1px solid ${isActive?'#4ade80':'#1a3a08'};border-radius:5px;color:#4ade80;font-size:10px;font-weight:700;cursor:pointer">${isActive?'CANCEL':'IN'}</button>`
+              :`<div style="font-size:10px;color:#2a2a40;padding:2px 8px">FULL</div>`}
+          </div>`;
+        }).join('');
+    }
+
+    function wcStartPlacing(benchId){
+      if(WCS.xiState&&WCS.xiState.mode==='placing'&&WCS.xiState.benchId===benchId){WCS.xiState=null;}
+      else{WCS.xiState={mode:'placing',benchId};}
+      renderWCXIPickerUI();
+    }
+    function wcPlaceInSlot(slotIdx){
+      if(!WCS.xiState||WCS.xiState.mode!=='placing')return;
+      const incoming=WCS.bench.find(b=>b.id===WCS.xiState.benchId);
+      if(!incoming||!XI_POS_DEFS[slotIdx].test(incoming))return;
+      const prev=WCS.xiSlots[slotIdx];
+      if(prev)WCS.bench.push(prev);
+      WCS.xiSlots[slotIdx]=incoming;
+      WCS.bench=WCS.bench.filter(b=>b.id!==incoming.id);
+      WCS.xiState=null;renderWCXIPickerUI();
+    }
+    function wcInitiateSwap(slotIdx){WCS.xiState={mode:'swapping',slotIdx};renderWCXIPickerUI();}
+    function wcCompleteSwap(targetIdx){
+      if(!WCS.xiState||WCS.xiState.mode!=='swapping')return;
+      const src=WCS.xiState.slotIdx;
+      const tmp=WCS.xiSlots[src];WCS.xiSlots[src]=WCS.xiSlots[targetIdx];WCS.xiSlots[targetIdx]=tmp;
+      WCS.xiState=null;renderWCXIPickerUI();
+    }
+    function wcCanXISwap(slotA,slotB){
+      const pA=WCS.xiSlots[slotA],pB=WCS.xiSlots[slotB];
+      if(!pA||!pB)return false;
+      return XI_POS_DEFS[slotB].test(pA)&&XI_POS_DEFS[slotA].test(pB);
     }
 
     function confirmWCXI(){
       if(WCS.xiSlots.filter(Boolean).length<11){const h=document.getElementById('wc-xi-confirm-hint');if(h)h.style.display='';return;}
       WCS.currentXI=[...WCS.xiSlots];WCS.bench=WCS.squad.filter(p=>!WCS.currentXI.find(q=>q&&q.id===p.id));
+      WCS.xiState=null;
       go('s-wc-match');runWCMatch();
     }
 
@@ -10027,28 +10138,93 @@
 
       // Captain analysis
       const capAnalysis=cap?.role==='allrounder'
-        ?`${cap.name} takes the captaincy as an all-rounder — he can shape the game with bat, ball and in the field.`
+        ?`${cap.name} takes the captaincy as an all-rounder, contributing across all three departments.`
         :cap?.role==='bowler'
         ?`${cap.name} leads as a frontline bowler — an uncommon choice at this level, but a deliberate one.`
         :`${cap.name} leads from the top order, with ${vc?.name||'the vice-captain'} as vice-captain providing ${vc?.role==='allrounder'?'all-round cover':vc?.role==='bowler'?'bowling support':'batting depth'}.`;
 
-      // Pundit quotes
-      const bhogleQuote=avgBat>=82
-        ?`"${bestBat?.name} at ${bestBat?.year} is the standout pick. ODI cricket rewards players who can pace an innings and he's one of the best at that. The top order gives this XI a real chance in Group A."`
-        :`"The batting average of ${avgBat} across the top order is a concern. ${allTeams.filter(t=>t.id!=='myxi').sort((a,b)=>b.rating-a.rating)[0]?.name} will expose gaps if the bowling doesn't restrict them first."`;
+      // Pundit quotes — pick 3 from a larger pool each run
+      const strongest=allTeams.filter(t=>t.id!=='myxi').sort((a,b)=>b.rating-a.rating)[0];
+      const allPundits=[
+        {
+          name:'Harsha Bhogle', color:'#4ade80',
+          quotes: avgBat>=82
+            ? [
+                `"${bestBat?.name} at ${bestBat?.year} is the pick of the batting. At ${avgBat} across the top order, Group A is manageable — provided the bowling holds early."`,
+                `"A squad of ${avgBat} batting average going into a World Cup is enough to cause problems. The question is whether ${cap?.name} can manage the pressure when it matters."`,
+                `"${myXIRating} overall — that's a squad built to compete. The group stage will test them, but I don't think they'll be found wanting."`,
+              ]
+            : [
+                `"${avgBat} across the top order is thin for a World Cup. ${strongest?.name} bat deep. If the bowling doesn't take wickets in the powerplay, this XI gets chased down."`,
+                `"The batting worries me. ${avgBat} average means this side needs early wickets every match — one off day with the ball and they're chasing an unreachable total."`,
+                `"${cap?.name} will need the bowlers to do the heavy lifting. The batting isn't strong enough to win shootouts."`,
+              ],
+        },
+        {
+          name:'Ravi Shastri', color:'#60a5fa',
+          quotes:[
+            `"${cap?.name} as captain. Right call. He's led in pressure situations and this squad can follow him."`,
+            `"${bestBowl?.name} with the white ball in 50-over conditions — that's a problem for every top order in Group A. ${cap?.name} will open with him and back him through the powerplay."`,
+            `"${vc?.name} and ${cap?.name} at the top — if they bat 20 overs together, this XI posts 280. The lower order doesn't need to be heroes."`,
+            `"World Cup cricket is different. You get one chance. This squad knows that — the experience in this group is real."`,
+            `"${bestBat?.name} is the one to watch. If he fires in the group stage, this XI goes deep. Simple as that."`,
+          ],
+        },
+        {
+          name:'Ian Chappell', color:'#fbbf24',
+          quotes: avgBat<80
+            ? [
+                `"${avgBat} average in a World Cup knockout won't hold up. Bowl sides out under 220 or they'll be chasing scores they can't reach."`,
+                `"I've seen batting attacks like this before. They need early wickets — every single match. One boundary-heavy powerplay from ${strongest?.name} and it's over."`,
+                `"The batting is lightweight. If ${cap?.name} doesn't get runs at the top, who does? The middle order can't be asked to rescue 80 for 3 every game."`,
+              ]
+            : [
+                `"The top order can bat and the bowling has something to work with. None of that matters until a semi-final. Show me then."`,
+                `"${myXIRating} is a decent squad rating. Whether it holds up under knockout pressure is another matter entirely."`,
+                `"${cap?.name} is a fine choice. Captaincy in a World Cup comes down to six or seven key decisions — he needs to get those right."`,
+              ],
+        },
+        {
+          name:'Michael Atherton', color:'#a78bfa',
+          quotes:[
+            `"The fixture list has ${WCS.matches.filter(m=>!m.opp.home).length} away games in the group stage. That's where World Cups are won and lost — in conditions that aren't yours."`,
+            `"${cap?.name} leading this side makes sense. He reads the game well and this squad has the players to back his calls."`,
+            `"${bestBowl?.name} could be the difference maker. In 50-over cricket a single bowler who can take wickets in the middle overs changes everything."`,
+            `"Don't read too much into the group stage draw. Every team in Group A is capable of beating each other on the right day."`,
+          ],
+        },
+        {
+          name:'Nasser Hussain', color:'#f97316',
+          quotes:[
+            `"${avgBowl} bowling average across the attack — that's ${avgBowl>=80?'a genuine threat':'workmanlike but not imposing'}. ${bestBowl?.name} carries a lot of that weight."`,
+            `"The balance of this squad is interesting. ${allrs.length} all-rounders gives ${cap?.name} options — he can play an extra batter or an extra bowler depending on the surface."`,
+            `"I'd be watching ${bestBat?.name} closely in the first two matches. If he finds form early, this XI looks a very different proposition."`,
+            `"World Cups throw up surprises every time. The squads that peak in the knockout rounds win it — not the ones who look best on paper going in."`,
+          ],
+        },
+        {
+          name:'Mark Nicholas', color:'#34d399',
+          quotes:[
+            `"There's something about this squad that I like. The blend of experience and quality in the batting is exactly what you need for a long tournament."`,
+            `"${cap?.name} and ${vc?.name} as the leadership pair — both have played high-pressure cricket. This side won't fold."`,
+            `"${myXIRating} overall puts them squarely in the mix. Not favourites, but not makeweights either."`,
+            `"The World Cup group stage is about not losing matches you should win. This XI is good enough to take care of business in Group A."`,
+          ],
+        },
+      ];
 
-      const shastriQuote=pick([
-        `"${cap?.name} as captain. Good choice. He knows what's required in knockout cricket and this squad has the players to go with him."`,
-        `"${bestBowl?.name} with the white ball — that's a serious threat in 50-over conditions. ${cap?.name} will back him hard. They can go deep in this."`,
-        `"ODI cricket is won in partnerships. ${vc?.name} and ${cap?.name} setting things up at the top — if that combination clicks, the lower order doesn't need to do too much."`,
-      ]);
+      // Pick 3 different pundits at random each time
+      const shuffled=[...allPundits].sort(()=>Math.random()-0.5).slice(0,3);
+      const [p1,p2,p3]=shuffled.map(p=>({...p,quote:pick(p.quotes)}));
 
-      const chappellQuote=avgBat<80
-        ?`"The batting is light. ${avgBat} average won't cut it in a World Cup knockout. They need to bowl sides out cheaply or they'll be chasing scores they can't handle."`
-        :`"Decent squad. The top order can bat, the bowling has teeth. None of that matters until the semi-final. Show me then."`;
+      const batVerdict=avgBat>=85?'formidable':avgBat>=80?'solid':avgBat>=75?'decent':'concerning';
+      const bowlVerdict=avgBowl>=85?'world-class':avgBowl>=80?'strong':avgBowl>=75?'workmanlike':'thin';
+      const keeper=WCS.squad.find(p=>p.role==='wicketkeeper');
+      const homeCount=WCS.matches.filter(m=>m.opp.home).length;
+      const awayCount=WCS.matches.filter(m=>!m.opp.home).length;
 
       el.innerHTML=`
-        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">🏆 ICC Cricket World Cup</div>
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">Cricket World Cup</div>
         <div style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px">${cap?.name||'Your captain'} named to lead Your XI into the World Cup</div>
         <div style="font-size:12px;color:#6060a0;margin-bottom:20px">${vc?.name||'Vice-captain'} as vice-captain · Squad of 15 confirmed · Representing ${myNat.flag} ${myNat.name}</div>
 
@@ -10068,31 +10244,70 @@
           </div>
         </div>
 
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Squad Analysis</div>
+        <div style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 16px;margin-bottom:18px">
+          <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:14px">
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Batting avg</div>
+              <div style="font-size:28px;font-weight:900;color:#fff;line-height:1">${avgBat}</div>
+              <div style="font-size:11px;color:#8080a0;margin-top:2px">${batVerdict}</div>
+            </div>
+            <div style="width:1px;background:#252535"></div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Bowling avg</div>
+              <div style="font-size:28px;font-weight:900;color:#fff;line-height:1">${avgBowl}</div>
+              <div style="font-size:11px;color:#8080a0;margin-top:2px">${bowlVerdict}</div>
+            </div>
+            <div style="width:1px;background:#252535"></div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Squad ovr</div>
+              <div style="font-size:28px;font-weight:900;color:#fff;line-height:1">${myXIRating}</div>
+              <div style="font-size:11px;color:#8080a0;margin-top:2px">${predPos<=5?'competitive':'building'}</div>
+            </div>
+          </div>
+          ${bestBat?`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #1a1a2a">
+            <div style="font-size:10px;color:#6060a0;text-transform:uppercase;letter-spacing:1px;min-width:70px">Key bat</div>
+            <div style="flex:1;font-size:12px;font-weight:700;color:#fff">${bestBat.name} <span style="color:#6060a0;font-weight:400">${bestBat.year}</span></div>
+            <div style="font-size:13px;font-weight:900;color:${ratingColor(bestBat.rating)}">${bestBat.rating}</div>
+          </div>`:''}
+          ${bestBowl?`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #1a1a2a">
+            <div style="font-size:10px;color:#6060a0;text-transform:uppercase;letter-spacing:1px;min-width:70px">Key bowl</div>
+            <div style="flex:1;font-size:12px;font-weight:700;color:#fff">${bestBowl.name} <span style="color:#6060a0;font-weight:400">${bestBowl.year}</span></div>
+            <div style="font-size:13px;font-weight:900;color:${ratingColor(bestBowl.rating)}">${bestBowl.rating}</div>
+          </div>`:''}
+          ${keeper?`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #1a1a2a">
+            <div style="font-size:10px;color:#6060a0;text-transform:uppercase;letter-spacing:1px;min-width:70px">Keeper</div>
+            <div style="flex:1;font-size:12px;font-weight:700;color:#fff">${keeper.name} <span style="color:#6060a0;font-weight:400">${keeper.year}</span></div>
+            <div style="font-size:13px;font-weight:900;color:${ratingColor(keeper.rating)}">${keeper.rating}</div>
+          </div>`:''}
+        </div>
+
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Group Stage Schedule</div>
         <div style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:10px 14px;margin-bottom:18px">${fixtureRows}</div>
 
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">The Appointment</div>
-        <div style="font-size:13px;color:#c0c0d8;line-height:1.7;margin-bottom:18px">${capAnalysis} Your XI face <strong style="color:#fff">${WCS.matches.filter(m=>m.opp.home).length} home</strong> and <strong style="color:#fff">${WCS.matches.filter(m=>!m.opp.home).length} away</strong> matches in Group A. Top 3 from each group advance to the Super Sixes — where the top 4 teams reach the semi-finals.</div>
+        <div style="font-size:13px;color:#c0c0d8;line-height:1.7;margin-bottom:18px">${capAnalysis} Your XI face <strong style="color:#fff">${homeCount} home</strong> and <strong style="color:#fff">${awayCount} away</strong> matches in Group A. Top 3 from each group advance to the Super Sixes. The top 4 from there reach the semi-finals.</div>
 
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:10px">Pundit Reaction</div>
 
-        <div style="background:#0a0a14;border-left:3px solid #4ade80;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px">
-          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${bhogleQuote}</div>
-          <div style="font-size:10px;color:#4ade80;font-weight:800;margin-top:6px">— Harsha Bhogle</div>
+        <div style="background:#0a0a14;border-left:3px solid ${p1.color};border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px">
+          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${p1.quote}</div>
+          <div style="font-size:10px;color:${p1.color};font-weight:800;margin-top:6px">— ${p1.name}</div>
         </div>
 
-        <div style="background:#0a0a14;border-left:3px solid #60a5fa;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px">
-          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${shastriQuote}</div>
-          <div style="font-size:10px;color:#60a5fa;font-weight:800;margin-top:6px">— Ravi Shastri</div>
+        <div style="background:#0a0a14;border-left:3px solid ${p2.color};border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px">
+          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${p2.quote}</div>
+          <div style="font-size:10px;color:${p2.color};font-weight:800;margin-top:6px">— ${p2.name}</div>
         </div>
 
-        <div style="background:#0a0a14;border-left:3px solid #fbbf24;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:18px">
-          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${chappellQuote}</div>
-          <div style="font-size:10px;color:#fbbf24;font-weight:800;margin-top:6px">— Ian Chappell</div>
+        <div style="background:#0a0a14;border-left:3px solid ${p3.color};border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:18px">
+          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${p3.quote}</div>
+          <div style="font-size:10px;color:${p3.color};font-weight:800;margin-top:6px">— ${p3.name}</div>
         </div>
 
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Betting · World Cup Odds</div>
         <div style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:10px 14px;margin-bottom:4px">${oddsRows}</div>
+        <div style="font-size:9px;color:#3a3a50;margin-bottom:20px;text-align:right">Odds indicative only. Please gamble responsibly.</div>
       `;
     }
 
@@ -10101,62 +10316,84 @@
     function buildWCHub(){
       const el=document.getElementById('wc-hub-content');
       const phase=WCS.phase;
-      const sqAvg=WCS.squad.length?Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length):'';
+      const sqAvg=WCS.squad.length?Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length):'—';
       const sortT=tbl=>Object.entries(tbl).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts||(b.w/Math.max(1,b.p))-(a.w/Math.max(1,a.p)));
-      const tblHTML=(sorted,myId)=>`<table class="wtc-table" style="margin-bottom:12px"><thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>${sorted.map((t,i)=>`<tr class="${t.id===myId?'my-row':''}"><td>${i+1}</td><td>${t.flag} ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td class="wtc-pct">${t.pts}</td></tr>`).join('')}</tbody></table>`;
-      const matchRow=(m,i,lbl)=>{const isDone=m.completed,isCur=!isDone&&i===WCS.matches.findIndex(x=>!x.completed),res=m.result,col=res==='W'?'#4ade80':'#f87171';return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${isCur?'#0d1220':'#0a0a0f'};border:1px solid ${isCur?'#2040a0':'#1a1a22'};border-radius:10px;margin-bottom:6px;cursor:${isCur?'pointer':'default'}" ${isCur?`onclick="startWCMatch(${i})"`:''}}><span style="font-size:20px">${m.opp.flag}</span><div style="flex:1"><div style="font-size:13px;font-weight:700;color:#fff">${m.opp.name}</div><div style="font-size:11px;color:#6060a0">${m.opp.home?'🏠 Home':'✈️ Away'} · ${lbl} · Match ${i+1}</div></div>${isDone?`<div style="font-size:12px;font-weight:900;color:${col}">${res==='W'?'WON':'LOST'}</div>`:isCur?`<div style="font-size:11px;color:#f9c846;font-weight:700">▶ Play</div>`:''}</div>`;};
+
+      const tblHTML=(sorted,myId)=>`<table class="wtc-table" style="margin-bottom:16px"><thead><tr><th style="text-align:center;width:24px">#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>${sorted.map((t,i)=>`<tr class="${t.id===myId?'my-row':''}"><td style="text-align:center;color:#606070;font-size:11px">${i+1}</td><td>${t.flag} ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td class="wtc-pct" style="color:${t.pts>0?'#4ade80':'#c0c0d8'}">${t.pts}</td></tr>`).join('')}</tbody></table>`;
+
+      const matchCard=(m,i,lbl)=>{
+        const isDone=m.completed,isCur=!isDone&&i===WCS.matches.findIndex(x=>!x.completed);
+        const res=m.result;
+        const pill=isDone
+          ?`<span class="sc-result-pill ${res==='W'?'pill-w':'pill-l'}">${res==='W'?'WON':'LOST'}</span>`
+          :isCur?`<span class="sc-result-pill pill-upcoming">NEXT</span>`:'';
+        return`<div class="series-card ${isDone?'completed':''} ${isCur?'upcoming':''}" ${isCur?`onclick="startWCMatch(${i})" style="cursor:pointer"`:''}>
+          <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+            <div style="display:flex;align-items:center;flex:1;min-width:0">
+              <span class="sc-flag">${m.opp.flag}</span>
+              <div>
+                <div class="sc-country">${m.opp.name}</div>
+                <div class="sc-meta">${m.opp.home?'🏠 Home':'✈️ Away'} · ${lbl} · Match ${i+1}</div>
+              </div>
+            </div>
+            ${pill}
+          </div>
+        </div>`;
+      };
+
+      const header=(label,title,sub)=>`
+        <div style="width:100%;margin-bottom:16px;text-align:left">
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">${label}</div>
+          <div style="font-size:22px;font-weight:900;color:#fff">${title}</div>
+          ${sub?`<div style="font-size:12px;color:#6060a0;margin-top:2px">${sub}</div>`:''}
+        </div>`;
 
       if(phase==='group'){
         const sA=sortT(WCS.groupTable.A),sB=sortT(WCS.groupTable.B);
         const myPos=sA.findIndex(t=>t.id==='myxi')+1;
         const myRec=WCS.groupTable.A['myxi'];
+        const done=WCS.matches.filter(m=>m.completed).length;
         const allDone=WCS.matches.every(m=>m.completed);
+        // Show Group B as zeros until group stage complete
+        const sBDisplay = allDone ? sB : sB.map(t=>({...t,p:0,w:0,l:0,pts:0}));
         el.innerHTML=`
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-            <div style="flex:1">
-              <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9090a8">World Cup · Group Stage</div>
-              <div style="font-size:22px;font-weight:900;color:#fff">${allDone?'Group Stage Complete':WCS.matches.filter(m=>m.completed).length===0?'Match 1 of 6':`Match ${WCS.matches.filter(m=>m.completed).length+1} of 6`}</div>
-              <div style="font-size:12px;color:#6060a0">Group A: ${ordinal(myPos)} of 7 · <span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span></div>
-            </div>
-            <div style="text-align:right"><div style="font-size:11px;color:#6060a0">Squad avg</div><div style="font-size:22px;font-weight:900;color:#f9c846">${sqAvg}</div></div>
-          </div>
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:6px">Group A <span style="color:#f9c846;font-size:9px">↑ top 3 qualify</span></div>
+          ${header('World Cup · Group Stage',allDone?'Group Stage Complete':done===0?'Match 1 of 6':`Match ${done+1} of 6`,`Group A: ${ordinal(myPos)} of 7 · <span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span>`)}
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Group A <span style="color:#f9c846;font-size:9px">↑ top 3 qualify</span></div>
           ${tblHTML(sA,'myxi')}
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:6px">Group B <span style="color:#f9c846;font-size:9px">↑ top 3 qualify</span></div>
-          ${tblHTML(sB,'myxi')}
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-top:8px;margin-bottom:8px">Your Group A Fixtures</div>
-          ${WCS.matches.map((m,i)=>matchRow(m,i,'Group A')).join('')}
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Group B <span style="color:#f9c846;font-size:9px">↑ top 3 qualify</span></div>
+          ${tblHTML(sBDisplay,'myxi')}
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Your Fixtures</div>
+          ${WCS.matches.map((m,i)=>matchCard(m,i,'Group A')).join('')}
           ${allDone?`<button class="btn-sim" style="margin-top:16px" onclick="checkGroupQualification()">Group Stage Complete →</button>`:''}
         `;
       } else if(phase==='super6'){
         const sS=sortT(WCS.superSixTable);
         const myPos=sS.findIndex(t=>t.id==='myxi')+1;
         const myRec=WCS.superSixTable['myxi'];
+        const done=WCS.matches.filter(m=>m.completed).length;
         const allDone=WCS.matches.every(m=>m.completed);
         el.innerHTML=`
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-            <div style="flex:1">
-              <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9090a8">World Cup · Super Sixes</div>
-              <div style="font-size:22px;font-weight:900;color:#fff">${allDone?'Super Sixes Complete':WCS.matches.filter(m=>m.completed).length===0?'Super Sixes Begin':`Match ${WCS.matches.filter(m=>m.completed).length+1} of 3`}</div>
-              <div style="font-size:12px;color:#6060a0">Position: ${ordinal(myPos)} of 6 · <span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span></div>
-            </div>
-            <div style="text-align:right"><div style="font-size:11px;color:#6060a0">Squad avg</div><div style="font-size:22px;font-weight:900;color:#f9c846">${sqAvg}</div></div>
-          </div>
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:6px">Super Sixes Table <span style="color:#f9c846;font-size:9px">↑ top 4 to semis</span></div>
+          ${header('World Cup · Super Sixes',allDone?'Super Sixes Complete':done===0?'Super Sixes Begin':`Match ${done+1} of 3`,`Position: ${ordinal(myPos)} of 6 · <span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span>`)}
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Super Sixes <span style="color:#f9c846;font-size:9px">↑ top 4 to semis</span></div>
           ${tblHTML(sS,'myxi')}
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-top:8px;margin-bottom:8px">Your Super Sixes Fixtures</div>
-          ${WCS.matches.map((m,i)=>matchRow(m,i,'Super Sixes')).join('')}
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Your Fixtures</div>
+          ${WCS.matches.map((m,i)=>matchCard(m,i,'Super Sixes')).join('')}
           ${allDone?`<button class="btn-sim" style="margin-top:16px" onclick="checkSuperSixQualification()">Super Sixes Complete →</button>`:''}
         `;
       } else {
         el.innerHTML=`
-          <div style="margin-bottom:16px">
-            <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9090a8">World Cup · ${phase==='semi'?'Semi-Finals':'The Final'}</div>
-            <div style="font-size:22px;font-weight:900;color:#fff">${phase==='semi'?'🏏 Semi-Final':'🏆 World Cup Final'}</div>
-          </div>
-          <div style="background:#1a1020;border:1px solid #4020a0;border-radius:10px;padding:12px;cursor:pointer" onclick="startWCKnockout()">
-            <div style="font-size:13px;font-weight:800;color:#f9c846">${phase==='semi'?'🏏 Semi-Final →':'🏆 World Cup Final →'}</div>
-            <div style="font-size:11px;color:#8060a0;margin-top:3px">${WCS.myNation?.flag||''} Your XI vs ${WCS.knockoutOpp?.flag||''} ${WCS.knockoutOpp?.name||'TBC'}</div>
+          ${header(`World Cup · ${phase==='semi'?'Semi-Finals':'The Final'}`,phase==='semi'?'Semi-Final':'World Cup Final',`${WCS.myNation?.flag||''} Your XI vs ${WCS.knockoutOpp?.flag||''} ${WCS.knockoutOpp?.name||'TBC'}`)}
+          <div class="series-card upcoming" onclick="startWCKnockout()" style="cursor:pointer">
+            <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+              <div style="display:flex;align-items:center;flex:1;min-width:0">
+                <span class="sc-flag">${WCS.knockoutOpp?.flag||'🏏'}</span>
+                <div>
+                  <div class="sc-country">${WCS.knockoutOpp?.name||'TBC'}</div>
+                  <div class="sc-meta">${phase==='semi'?'Semi-Final':'World Cup Final'} · ODI</div>
+                </div>
+              </div>
+              <span class="sc-result-pill pill-upcoming">PLAY</span>
+            </div>
           </div>
         `;
       }
@@ -10282,7 +10519,7 @@
 
     function simODIInnings(batR,bowlR,oversMax,target,batNames,bowlPool,keeperName,batRatings){
       const q=Math.max(0,Math.min(1,(batR-bowlR+50)/100));
-      const wktProbBase=0.021-q*0.007;
+      const wktProbBase=0.028-q*0.016;
       const batters=batNames.slice(0,11).map(n=>({name:n,runs:0,balls:0,out:false,how:''}));
       const bwlrs=bowlPool.map(b=>{
         const bRat=Math.max(55,Math.min(97,b.rating||72));
@@ -10319,8 +10556,8 @@
           batters[striker].balls++;
           if(Math.random()<wktP){batters[striker].out=true;batters[striker].how=makeHow(bowler.name);bowler.wickets++;wkts++;striker=nextIn++;}
           else{
-            const batScMod=0.80+(bRat-52)/47*0.40;const phaseMult=isPP?1.18:isDeath?1.55:1.0;
-            const sc=(0.95+q*0.20)*batScMod*phaseMult;
+            const batScMod=0.68+(bRat-52)/47*0.55;const phaseMult=isPP?1.18:isDeath?1.55:1.0;
+            const sc=(0.88+q*0.22)*batScMod*phaseMult;
             const p1=0.22*sc,p2=0.07*sc,p3=0.005*sc,p4=0.09*sc,p6=0.025*sc;
             const p0=Math.max(0.38,1-(p1+p2+p3+p4+p6));const r=Math.random();
             let runs=r<p0?0:r<p0+p1?1:r<p0+p1+p2?2:r<p0+p1+p2+p3?3:r<p0+p1+p2+p3+p4?4:6;
@@ -10364,13 +10601,54 @@
     }
 
     function renderODIBatters(batters,wkts){
-      const scored=batters.filter(b=>b.balls>0||b.out);if(!scored.length)return'';
-      return`<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="color:#6060a0"><th style="text-align:left;padding:4px 8px">Batter</th><th style="text-align:right;padding:4px 4px">R</th><th style="text-align:right;padding:4px 4px">B</th><th style="text-align:right;padding:4px 4px">SR</th></tr></thead><tbody>${scored.map(b=>{const sr=b.balls>0?(b.runs/b.balls*100).toFixed(0):'—';const out=b.out?`<div style="font-size:9px;color:#888">${b.how}</div>`:'<div style="font-size:9px;color:#4ade80">not out</div>';return`<tr style="border-top:1px solid #1a1a22"><td style="padding:5px 8px"><div style="font-weight:700;color:#c0c0d8">${shortName(b.name)}</div>${out}</td><td style="text-align:right;padding:5px 4px;font-weight:700;color:#fff">${b.runs}</td><td style="text-align:right;padding:5px 4px;color:#6060a0">${b.balls}</td><td style="text-align:right;padding:5px 4px;color:#6060a0">${sr}</td></tr>`;}).join('')}</tbody></table>`;
+      const allOut=wkts>=10;
+      const maxBatted=allOut?11:Math.min(wkts+2,11);
+      const ROW='display:grid;grid-template-columns:110px 1fr 34px 38px;align-items:center;padding:7px 10px;border-bottom:1px solid #111118';
+      const rows=batters.map((b,i)=>{
+        const hasBatted=i<maxBatted;
+        const isBatting=!b.out&&i===Math.min(wkts,10);
+        if(!hasBatted)return`<div style="${ROW};opacity:0.2"><span style="font-size:12px;font-weight:600;color:#2a2a3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${shortName(b.name)}</span><span></span><span></span><span></span></div>`;
+        const nameCol=isBatting?'color:#f9c846;font-weight:800':'color:#c0c0d8';
+        const howCol=b.out?'color:#6060a0':'color:#4ade80';
+        const howText=b.out?b.how:isBatting?'batting':'not out';
+        const runsCls=b.runs>=100?'hundred':b.runs>=50?'fifty':'';
+        return`<div style="${ROW}">
+          <span style="font-size:12px;font-weight:700;${nameCol};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${isBatting?'▶ ':''}${shortName(b.name)}</span>
+          <span style="font-size:10px;${howCol};padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${howText}</span>
+          <span class="sc-batter-runs${runsCls?' '+runsCls:''}">${b.runs}</span>
+          <span class="sc-batter-balls">${b.balls>0?'('+b.balls+')':''}</span>
+        </div>`;
+      }).join('');
+      const extras=Math.floor(Math.random()*12+4);
+      return`<div class="sc-innings" style="margin-bottom:4px">
+        <div style="display:grid;grid-template-columns:110px 1fr 34px 38px;padding:5px 10px 4px;background:#0a0a0f;border-bottom:1px solid #111">
+          <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700">Batter</span>
+          <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700;padding-left:6px">Dismissal</span>
+          <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:right;font-weight:700">R</span>
+          <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:right;font-weight:700">B</span>
+        </div>
+        ${rows}
+        <div class="sc-extras">Extras: ${extras}</div>
+      </div>`;
     }
 
     function renderODIBowling(bowlers,fieldingTeam){
       if(!bowlers||!bowlers.length)return'';
-      return`<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:6px"><thead><tr style="color:#6060a0"><th style="text-align:left;padding:3px 8px">Bowler</th><th style="text-align:right;padding:3px 4px">O</th><th style="text-align:right;padding:3px 4px">R</th><th style="text-align:right;padding:3px 4px">W</th><th style="text-align:right;padding:3px 4px">Econ</th></tr></thead><tbody>${bowlers.map(b=>`<tr style="border-top:1px solid #1a1a22"><td style="padding:4px 8px;font-weight:600;color:#c0c0d8">${b.name}</td><td style="text-align:right;padding:4px;color:#a0a0c0">${b.overs}</td><td style="text-align:right;padding:4px;color:#a0a0c0">${b.runs}</td><td style="text-align:right;padding:4px;font-weight:700;color:${b.wickets>0?'#f9c846':'#a0a0c0'}">${b.wickets}</td><td style="text-align:right;padding:4px;color:#6060a0">${b.overs>0?(b.runs/b.overs).toFixed(1):'—'}</td></tr>`).join('')}</tbody></table>`;
+      const rows=bowlers.map(b=>`<div class="sc-bowler-row">
+        <span class="sc-bowler-name">${shortName(b.name)}</span>
+        <span class="sc-bowler-stat">${b.overs}</span>
+        <span class="sc-bowler-stat">${b.maidens||0}</span>
+        <span class="sc-bowler-stat">${b.runs}</span>
+        <span class="sc-bowler-wkts${b.wickets>=3?' haul':''}">${b.wickets}</span>
+      </div>`).join('');
+      return`<div class="sc-innings" style="margin-bottom:6px">
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:700;padding:6px 14px 4px;background:#0a0a0f;border-bottom:1px solid #111">Bowling · <span style="color:#c0c0d8">${fieldingTeam}</span></div>
+        <div class="sc-bowling-header">
+          <span class="sc-bowl-th" style="flex:1;text-align:center">Bowler</span>
+          <span class="sc-bowl-th">O</span><span class="sc-bowl-th">M</span>
+          <span class="sc-bowl-th">R</span><span class="sc-bowl-th">W</span>
+        </div>${rows}
+      </div>`;
     }
 
     function showWCResult(matchData,opp){
@@ -10480,36 +10758,103 @@
 
     function buildWCEndScreen(){
       const el=document.getElementById('wc-end-content');if(!el)return;
-      const won=WCS.finalResult==='W';const isElim=WCS.finalResult==='eliminated';
-      const isSemiFail=WCS.semiResult==='L'&&WCS.phase==='semi';const isFinalFail=WCS.finalResult==='L'&&WCS.phase==='final';
+      const won=WCS.finalResult==='W';
+      const isElim=WCS.finalResult==='eliminated';
+      const isFinalFail=WCS.finalResult==='L'&&WCS.phase==='final';
+      const isSemiFail=WCS.phase==='semi'&&!won&&WCS.semiResult!=='W';
       const inSuperSix=WCS.superSixTable&&Object.keys(WCS.superSixTable).length>0;
-      const dispTable=inSuperSix?WCS.superSixTable:WCS.groupTable.A;
-      const table=Object.entries(dispTable||{}).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts);
       const groupTable=Object.entries(WCS.groupTable.A||{}).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts);
+      const superTable=Object.entries(WCS.superSixTable||{}).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts);
       const groupPos=groupTable.findIndex(t=>t.id==='myxi')+1;
-      const superPos=inSuperSix?table.findIndex(t=>t.id==='myxi')+1:null;
-      const myRec=(inSuperSix?WCS.superSixTable:WCS.groupTable.A)?.['myxi']||{w:0,l:0};
-      const stageReached=won?'Final':isFinalFail?'Final':isSemiFail?'Semi-Final':inSuperSix?'Super Sixes':'Group Stage';
-      const headline=won?'🏆 World Cup Champions!':isFinalFail?'🥈 World Cup Runners-Up':isSemiFail?'🏏 Semi-Final Exit':isElim&&inSuperSix?`Super Sixes Exit · ${ordinal(superPos)} Place`:`Group Stage Exit · ${ordinal(groupPos)} in Group A`;
+      const superPos=inSuperSix?superTable.findIndex(t=>t.id==='myxi')+1:null;
+      const myRec=(inSuperSix?WCS.superSixTable:WCS.groupTable.A)?.['myxi']||{w:0,l:0,p:0};
+      const totalWins=myRec.w+(won?1:0)+(isFinalFail?1:0);
+      const totalLosses=myRec.l+(isElim?0:won?0:1);
+
+      // Performance verdict vs prediction
+      const myXIRating=Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length);
+      const allTeams=[{id:'myxi',rating:myXIRating},...WC_NATIONS.map(n=>({id:n.id,rating:WCS.cycleRatings[n.id]||n.rMin}))].sort((a,b)=>b.rating-a.rating);
+      const predPos=allTeams.findIndex(t=>t.id==='myxi')+1;
+      const predTier=predPos<=2?5:predPos<=5?4:predPos<=8?3:predPos<=11?2:1;
+      const actualTier=won?6:isFinalFail?5:isSemiFail?4:inSuperSix?3:groupPos<=3?2:1;
+      const diff=actualTier-predTier;
+      const perfClass=diff>=1?'perf-over':diff===0?'perf-met':'perf-under';
+      const perfEyebrow=diff>=1?'Overperformed':diff===0?'Prediction met':'Underperformed';
+      const perfVerdict=diff>=2?'Well above the prediction':diff===1?'One tier above prediction':diff===0?'Landed exactly on the call':diff===-1?'One tier below prediction':'Well below the prediction';
+
+      // Stage strings
+      const stageReached=won?'World Cup Champions':isFinalFail?'World Cup Final':isSemiFail?'Semi-Final':inSuperSix?`Super Sixes (${ordinal(superPos||0)})`:`Group Stage (${ordinal(groupPos)} in Group A)`;
+      const predLabel=predPos<=2?'Tournament favourites':predPos<=5?'Strong contenders':predPos<=9?'Mid-table':'Outsiders';
+      const icon=won?'🏆':isFinalFail?'🥈':isSemiFail?'🏏':inSuperSix?'📊':'📋';
+      const headerClass=won?'ov-header ovh-won':isFinalFail||isSemiFail?'ov-header ovh-final':'ov-header ovh-early';
+      const headline=won?'World Cup Champions!':isFinalFail?'World Cup Runners-Up':isSemiFail?'Semi-Final Exit':inSuperSix?`Super Sixes Exit`:`Eliminated in the Group Stage`;
+      const sub=won?'Won it. The World Cup is yours.':isFinalFail?'Made the final. Lost it.':isSemiFail?'Beaten in the semi-final.':inSuperSix?`Finished ${ordinal(superPos||0)} in the Super Sixes.`:`Finished ${ordinal(groupPos)} in Group A.`;
+
+      // Quote
+      const wcQuote=won?'Won the World Cup. There\'s nothing left to say.':isFinalFail?'One game away. The final is the hardest place to lose it.':isSemiFail?'Made the semis. That\'s further than most squads get.':inSuperSix?'Made it out of the group. The Super Sixes showed what this XI can do.':'Didn\'t get through the group. The squad has the players — it didn\'t come together this time.';
+
+      // Player stats
+      const stats=Object.entries(WCS.playerStats||{});
+      const topRunEntry=stats.filter(([,s])=>s.runs>0).sort(([,a],[,b])=>b.runs-a.runs)[0];
+      const topWktEntry=stats.filter(([,s])=>s.wickets>0).sort(([,a],[,b])=>b.wickets-a.wickets)[0];
+      const topRunPlayer=topRunEntry?WCS.squad.find(p=>p.id===topRunEntry[0]):null;
+      const topWktPlayer=topWktEntry?WCS.squad.find(p=>p.id===topWktEntry[0]):null;
+      const totalWickets=stats.reduce((s,[,p])=>s+p.wickets,0);
+      const totalRuns=stats.reduce((s,[,p])=>s+p.runs,0);
+
+      // Tables
+      const dispTable=inSuperSix?superTable:groupTable;
+      const tblLabel=inSuperSix?'Super Sixes Table':'Group A Table';
       const OV_ORDER=['batsman','wicketkeeper','allrounder','bowler'];
       const xi=[...WCS.squad].sort((a,b)=>OV_ORDER.indexOf(a.role)-OV_ORDER.indexOf(b.role));
       const RL={bat:'BAT',wk:'WK',all:'ALL',bowl:'BOWL'};
+
       el.innerHTML=`
-        <div style="text-align:center;padding:20px 0 16px">
-          <div style="font-size:36px;margin-bottom:8px">${won?'🏆':isElim?'📊':isSemiFail?'🏏':'🥈'}</div>
-          <div style="font-size:24px;font-weight:900;color:#fff">${headline}</div>
-          <div style="font-size:13px;color:#6060a0;margin-top:6px">Stage reached: ${stageReached}</div>
+        <div class="${headerClass}">
+          <span class="ov-icon">${icon}</span>
+          <div class="ov-result">${headline}</div>
+          <div class="ov-sub">${sub}</div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
-          <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:900;color:${won?'#f9c846':'#c0c0d8'}">${won?'🏆':ordinal(groupPos)}</div><div style="font-size:10px;color:#6060a0">Group A</div></div>
-          <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:900;color:#f9c846">${myRec.w}</div><div style="font-size:10px;color:#6060a0">Wins</div></div>
-          <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:900;color:#f9c846">${Object.values(WCS.playerStats).reduce((s,p)=>s+p.wickets,0)}</div><div style="font-size:10px;color:#6060a0">Wickets</div></div>
+
+        <div class="ov-quote">"${wcQuote}"</div>
+
+        <div class="ov-stats">
+          <div class="ov-box"><div class="ov-n" style="color:#4ade80">${totalWins}</div><div class="ov-l">Wins</div></div>
+          <div class="ov-box"><div class="ov-n" style="color:#f87171">${totalLosses}</div><div class="ov-l">Losses</div></div>
+          <div class="ov-box"><div class="ov-n" style="color:#fbbf24">${totalRuns}</div><div class="ov-l">Runs scored</div></div>
+          <div class="ov-box"><div class="ov-n" style="color:#60a5fa">${totalWickets}</div><div class="ov-l">Wickets</div></div>
         </div>
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">${inSuperSix?'Super Sixes':'Group A'} Table</div>
-        <table class="wtc-table" style="margin-bottom:16px"><thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>${table.map((t,i)=>`<tr class="${t.id==='myxi'?'my-row':''}"><td>${i+1}</td><td>${t.flag} ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td class="wtc-pct">${t.pts}</td></tr>`).join('')}</tbody></table>
+
+        <div class="ov-lower">
+          <div class="ov-reached">
+            <div class="perf-card ${perfClass}">
+              <div class="perf-eyebrow">${perfEyebrow}</div>
+              <div class="perf-verdict">${perfVerdict}</div>
+              <div class="perf-row"><span class="perf-label">Predicted finish</span><span class="perf-val" style="color:#9090a8">${predLabel}</span></div>
+              <div class="perf-row"><span class="perf-label">Record</span><span class="perf-val" style="color:#e0e0f0">W${totalWins} L${totalLosses}</span></div>
+              <div class="perf-row"><span class="perf-label">Stage reached</span><span class="perf-val" style="color:#e0e0f0">${stageReached}</span></div>
+              ${inSuperSix?`<div class="perf-row"><span class="perf-label">Super Sixes pos</span><span class="perf-val" style="color:#e0e0f0">${ordinal(superPos||0)} of 6</span></div>`:`<div class="perf-row"><span class="perf-label">Group A pos</span><span class="perf-val" style="color:#e0e0f0">${ordinal(groupPos)} of 7</span></div>`}
+            </div>
+          </div>
+          ${(topRunPlayer||topWktPlayer)?`<div class="ov-season-stats">
+            ${topRunPlayer?`<div class="stat-card"><div class="stat-card-label">Most Runs</div><div class="stat-card-name">${topRunPlayer.name.split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topRunEntry[1].runs}</div><div class="stat-card-sub">Tournament</div></div>`:''}
+            ${topWktPlayer?`<div class="stat-card"><div class="stat-card-label">Most Wickets</div><div class="stat-card-name">${topWktPlayer.name.split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topWktEntry[1].wickets}</div><div class="stat-card-sub">Tournament</div></div>`:''}
+          </div>`:''}
+        </div>
+
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">${tblLabel}</div>
+        <table class="wtc-table" style="margin-bottom:16px">
+          <thead><tr><th style="text-align:center;width:24px">#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead>
+          <tbody>${dispTable.map((t,i)=>`<tr class="${t.id==='myxi'?'my-row':''}"><td style="text-align:center;color:#606070;font-size:11px">${i+1}</td><td>${t.flag} ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td class="wtc-pct">${t.pts}</td></tr>`).join('')}</tbody>
+        </table>
+
         <div class="section-lbl">Your Squad</div>
-        <div class="squad-list" style="margin-bottom:24px">${xi.map(p=>{const rk={batsman:'bat',wicketkeeper:'wk',allrounder:'all',bowler:'bowl'}[p.role]||p.role;const ps=WCS.playerStats[p.id]||{runs:0,inns:0,dismissed:0,wickets:0,runsConceded:0};return`<div class="squad-item si-${rk}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.year}${ps.inns?` · ${ps.runs}R avg ${ps.dismissed?(ps.runs/ps.dismissed).toFixed(0):'—'}`:''}${ps.wickets?` · ${ps.wickets}W`:''}</div></div><div class="si-right"><span class="rp-badge rpb-${rk}">${RL[rk]||rk.toUpperCase()}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`;}).join('')}</div>
+        <div class="squad-list" style="margin-bottom:24px">${xi.map(p=>{const rk={batsman:'bat',wicketkeeper:'wk',allrounder:'all',bowler:'bowl'}[p.role]||p.role;const ps=WCS.playerStats[p.id]||{runs:0,inns:0,dismissed:0,wickets:0};return`<div class="squad-item si-${rk}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.year}${ps.runs?` · ${ps.runs}R`:''}${ps.wickets?` · ${ps.wickets}W`:''}</div></div><div class="si-right"><span class="rp-badge rpb-${rk}">${RL[rk]||rk.toUpperCase()}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`;}).join('')}</div>
+
+        <button onclick="go('s-home')" style="width:100%;padding:14px;background:#0d0d18;border:1px solid #2a2a50;border-radius:12px;color:#8080c0;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">← Back to Home</button>
       `;
+
+      if(won)launchConfetti();
     }
 
   </script>
@@ -10870,35 +11215,32 @@
     <div style="width:100%;display:flex;flex-direction:column;gap:14px;margin-bottom:28px">
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Your Squad</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Spin a <span style="color:#f9c846;font-weight:800">squad of 15</span> World Cup players from any nation — each spin picks a nation, year, and player. The nation you have <span style="color:#f9c846;font-weight:800">the most players from</span> is the team you represent. Select an <span style="color:#f9c846;font-weight:800">XI for every match</span>.</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Spin a <span style="color:#f9c846;font-weight:800">squad of 15</span> World Cup players from any nation. Each spin picks a nation, year, and player. The nation with <span style="color:#f9c846;font-weight:800">the most players</span> in your squad is the team you represent. Pick an <span style="color:#f9c846;font-weight:800">XI for every match</span>.</div>
       </div>
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">ODI Format</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Each match is <span style="color:#f9c846;font-weight:800">one innings per side</span> — 50 overs maximum. Win by wickets chasing, or defend your total. No draws.</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6"><span style="color:#f9c846;font-weight:800">One innings per side</span>, 50 overs maximum. Win by wickets chasing, or defend your total. No draws.</div>
       </div>
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:10px">The Tournament</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <div style="font-size:18px;line-height:1;margin-top:2px">🏏</div>
-            <div style="font-size:13px;color:#c0c0d8;line-height:1.6"><span style="color:#fff;font-weight:800">14 teams, 2 groups of 7.</span> Your XI are in Group A and play all 6 other Group A teams. The <span style="color:#f9c846;font-weight:800">top 3</span> from each group advance — Group B teams play each other simultaneously.</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div>
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:5px">Group Stage</div>
+            <div style="font-size:13px;color:#c0c0d8;line-height:1.6">14 teams, 2 groups of 7. Your XI are in Group A and play all 6 other Group A teams. The <span style="color:#f9c846;font-weight:800">top 3</span> from each group advance. Group B teams play each other at the same time.</div>
           </div>
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <div style="font-size:18px;line-height:1;margin-top:2px">⚡</div>
-            <div style="font-size:13px;color:#c0c0d8;line-height:1.6"><span style="color:#fff;font-weight:800">Super Sixes.</span> All 6 qualifiers enter one table. Teams from Group A play <span style="color:#f9c846;font-weight:800">3 new matches against the Group B qualifiers only</span> — no rematches within your group.</div>
+          <div>
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:5px">Super Sixes</div>
+            <div style="font-size:13px;color:#c0c0d8;line-height:1.6">All 6 qualifiers enter one table. Group A teams play <span style="color:#f9c846;font-weight:800">3 new matches against the Group B qualifiers only</span>. No rematches against your own group. Points earned against qualifying teams from your group carry forward into the table.</div>
           </div>
-          <div style="background:#0a0a18;border-left:3px solid #f9c846;border-radius:0 8px 8px 0;padding:10px 12px">
-            <div style="font-size:12px;color:#c0c0d8;line-height:1.6"><span style="color:#f9c846;font-weight:800">Points carry forward.</span> The points (and NRR) your team earned against the other qualifying teams from your group carry into the Super Sixes table. Beat both other Group A qualifiers in the group stage and you start Super Sixes with a 4-point head start. Lose both and you need to beat all three Group B qualifiers just to have a chance.</div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <div style="font-size:18px;line-height:1;margin-top:2px">🏆</div>
-            <div style="font-size:13px;color:#c0c0d8;line-height:1.6"><span style="color:#fff;font-weight:800">Top 4 from Super Sixes</span> → Semi-Finals → Final. Win all three to be crowned World Champions.</div>
+          <div>
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:5px">Semi-Finals &amp; Final</div>
+            <div style="font-size:13px;color:#c0c0d8;line-height:1.6">Top 4 from the Super Sixes reach the semi-finals. Win both to reach the Final. Win the Final to lift the Cup.</div>
           </div>
         </div>
       </div>
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Form</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Player form shifts match by match — big scores and wicket hauls boost ratings, poor performances drag them down. Rotate your XI to keep players sharp.</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Form shifts match by match. Big scores and wicket hauls push ratings up, poor performances pull them down. Rotate your XI to manage workloads.</div>
       </div>
     </div>
     <button class="btn-start" onclick="startWCSquadDraft()" style="width:100%">Begin Draft →</button>
@@ -10967,7 +11309,7 @@
       <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8">🏆 World Cup</div>
       <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
     </div>
-    <div id="wc-hub-content" style="width:100%"></div>
+    <div id="wc-hub-content" style="width:100%;text-align:left"></div>
   </div>
 
   <!-- WC MATCH SCREEN -->
