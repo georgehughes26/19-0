@@ -10767,7 +10767,7 @@
           const isBowler=player.role==='bowler';
           const isAR=player.role==='allrounder';
           const parts=[];
-          if(isBatter||isAR)parts.push(`${runs} (${balls})`);
+          if(isBatter||isAR)parts.push(balls>0?`${runs} (${balls})`:'DNB');
           if((isBowler||isAR)&&overs>0)parts.push(`${wkts}/${overs}`);
           const statStr=parts.join(' · ');
           return`<div style="display:flex;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:4px;background:#0d0d12;border:1px solid #1a1a24">
@@ -11086,14 +11086,19 @@
       // Quote
       const wcQuote=won?'Won the World Cup. There\'s nothing left to say.':isFinalFail?'One game away. The final is the hardest place to lose it.':isSemiFail?'Made the semis. That\'s further than most squads get.':inSuperSix?'Made it out of the group. The Super Sixes showed what this XI can do.':'Didn\'t get through the group. The squad has the players — it didn\'t come together this time.';
 
-      // Player stats
-      const stats=Object.entries(WCS.playerStats||{});
-      const topRunEntry=stats.filter(([,s])=>s.runs>0).sort(([,a],[,b])=>b.runs-a.runs)[0];
-      const topWktEntry=stats.filter(([,s])=>s.wickets>0).sort(([,a],[,b])=>b.wickets-a.wickets)[0];
-      const topRunPlayer=topRunEntry?WCS.squad.find(p=>p.id===topRunEntry[0]):null;
-      const topWktPlayer=topWktEntry?WCS.squad.find(p=>p.id===topWktEntry[0]):null;
-      const totalWickets=stats.reduce((s,[,p])=>s+p.wickets,0);
-      const totalRuns=stats.reduce((s,[,p])=>s+p.runs,0);
+      // Player stats — Most Runs / Most Wickets / MVP
+      const runTotals={},wktTotals={};
+      for(const[id,ps]of Object.entries(WCS.playerStats||{})){
+        const p=WCS.squad.find(x=>x.id===id);if(!p)continue;
+        if(ps.runs)runTotals[p.name]=(runTotals[p.name]||0)+ps.runs;
+        if(ps.wickets)wktTotals[p.name]=(wktTotals[p.name]||0)+ps.wickets;
+      }
+      const topBat=Object.entries(runTotals).sort((a,b)=>b[1]-a[1])[0];
+      const topBowl=Object.entries(wktTotals).sort((a,b)=>b[1]-a[1])[0];
+      const mvpScore={};
+      for(const[n,r]of Object.entries(runTotals))mvpScore[n]=(mvpScore[n]||0)+r/25;
+      for(const[n,w]of Object.entries(wktTotals))mvpScore[n]=(mvpScore[n]||0)+w*2;
+      const topMVP=Object.entries(mvpScore).sort((a,b)=>b[1]-a[1])[0];
 
       // Tables
       const dispTable=inSuperSix?superTable:groupTable;
@@ -11125,11 +11130,9 @@
 
         <div class="ov-quote">"${wcQuote}"</div>
 
-        <div class="ov-stats">
+        <div class="ov-stats" style="grid-template-columns:1fr 1fr">
           <div class="ov-box"><div class="ov-n" style="color:#4ade80">${totalWins}</div><div class="ov-l">Wins</div></div>
           <div class="ov-box"><div class="ov-n" style="color:#f87171">${totalLosses}</div><div class="ov-l">Losses</div></div>
-          <div class="ov-box"><div class="ov-n" style="color:#fbbf24">${totalRuns}</div><div class="ov-l">Runs scored</div></div>
-          <div class="ov-box"><div class="ov-n" style="color:#60a5fa">${totalWickets}</div><div class="ov-l">Wickets</div></div>
         </div>
 
         ${!signedIn?`<div style="width:100%;background:linear-gradient(135deg,#0d0d18,#13131f);border:1px solid #252535;border-radius:12px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -11151,9 +11154,10 @@
               ${inSuperSix?`<div class="perf-row"><span class="perf-label">Super Sixes pos</span><span class="perf-val" style="color:#e0e0f0">${ordinal(superPos||0)} of 6</span></div>`:`<div class="perf-row"><span class="perf-label">Group A pos</span><span class="perf-val" style="color:#e0e0f0">${ordinal(groupPos)} of 7</span></div>`}
             </div>
           </div>
-          ${(topRunPlayer||topWktPlayer)?`<div class="ov-season-stats">
-            ${topRunPlayer?`<div class="stat-card"><div class="stat-card-label">Most Runs</div><div class="stat-card-name">${topRunPlayer.name.split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topRunEntry[1].runs}</div><div class="stat-card-sub">Tournament</div></div>`:''}
-            ${topWktPlayer?`<div class="stat-card"><div class="stat-card-label">Most Wickets</div><div class="stat-card-name">${topWktPlayer.name.split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topWktEntry[1].wickets}</div><div class="stat-card-sub">Tournament</div></div>`:''}
+          ${(topBat||topBowl||topMVP)?`<div class="ov-season-stats">
+            ${topBat?`<div class="stat-card"><div class="stat-card-label">Most Runs</div><div class="stat-card-name">${topBat[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBat[1]}</div><div class="stat-card-sub">Tournament</div></div>`:''}
+            ${topBowl?`<div class="stat-card"><div class="stat-card-label">Most Wickets</div><div class="stat-card-name">${topBowl[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBowl[1]}</div><div class="stat-card-sub">Tournament</div></div>`:''}
+            ${topMVP?`<div class="stat-card mvp-card"><div class="stat-card-label">⭐ MVP</div><div class="stat-card-name">${topMVP[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${[runTotals[topMVP[0]]?runTotals[topMVP[0]]+' runs':'',wktTotals[topMVP[0]]?wktTotals[topMVP[0]]+' wkts':''].filter(Boolean).join(' · ')}</div><div class="stat-card-sub">Tournament</div></div>`:''}
           </div>`:''}
         </div>
 
@@ -11171,11 +11175,7 @@
         <div class="section-lbl">Your Squad</div>
         <div class="squad-list" style="margin-bottom:24px">${xi.map(p=>{
           const rk={batsman:'bat',wicketkeeper:'wk',allrounder:'all',bowler:'bowl'}[p.role]||p.role;
-          const ps=WCS.playerStats[p.id]||{runs:0,inns:0,dismissed:0,wickets:0,runsConceded:0};
-          const batAvg=ps.dismissed?(ps.runs/ps.dismissed).toFixed(1):null;
-          const bowlAvg=ps.wickets?(ps.runsConceded/ps.wickets).toFixed(1):null;
-          const statBits=[ps.runs?`${ps.runs}R${batAvg?` (avg ${batAvg})`:''}`:'',ps.wickets?`${ps.wickets}W${bowlAvg?` (avg ${bowlAvg})`:''}`:''].filter(Boolean).join(' · ');
-          return`<div class="squad-item si-${rk}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.year}${statBits?` · ${statBits}`:''}</div></div><div class="si-right"><span class="rp-badge rpb-${rk}">${RL[rk]||rk.toUpperCase()}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`;
+          return`<div class="squad-item si-${rk}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.year}</div></div><div class="si-right"><span class="rp-badge rpb-${rk}">${RL[rk]||rk.toUpperCase()}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`;
         }).join('')}</div>
 
         <button onclick="go('s-home')" style="width:100%;padding:14px;background:#0d0d18;border:1px solid #2a2a50;border-radius:12px;color:#8080c0;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">← Back to Home</button>
