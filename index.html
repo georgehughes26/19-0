@@ -9912,21 +9912,38 @@
 
     function autoFillWCXI(){
       const getEff=p=>Math.min(99,p.rating+(WCS.playerForm[p.id]||0));
+      const isSpin=p=>p.canBowl&&p.bowlingStyle&&/break|orthodox|spin/i.test(p.bowlingStyle);
+      const isSeam=p=>p.canBowl&&p.bowlingStyle&&/fast|swing|medium/i.test(p.bowlingStyle);
       const sorted=role=>WCS.squad.filter(p=>p.role===role).sort((a,b)=>getEff(b)-getEff(a));
       const openers=sorted('batsman').filter(p=>p.opener);
       const batters=sorted('batsman').filter(p=>!p.opener);
-      const allrounders=sorted('allrounder');const keepers=sorted('wicketkeeper');const bowlers=sorted('bowler');
-      const xi=[];
-      xi.push(...openers.slice(0,2));
-      if(xi.filter(p=>p&&p.opener).length<2&&batters.length)xi.push(batters.shift());
-      const batPool=[...openers.slice(xi.filter(p=>p.opener).length),...batters,...keepers,...allrounders];
-      while(xi.length<6&&batPool.length)xi.push(batPool.shift());
-      if(!xi.find(p=>p&&p.role==='wicketkeeper')&&keepers.length)xi.push(keepers[0]);
-      allrounders.forEach(p=>{if(!xi.find(q=>q&&q.id===p.id)&&xi.length<8)xi.push(p);});
-      bowlers.forEach(p=>{if(!xi.find(q=>q&&q.id===p.id)&&xi.length<11)xi.push(p);});
-      WCS.squad.filter(p=>!xi.find(q=>q&&q.id===p.id)).forEach(p=>{if(xi.length<11)xi.push(p);});
-      WCS.xiSlots=xi.slice(0,11);WCS.currentXI=[...WCS.xiSlots];
-      WCS.bench=WCS.squad.filter(p=>!WCS.currentXI.find(q=>q&&q.id===p.id));
+      const allrounders=sorted('allrounder');
+      const keepers=sorted('wicketkeeper');
+      const bowlers=sorted('bowler');
+      const spinners=bowlers.filter(isSpin);
+      const seamers=bowlers.filter(isSeam);
+      const otherBowl=bowlers.filter(p=>!isSpin(p)&&!isSeam(p));
+      const prefBowl=spinners.length
+        ?[spinners[0],...seamers,...otherBowl,...spinners.slice(1)]
+        :[...seamers,...otherBowl];
+      const bowl9=prefBowl[0];
+      const bowl10=prefBowl.find(b=>b.id!==bowl9?.id);
+      const bowl11=prefBowl.find(b=>b.id!==bowl9?.id&&b.id!==bowl10?.id);
+
+      const op1=openers.shift(),op2=openers.shift()||batters.shift()||allrounders.shift();
+      const bat3=batters.shift()||allrounders.shift();
+      const bat4=batters.shift()||allrounders.shift();
+      const bat5=batters.shift()||allrounders.shift();
+      const ar6=allrounders.shift()||batters.shift();
+      const ar8=allrounders.shift()||batters.shift();
+      const picks=[op1,op2,bat3,bat4,bat5,ar6,keepers[0],ar8,bowl9,bowl10,bowl11];
+      const used=new Set();
+      WCS.xiSlots=picks.map(p=>{
+        if(!p||used.has(p.id))return null;
+        used.add(p.id);return p;
+      });
+      WCS.currentXI=[...WCS.xiSlots];
+      WCS.bench=WCS.squad.filter(p=>!used.has(p.id));
     }
 
     function _wcStatsHtml(p){
@@ -10660,7 +10677,89 @@
         <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">${winnerName} ${margin}</div>
         <div style="font-size:12px;color:#6060a0;margin-top:4px">${inn1.team==='eng'?'Your XI':opp.name}: ${inn1.runs}/${inn1.wkts} (${inn1.oversPlayed} ov)&nbsp;&nbsp;·&nbsp;&nbsp;${inn2.team==='eng'?'Your XI':opp.name}: ${inn2.runs}/${inn2.wkts} (${inn2.oversPlayed} ov)</div>
       </div>`;
-      const nextBtn=document.getElementById('wm-next-btn');nextBtn.style.display='';nextBtn.textContent='Continue →';nextBtn.onclick=()=>afterWCMatch(matchData,opp,result);
+      const nextBtn=document.getElementById('wm-next-btn');nextBtn.style.display='';nextBtn.textContent='Continue →';nextBtn.onclick=()=>showWCMatchSummary(matchData,opp,result);
+    }
+
+    function showWCMatchSummary(matchData,opp,result){
+      const engBatInns=matchData.innings.filter(i=>i.team==='eng');
+      const engBowlInns=matchData.innings.filter(i=>i.team!=='eng');
+
+      const changes=WCS.currentXI.filter(Boolean).map(p=>{
+        let runs=0,balls=0,wkts=0,overs=0;
+        engBatInns.forEach(inn=>{const b=inn._batters&&inn._batters.find(x=>x.name===p.name);if(b){runs+=b.runs||0;balls+=b.balls||0;}});
+        if(p.canBowl){
+          engBowlInns.forEach(inn=>{const b=inn._bowlers&&inn._bowlers.find(x=>x.name===shortName(p.name));if(b){wkts+=b.wickets||0;overs+=b.overs||0;}});
+        }
+
+        if(!WCS.playerStats[p.id])WCS.playerStats[p.id]={runs:0,inns:0,dismissed:0,wickets:0,runsConceded:0};
+        const ps=WCS.playerStats[p.id];
+        engBatInns.forEach(inn=>{const b=inn._batters&&inn._batters.find(x=>x.name===p.name);if(b){if(b.balls>0)ps.inns++;ps.runs+=b.runs||0;if(b.out)ps.dismissed++;}});
+        if(p.canBowl){
+          engBowlInns.forEach(inn=>{const b=inn._bowlers&&inn._bowlers.find(x=>x.name===shortName(p.name));if(b){ps.wickets+=b.wickets||0;ps.runsConceded+=b.runs||0;}});
+        }
+
+        const hadBatOpportunity=balls>=10;
+        let delta=0;
+        if(p.role==='bowler'){
+          if(wkts>=4)delta=2;else if(wkts>=3)delta=1;else if(wkts>=1)delta=0;else if(overs>=8)delta=-1;else delta=0;
+        } else if(p.role==='allrounder'){
+          const batDelta=!hadBatOpportunity?0:runs>=80?2:runs>=45?1:runs>=20?0:runs>=8?-1:-2;
+          const bowlDelta=wkts>=4?2:wkts>=3?1:wkts>=1?0:overs>=8?-1:0;
+          delta=Math.max(batDelta,bowlDelta);
+        } else {
+          if(!hadBatOpportunity)delta=0;
+          else if(runs>=100)delta=2;else if(runs>=50)delta=1;else if(runs>=25)delta=0;else if(runs>=10)delta=-1;else delta=-2;
+        }
+
+        const oppAdj=opp.rating>=83?1:opp.rating<=65?-1:0;
+        if(delta>0)delta=Math.max(0,delta+oppAdj);
+        if(result==='L')delta=Math.max(-2,delta-1);
+        delta=Math.max(-2,Math.min(2,delta));
+
+        const currentForm=WCS.playerForm[p.id]||0;
+        const headroom=99-p.rating;
+        WCS.playerForm[p.id]=Math.max(-8,Math.min(Math.min(8,headroom),currentForm+delta));
+        return{player:p,delta,runs,balls,wkts,overs};
+      });
+
+      const el=document.getElementById('wc-summary-content');
+      const resCol=result==='W'?'#4ade80':'#f87171';
+      const resLabel=result==='W'?'Your XI Won':'Your XI Lost';
+      const headline=matchData.margin?(result==='W'?`Won by ${matchData.margin.replace('won by ','')}`:`Lost by ${matchData.margin.replace('won by ','')}`):resLabel;
+
+      el.innerHTML=`
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#606070;margin-bottom:4px">vs ${opp.flag} ${opp.name}</div>
+          <div style="font-size:24px;font-weight:900;color:${resCol}">${resLabel}</div>
+          <div style="font-size:13px;color:#9090a8;margin-top:4px">${headline}</div>
+        </div>
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Player Ratings After This Match</div>
+        ${changes.map(({player,delta,runs,balls,wkts,overs})=>{
+          const newEff=player.rating+(WCS.playerForm[player.id]||0);
+          const col=delta>0?'#4ade80':delta<0?'#f87171':'#6060a0';
+          const arrow=delta>0?`▲${delta}`:delta<0?`▼${Math.abs(delta)}`:'—';
+          const isBatter=['batsman','wicketkeeper'].includes(player.role);
+          const isBowler=player.role==='bowler';
+          const isAR=player.role==='allrounder';
+          const parts=[];
+          if(isBatter||isAR)parts.push(`${runs} (${balls})`);
+          if((isBowler||isAR)&&overs>0)parts.push(`${wkts}/${overs}`);
+          const statStr=parts.join(' · ');
+          return`<div style="display:flex;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:4px;background:#0d0d12;border:1px solid #1a1a24">
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-size:13px;font-weight:700;color:#e0e0f0">${player.name}</span>
+                ${statStr?`<span style="font-size:11px;font-weight:700;color:#8080a8">${statStr}</span>`:''}
+              </div>
+              <div style="font-size:10px;color:#5050a0;margin-top:2px;text-align:left">${roleLabel(player.role)} · ${player.year}</div>
+            </div>
+            <div style="font-size:12px;font-weight:900;color:${ratingColor(newEff)};min-width:26px;text-align:right;margin-right:6px">${newEff}</div>
+            <div style="font-size:13px;font-weight:900;color:${col};min-width:22px;text-align:right">${arrow}</div>
+          </div>`;
+        }).join('')}
+      `;
+      document.getElementById('wc-summary-btn').onclick=()=>afterWCMatch(matchData,opp,result);
+      go('s-wc-summary');
     }
 
     function afterWCMatch(matchData,opp,result){
@@ -10681,23 +10780,43 @@
           const finCands=Object.entries(WCS.superSixTable).map(([id,t])=>({id,...t})).filter(t=>t.id!=='myxi'&&t.id!==opp.id).sort((a,b)=>WCS.cycleRatings[b.id]-WCS.cycleRatings[a.id]);
           const finNation=WC_NATIONS.find(n=>n.id===finCands[0]?.id)||WC_NATIONS[0];
           WCS.knockoutOpp={...finNation,rating:WCS.cycleRatings[finNation.id],home:false};
-          go('s-wc-hub');buildWCHub();
+          showWCStageAdvance({
+            stage:'The Final',eyebrow:'World Cup · Semi-Final Won',
+            headline:'You\'re Through To The Final!',
+            sub:`Beat ${opp.flag} ${opp.name} to book a place in the World Cup Final.`,
+            opponent:WCS.knockoutOpp,
+            btnLabel:'Play Final →',
+            onPlay:()=>startWCKnockout()
+          });
         } else{WCS.finalResult='L';buildWCEndScreen();go('s-wc-end');}
         return;
       } else if(WCS.phase==='final'){WCS.finalResult=result;buildWCEndScreen();go('s-wc-end');return;}
 
-      // Update player form + stats
-      matchData.innings.forEach(inn=>{
-        if(inn.team!=='eng')return;
-        inn._batters.forEach(b=>{const player=WCS.currentXI.find(p=>p&&p.name===b.name);if(!player)return;const delta=b.runs>=50?+2:b.runs>=30?+1:b.runs<10&&b.balls>3?-1:0;WCS.playerForm[player.id]=Math.max(-8,Math.min(8,(WCS.playerForm[player.id]||0)+delta));});
-        inn._bowlers.forEach(b=>{const player=WCS.currentXI.find(p=>p&&shortName(p.name)===b.name);if(!player)return;const delta=b.wickets>=3?+2:b.wickets>=2?+1:b.wickets===0&&b.overs>=8?-1:0;WCS.playerForm[player.id]=Math.max(-8,Math.min(8,(WCS.playerForm[player.id]||0)+delta));});
-        inn._batters.forEach(b=>{const player=WCS.currentXI.find(p=>p&&p.name===b.name);if(!player)return;if(!WCS.playerStats[player.id])WCS.playerStats[player.id]={runs:0,inns:0,dismissed:0,wickets:0,runsConceded:0};const ps=WCS.playerStats[player.id];if(b.balls>0)ps.inns++;ps.runs+=b.runs;if(b.out)ps.dismissed++;});
-        inn._bowlers.forEach(b=>{const player=WCS.currentXI.find(p=>p&&shortName(p.name)===b.name);if(!player)return;if(!WCS.playerStats[player.id])WCS.playerStats[player.id]={runs:0,inns:0,dismissed:0,wickets:0,runsConceded:0};const ps=WCS.playerStats[player.id];ps.wickets+=b.wickets;ps.runsConceded+=b.runs;});
-      });
-
       const allDone=WCS.matches.every(m=>m.completed);
       if(allDone){if(WCS.phase==='group')checkGroupQualification();else if(WCS.phase==='super6')checkSuperSixQualification();}
       else{go('s-wc-hub');buildWCHub();}
+    }
+
+    function showWCStageAdvance(opts){
+      const el=document.getElementById('wc-stage-advance-content');
+      const opp=opts.opponent;
+      el.innerHTML=`
+        <div style="text-align:center;margin-bottom:24px;margin-top:20px">
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:8px">${opts.eyebrow}</div>
+          <div style="font-size:28px;font-weight:900;color:#f9c846;line-height:1.15">${opts.headline}</div>
+          <div style="font-size:13px;color:#9090a8;margin-top:8px">${opts.sub}</div>
+        </div>
+        ${opp?`<div style="width:100%;box-sizing:border-box;background:#111118;border:1px solid #1a1a24;border-radius:14px;padding:20px;text-align:center;margin-bottom:20px">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:10px">${opts.stage} · Your Opponent</div>
+          <div style="font-size:38px;margin-bottom:6px">${opp.flag}</div>
+          <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">${opp.name}</div>
+          <div class="rating-badge ${ratingBadgeClass(opp.rating)}" style="width:44px;height:44px;font-size:18px;margin:6px auto 0">${opp.rating}</div>
+          <div style="font-size:11px;color:#6060a0;margin-top:6px">Squad Rating · Neutral Venue</div>
+        </div>`:''}
+        <button class="btn-sim" id="wc-stage-advance-btn">${opts.btnLabel}</button>
+      `;
+      document.getElementById('wc-stage-advance-btn').onclick=opts.onPlay;
+      go('s-wc-stage-advance');
     }
 
     function checkGroupQualification(){
@@ -10752,7 +10871,14 @@
         const semiOpp=table[4-myPos];
         const semiNation=WC_NATIONS.find(n=>n.id===semiOpp?.id)||WC_NATIONS[0];
         WCS.knockoutOpp={...semiNation,rating:WCS.cycleRatings[semiNation.id],home:false};
-        go('s-wc-hub');buildWCHub();
+        showWCStageAdvance({
+          stage:'Semi-Final',eyebrow:'World Cup · Super Sixes Complete',
+          headline:'Semi-Final Made!',
+          sub:`Finished ${ordinal(myPos)} in the Super Sixes — you're through to the knockouts.`,
+          opponent:WCS.knockoutOpp,
+          btnLabel:'Play Semi-Final →',
+          onPlay:()=>startWCKnockout()
+        });
       }else{WCS.qualified=false;WCS.finalResult='eliminated';buildWCEndScreen();go('s-wc-end');}
     }
 
@@ -11350,6 +11476,18 @@
     <!-- Result -->
     <div id="wm-result-block" style="display:none;width:100%;margin-top:4px"></div>
     <button class="btn-sim" id="wm-next-btn" style="display:none;margin-top:12px">Continue →</button>
+  </div>
+
+  <!-- WC MATCH SUMMARY (post-match ratings) -->
+  <div id="s-wc-summary" class="screen">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:16px;text-align:left">World Cup · Match Summary</div>
+    <div id="wc-summary-content" style="width:100%;margin-bottom:16px"></div>
+    <button class="btn-sim" id="wc-summary-btn">Continue →</button>
+  </div>
+
+  <!-- WC STAGE ADVANCE (Super Sixes / Semi / Final announcement) -->
+  <div id="s-wc-stage-advance" class="screen">
+    <div id="wc-stage-advance-content" style="width:100%"></div>
   </div>
 
   <!-- WC END SCREEN -->

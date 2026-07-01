@@ -37,7 +37,7 @@ function shortName(n) {
 
 function simODIInnings(batR, bowlR, oversMax, target, batNames, bowlPool, keeperName, batRatings) {
   const q = Math.max(0, Math.min(1, (batR - bowlR + 50) / 100));
-  const wktProbBase = 0.028 - q * 0.016;
+  const wktProbBase = 0.021 - q * 0.007;
   const batters = batNames.slice(0, 11).map(n => ({ name: n, runs: 0, balls: 0, out: false, how: '' }));
   const bwlrs = bowlPool.map(b => {
     const bRat = Math.max(55, Math.min(97, b.rating || 72));
@@ -92,9 +92,9 @@ function simODIInnings(batR, bowlR, oversMax, target, batNames, bowlPool, keeper
         batters[striker].out = true; batters[striker].how = makeHow(bowler.name);
         bowler.wickets++; wkts++; striker = nextIn++;
       } else {
-        const batScMod = 0.68 + (bRat - 52) / 47 * 0.55;
+        const batScMod = 0.80 + (bRat - 52) / 47 * 0.40;
         const phaseMult = isPP ? 1.18 : isDeath ? 1.55 : 1.0;
-        const sc = (0.88 + q * 0.22) * batScMod * phaseMult;
+        const sc = (0.95 + q * 0.20) * batScMod * phaseMult;
         const p1 = 0.22 * sc, p2 = 0.07 * sc, p3 = 0.005 * sc, p4 = 0.09 * sc, p6 = 0.025 * sc;
         const p0 = Math.max(0.38, 1 - (p1 + p2 + p3 + p4 + p6)); const r = Math.random();
         let runs = r < p0 ? 0 : r < p0 + p1 ? 1 : r < p0 + p1 + p2 ? 2 : r < p0 + p1 + p2 + p3 ? 3 : r < p0 + p1 + p2 + p3 + p4 ? 4 : 6;
