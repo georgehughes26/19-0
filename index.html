@@ -2921,6 +2921,8 @@
       50% { box-shadow: 0 0 10px currentColor; filter: brightness(1.3); }
     }
     .chip-boost { animation: chip-glisten 2.2s ease-in-out infinite; }
+    .ov-reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
+    .ov-reveal.ov-in { opacity: 1; transform: translateY(0); }
 
   </style>
 </head>
@@ -11094,9 +11096,9 @@
       const superTable=Object.entries(WCS.superSixTable||{}).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts);
       const groupPos=groupTable.findIndex(t=>t.id==='myxi')+1;
       const superPos=inSuperSix?superTable.findIndex(t=>t.id==='myxi')+1:null;
-      const myRec=(inSuperSix?WCS.superSixTable:WCS.groupTable.A)?.['myxi']||{w:0,l:0,p:0};
-      const totalWins=myRec.w+(won?1:0)+(isFinalFail?1:0);
-      const totalLosses=myRec.l+(isElim?0:won?0:1);
+      // All wins/losses across every phase played (group, Super Sixes, semi, final)
+      const totalWins=(WCS.matchHistory||[]).filter(m=>m.result==='W').length;
+      const totalLosses=(WCS.matchHistory||[]).filter(m=>m.result==='L').length;
 
       // Performance verdict vs prediction
       const myXIRating=Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length);
@@ -11166,12 +11168,12 @@
 
         <div class="ov-quote">"${wcQuote}"</div>
 
-        <div class="ov-stats" style="grid-template-columns:1fr 1fr">
+        <div class="ov-reveal ov-stats" style="grid-template-columns:1fr 1fr">
           <div class="ov-box"><div class="ov-n" style="color:#4ade80">${totalWins}</div><div class="ov-l">Wins</div></div>
           <div class="ov-box"><div class="ov-n" style="color:#f87171">${totalLosses}</div><div class="ov-l">Losses</div></div>
         </div>
 
-        ${!signedIn?`<div style="width:100%;background:linear-gradient(135deg,#0d0d18,#13131f);border:1px solid #252535;border-radius:12px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        ${!signedIn?`<div class="ov-reveal" style="width:100%;background:linear-gradient(135deg,#0d0d18,#13131f);border:1px solid #252535;border-radius:12px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
           <div style="text-align:left;min-width:0;flex:1">
             <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:3px">Save your drafts</div>
             <div style="font-size:11px;color:#606080;line-height:1.5">Create a free account to track your stats, best runs and most drafted players.</div>
@@ -11179,13 +11181,13 @@
           <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up →</button>
         </div>`:''}
 
-        ${(topBat||topBowl)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        ${(topBat||topBowl)?`<div class="ov-reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
           ${topBat?`<div class="stat-card"><div class="stat-card-label">Most Runs</div><div class="stat-card-name">${topBat[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBat[1]}</div><div class="stat-card-sub">Tournament</div></div>`:''}
           ${topBowl?`<div class="stat-card"><div class="stat-card-label">Most Wickets</div><div class="stat-card-name">${topBowl[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBowl[1]}</div><div class="stat-card-sub">Tournament</div></div>`:''}
         </div>`:''}
-        ${topMVP?`<div class="stat-card mvp-card" style="margin-bottom:16px"><div class="stat-card-label">⭐ MVP</div><div class="stat-card-name">${topMVP[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${[runTotals[topMVP[0]]?runTotals[topMVP[0]]+' runs':'',wktTotals[topMVP[0]]?wktTotals[topMVP[0]]+' wkts':''].filter(Boolean).join(' · ')}</div><div class="stat-card-sub">Tournament</div></div>`:''}
+        ${topMVP?`<div class="ov-reveal stat-card mvp-card chip-boost" style="margin-bottom:16px"><div class="stat-card-label">⭐ MVP</div><div class="stat-card-name">${topMVP[0]}</div><div class="stat-card-val">${[runTotals[topMVP[0]]?runTotals[topMVP[0]]+' runs':'',wktTotals[topMVP[0]]?wktTotals[topMVP[0]]+' wkts':''].filter(Boolean).join(' · ')}</div><div class="stat-card-sub">Tournament</div></div>`:''}
 
-        <div class="perf-card ${perfClass}" style="margin-bottom:16px">
+        <div class="ov-reveal perf-card ${perfClass}" style="margin-bottom:16px">
           <div class="perf-verdict">${perfVerdict}</div>
           <div class="perf-row"><span class="perf-label">Stage reached</span><span class="perf-val" style="color:#e0e0f0">${stageReached}</span></div>
           <div class="perf-row"><span class="perf-label">Overall record</span><span class="perf-val" style="color:#e0e0f0">W${totalWins} L${totalLosses}</span></div>
@@ -11193,25 +11195,43 @@
           <div class="perf-row"><span class="perf-label">Super Sixes position</span><span class="perf-val" style="color:#e0e0f0">${inSuperSix?`${ordinal(superPos||0)} of 6`:'N/A'}</span></div>
         </div>
 
-        ${matchRecapHTML?`<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Match Results</div>
-        <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:0 14px;margin-bottom:16px">${matchRecapHTML}</div>`:''}
+        ${matchRecapHTML?`<div class="ov-reveal">
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Match Results</div>
+        <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:0 14px;margin-bottom:16px">${matchRecapHTML}</div>
+        </div>`:''}
 
+        <div class="ov-reveal">
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">${tblLabel}</div>
         <table class="wtc-table" style="margin-bottom:16px">
           <thead><tr><th style="text-align:center;width:24px">#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead>
           <tbody>${dispTable.map((t,i)=>`<tr class="${t.id==='myxi'?'my-row':''}"><td style="text-align:center;color:#606070;font-size:11px">${i+1}</td><td>${t.flag} ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td class="wtc-pct">${t.pts}</td></tr>`).join('')}</tbody>
         </table>
+        </div>
 
         <button class="btn-share-season" onclick="openWCShareModal()" style="margin-top:4px;margin-bottom:16px">📸 Share your season</button>
 
+        <div class="ov-reveal">
         <div class="section-lbl">Your Squad</div>
         <div class="squad-list" style="margin-bottom:24px">${xi.map(p=>{
           const rk={batsman:'bat',wicketkeeper:'wk',allrounder:'all',bowler:'bowl'}[p.role]||p.role;
           return`<div class="squad-item si-${rk}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.year}</div></div><div class="si-right"><span class="rp-badge rpb-${rk}">${RL[rk]||rk.toUpperCase()}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`;
         }).join('')}</div>
+        </div>
 
-        <button onclick="go('s-home')" style="width:100%;padding:14px;background:#0d0d18;border:1px solid #2a2a50;border-radius:12px;color:#8080c0;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">← Back to Home</button>
+        <button onclick="startWCDraft()" style="width:100%;padding:14px;background:linear-gradient(135deg,#f9c846,#f97316);border:none;border-radius:12px;color:#0f0f13;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px">Play Again →</button>
+        <button onclick="go('s-home')" style="width:100%;padding:12px;background:#0d0d18;border:1px solid #2a2a50;border-radius:12px;color:#8080c0;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">← Back to Home</button>
       `;
+
+      // Reveal each section as the user scrolls through their tournament run
+      requestAnimationFrame(()=>{
+        const revealEls=el.querySelectorAll('.ov-reveal');
+        const obs=new IntersectionObserver((entries)=>{
+          entries.forEach(entry=>{
+            if(entry.isIntersecting){entry.target.classList.add('ov-in');obs.unobserve(entry.target);}
+          });
+        },{threshold:0.15});
+        revealEls.forEach(node=>obs.observe(node));
+      });
 
       if(won)launchConfetti();
       setTimeout(openCoffeeModal, 2000);
@@ -11227,9 +11247,8 @@
       const superTable=Object.entries(WCS.superSixTable||{}).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts);
       const groupPos=groupTable.findIndex(t=>t.id==='myxi')+1;
       const superPos=inSuperSix?superTable.findIndex(t=>t.id==='myxi')+1:null;
-      const myRec=(inSuperSix?WCS.superSixTable:WCS.groupTable.A)?.['myxi']||{w:0,l:0,p:0};
-      const totalWins=myRec.w+(won?1:0)+(isFinalFail?1:0);
-      const totalLosses=myRec.l+(WCS.finalResult==='eliminated'?0:won?0:1);
+      const totalWins=(WCS.matchHistory||[]).filter(m=>m.result==='W').length;
+      const totalLosses=(WCS.matchHistory||[]).filter(m=>m.result==='L').length;
       const headline=won?'🏆 World Cup Champions!':isFinalFail?'🥈 World Cup Runners-Up':isSemiFail?'Semi-Final Exit':inSuperSix?'Super Sixes Exit':`${ordinal(groupPos)} in Group A`;
       const finishCls=won?'sc-finish-won':isFinalFail?'sc-finish-final':isSemiFail?'sc-finish-sf':inSuperSix?'sc-finish-qf':'sc-finish-out';
 
@@ -11303,9 +11322,8 @@
       const inSuperSix=WCS.superSixTable&&Object.keys(WCS.superSixTable).length>0;
       const groupTable=Object.entries(WCS.groupTable.A||{}).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts);
       const groupPos=groupTable.findIndex(t=>t.id==='myxi')+1;
-      const myRec=(inSuperSix?WCS.superSixTable:WCS.groupTable.A)?.['myxi']||{w:0,l:0,p:0};
-      const totalWins=myRec.w+(won?1:0)+(isFinalFail?1:0);
-      const totalLosses=myRec.l+(WCS.finalResult==='eliminated'?0:won?0:1);
+      const totalWins=(WCS.matchHistory||[]).filter(m=>m.result==='W').length;
+      const totalLosses=(WCS.matchHistory||[]).filter(m=>m.result==='L').length;
       const headline=won?'🏆 World Cup Champions!':isFinalFail?'🥈 World Cup Runners-Up':isSemiFail?'Semi-Final Exit':inSuperSix?'Super Sixes Exit':`${ordinal(groupPos)} in Group A`;
       const textEl=document.getElementById('share-text-preview');
       if(textEl)textEl.textContent=`19-0 · Cricket World Cup\n${headline}\nW${totalWins} L${totalLosses}\n19-0.co.uk`;
