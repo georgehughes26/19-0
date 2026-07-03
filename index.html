@@ -11105,7 +11105,6 @@
       // Predicted tier: 1=Favourites (expect to win), 2=Strong Contenders (expect Semi-Final),
       // 3=Outsiders (expect Super Sixes), 4=No Hope (expect group knockout)
       const predTier=predPos===1?1:predPos<=5?2:predPos<=9?3:4;
-      const predLabel=predTier===1?'Tournament Favourites':predTier===2?'Strong Contenders':predTier===3?'Outsiders':'No Hope';
       const expectedTier={1:5,2:3,3:2,4:1}[predTier]; // maps to the actual-stage tier below
       // Actual stage tier: 1=Group knockout, 2=Super Sixes exit, 3=Semi-Final exit, 4=Final loss, 5=Champions
       const actualTier=won?5:isFinalFail?4:isSemiFail?3:inSuperSix?2:1;
@@ -11114,7 +11113,7 @@
       const perfVerdict=diff>0?'Overperformed':diff===0?'Expected':'Underperformed';
 
       // Stage strings
-      const stageReached=won?'World Cup Champions':isFinalFail?'World Cup Final':isSemiFail?'Semi-Final':inSuperSix?`Super Sixes (${ordinal(superPos||0)})`:`Group Stage (${ordinal(groupPos)} in Group A)`;
+      const stageReached=won?'World Cup Champions':isFinalFail?'World Cup Final':isSemiFail?'Semi-Final':inSuperSix?'Super Sixes':'Group Stage';
       const icon=won?'🏆':isFinalFail?'🥈':isSemiFail?'🏏':inSuperSix?'📊':'📋';
       const headerClass=won?'ov-header ovh-won':isFinalFail||isSemiFail?'ov-header ovh-final':'ov-header ovh-early';
       const headline=won?'World Cup Champions!':isFinalFail?'World Cup Runners-Up':isSemiFail?'Semi-Final Exit':inSuperSix?`Super Sixes Exit`:`Eliminated in the Group Stage`;
@@ -11180,21 +11179,18 @@
           <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up →</button>
         </div>`:''}
 
-        <div class="ov-lower">
-          <div class="ov-reached">
-            <div class="perf-card ${perfClass}">
-              <div class="perf-verdict">${perfVerdict}</div>
-              <div class="perf-row"><span class="perf-label">Predicted finish</span><span class="perf-val" style="color:#9090a8">${predLabel}</span></div>
-              <div class="perf-row"><span class="perf-label">Record</span><span class="perf-val" style="color:#e0e0f0">W${totalWins} L${totalLosses}</span></div>
-              <div class="perf-row"><span class="perf-label">Stage reached</span><span class="perf-val" style="color:#e0e0f0">${stageReached}</span></div>
-              ${inSuperSix?`<div class="perf-row"><span class="perf-label">Super Sixes pos</span><span class="perf-val" style="color:#e0e0f0">${ordinal(superPos||0)} of 6</span></div>`:`<div class="perf-row"><span class="perf-label">Group A pos</span><span class="perf-val" style="color:#e0e0f0">${ordinal(groupPos)} of 7</span></div>`}
-            </div>
-          </div>
-          ${(topBat||topBowl||topMVP)?`<div class="ov-season-stats">
-            ${topBat?`<div class="stat-card"><div class="stat-card-label">Most Runs</div><div class="stat-card-name">${topBat[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBat[1]}</div><div class="stat-card-sub">Tournament</div></div>`:''}
-            ${topBowl?`<div class="stat-card"><div class="stat-card-label">Most Wickets</div><div class="stat-card-name">${topBowl[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBowl[1]}</div><div class="stat-card-sub">Tournament</div></div>`:''}
-            ${topMVP?`<div class="stat-card mvp-card"><div class="stat-card-label">⭐ MVP</div><div class="stat-card-name">${topMVP[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${[runTotals[topMVP[0]]?runTotals[topMVP[0]]+' runs':'',wktTotals[topMVP[0]]?wktTotals[topMVP[0]]+' wkts':''].filter(Boolean).join(' · ')}</div><div class="stat-card-sub">Tournament</div></div>`:''}
-          </div>`:''}
+        ${(topBat||topBowl)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          ${topBat?`<div class="stat-card"><div class="stat-card-label">Most Runs</div><div class="stat-card-name">${topBat[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBat[1]}</div><div class="stat-card-sub">Tournament</div></div>`:''}
+          ${topBowl?`<div class="stat-card"><div class="stat-card-label">Most Wickets</div><div class="stat-card-name">${topBowl[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${topBowl[1]}</div><div class="stat-card-sub">Tournament</div></div>`:''}
+        </div>`:''}
+        ${topMVP?`<div class="stat-card mvp-card" style="margin-bottom:16px"><div class="stat-card-label">⭐ MVP</div><div class="stat-card-name">${topMVP[0].split(' ').slice(-1)[0]}</div><div class="stat-card-val">${[runTotals[topMVP[0]]?runTotals[topMVP[0]]+' runs':'',wktTotals[topMVP[0]]?wktTotals[topMVP[0]]+' wkts':''].filter(Boolean).join(' · ')}</div><div class="stat-card-sub">Tournament</div></div>`:''}
+
+        <div class="perf-card ${perfClass}" style="margin-bottom:16px">
+          <div class="perf-verdict">${perfVerdict}</div>
+          <div class="perf-row"><span class="perf-label">Stage reached</span><span class="perf-val" style="color:#e0e0f0">${stageReached}</span></div>
+          <div class="perf-row"><span class="perf-label">Overall record</span><span class="perf-val" style="color:#e0e0f0">W${totalWins} L${totalLosses}</span></div>
+          <div class="perf-row"><span class="perf-label">Group position</span><span class="perf-val" style="color:#e0e0f0">${ordinal(groupPos)} of 7</span></div>
+          <div class="perf-row"><span class="perf-label">Super Sixes position</span><span class="perf-val" style="color:#e0e0f0">${inSuperSix?`${ordinal(superPos||0)} of 6`:'N/A'}</span></div>
         </div>
 
         ${matchRecapHTML?`<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Match Results</div>
