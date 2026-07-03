@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-03T20:45:00Z",
+  "title": "Design System: 19-0",
+  "extensions": {
+    "colorMeta": {
+      "scoreboard-gold": { "role": "primary", "displayName": "Scoreboard Gold", "canonical": "#f9c846", "tonalRamp": ["#3d2f0d", "#5c4713", "#7a5e18", "#997621", "#b98d2a", "#d9a538", "#f9c846", "#fcdc8f"] },
+      "scoreboard-orange": { "role": "primary", "displayName": "Scoreboard Orange", "canonical": "#f97316", "tonalRamp": ["#3d1d06", "#5c2b09", "#7a380c", "#99460f", "#b95612", "#d96414", "#f97316", "#fca768"] },
+      "hero-rose": { "role": "tertiary", "displayName": "Hero Rose", "canonical": "#e11d48", "tonalRamp": ["#380712", "#54091b", "#700c24", "#8c0f2d", "#a81236", "#c4153f", "#e11d48", "#ee6689"] },
+      "ink-black": { "role": "neutral", "displayName": "Ink Black", "canonical": "#0d0d12", "tonalRamp": ["#050506", "#0d0d12", "#161620", "#20202e", "#33333f", "#55555f", "#8a8a92", "#c6c6ca"] },
+      "panel-black": { "role": "neutral", "displayName": "Panel Black", "canonical": "#111118", "tonalRamp": ["#060609", "#111118", "#1c1c26", "#272733", "#3a3a46", "#5c5c66", "#8e8e96", "#c8c8cc"] },
+      "void-black": { "role": "neutral", "displayName": "Void Black", "canonical": "#0a0a0f", "tonalRamp": ["#040406", "#0a0a0f", "#151519", "#202024", "#333338", "#55555a", "#8a8a8e", "#c6c6c8" ] },
+      "card-navy": { "role": "neutral", "displayName": "Card Navy", "canonical": "#0d0d18", "tonalRamp": ["#050508", "#0d0d18", "#181824", "#232330", "#363644", "#585868", "#8c8c98", "#c8c8cf"] },
+      "surface-navy": { "role": "neutral", "displayName": "Surface Navy", "canonical": "#13131f", "tonalRamp": ["#07070b", "#13131f", "#1e1e2a", "#292936", "#3c3c49", "#5e5e6a", "#90909a", "#cacad0"] },
+      "border-subtle": { "role": "neutral", "displayName": "Border Subtle", "canonical": "#1a1a24", "tonalRamp": ["#0a0a0e", "#1a1a24", "#24242f", "#2f2f3b", "#42424e", "#64646f", "#96969f", "#cececf"] },
+      "border-strong": { "role": "neutral", "displayName": "Border Strong", "canonical": "#252535", "tonalRamp": ["#0e0e15", "#252535", "#303041", "#3b3b4c", "#4e4e5e", "#70707d", "#a2a2ad", "#d6d6da"] },
+      "win-green": { "role": "semantic", "displayName": "Win Green", "canonical": "#4ade80", "tonalRamp": ["#0d3a1f", "#145530", "#1c7041", "#248c52", "#2ea866", "#3ac47e", "#4ade80", "#a3f0c0"] },
+      "loss-red": { "role": "semantic", "displayName": "Loss Red", "canonical": "#f87171", "tonalRamp": ["#450e0e", "#671515", "#891c1c", "#ab2424", "#cc3232", "#e94b4b", "#f87171", "#fbb3b3"] },
+      "draw-amber": { "role": "semantic", "displayName": "Draw Amber", "canonical": "#fbbf24", "tonalRamp": ["#452f04", "#674607", "#89600a", "#ab7a0d", "#cc9410", "#eeae14", "#fbbf24", "#fdde8f"] },
+      "info-blue": { "role": "semantic", "displayName": "Info Blue", "canonical": "#60a5fa", "tonalRamp": ["#0d2c56", "#144080", "#1c56a8", "#246cd0", "#3684f2", "#5296f6", "#60a5fa", "#b0d3fd"] },
+      "allrounder-purple": { "role": "semantic", "displayName": "Allrounder Purple", "canonical": "#c084fc", "tonalRamp": ["#33125c", "#4a1b85", "#6224ad", "#7a2ed6", "#9752ec", "#ac6ef4", "#c084fc", "#e0c0fd"] },
+      "text-highlight": { "role": "neutral", "displayName": "Text Highlight", "canonical": "#e0e0f0", "tonalRamp": ["#38384a", "#54546a", "#70708a", "#8c8caa", "#a8a8c2", "#c4c4da", "#e0e0f0", "#f4f4fa"] },
+      "text-muted-alt": { "role": "neutral", "displayName": "Text Muted Alt", "canonical": "#606080", "tonalRamp": ["#181820", "#242430", "#303040", "#3c3c50", "#484860", "#545470", "#606080", "#9494b0"] },
+      "border-muted": { "role": "neutral", "displayName": "Border Muted", "canonical": "#2a2a50", "tonalRamp": ["#0a0a14", "#14142a", "#1e1e3a", "#282848", "#323258", "#3c3c68", "#2a2a50", "#8080a8"] },
+      "text-secondary": { "role": "neutral", "displayName": "Text Secondary", "canonical": "#8080c0", "tonalRamp": ["#202032", "#30304c", "#404066", "#505080", "#60609a", "#7070b0", "#8080c0", "#c0c0e0"] },
+      "fallback-gray": { "role": "neutral", "displayName": "Fallback Gray", "canonical": "#aaaaaa", "tonalRamp": ["#2a2a2a", "#404040", "#565656", "#6c6c6c", "#828282", "#969696", "#aaaaaa", "#d4d4d4"] },
+      "loss-tint-bg": { "role": "semantic", "displayName": "Loss Tint Bg", "canonical": "#1a1010", "tonalRamp": ["#0a0606", "#140c0c", "#1a1010", "#241616", "#301c1c", "#3c2424", "#482a2a", "#603838"] },
+      "loss-tint-border": { "role": "semantic", "displayName": "Loss Tint Border", "canonical": "#4a2020", "tonalRamp": ["#180c0c", "#241212", "#301818", "#3c1e1e", "#4a2020", "#682c2c", "#864040", "#b06868"] },
+      "perf-over-label": { "role": "semantic", "displayName": "Perf Over Label", "canonical": "#6fae82", "tonalRamp": ["#1c3a24", "#284e30", "#34623c", "#40764a", "#4c8a56", "#589e64", "#6fae82", "#a0d0ac"] },
+      "perf-met-label": { "role": "semantic", "displayName": "Perf Met Label", "canonical": "#9a9ad4", "tonalRamp": ["#28284a", "#363662", "#44447a", "#525292", "#6060aa", "#7878c0", "#9a9ad4", "#c8c8e8"] },
+      "perf-under-label": { "role": "semantic", "displayName": "Perf Under Label", "canonical": "#d99860", "tonalRamp": ["#3a2410", "#4e3016", "#623c1c", "#764822", "#8a5428", "#a06838", "#d99860", "#eec8a0"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The \"19-0\" hero wordmark only. Gradient-filled via background-clip: text — a grandfathered exception, not a reusable pattern." },
+      "body": { "displayName": "Body", "purpose": "Standard copy, descriptions, quotes." },
+      "label": { "displayName": "Label", "purpose": "Uppercase tracked eyebrows for table headers and stat captions only." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-out-strong", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Default entrance/reveal easing across the season review and home screen." },
+      { "name": "ease-pop", "value": "cubic-bezier(0.34, 1.56, 0.64, 1)", "purpose": "Springy pop-in for rare celebratory moments (MVP card, hero icon, verdict word)." }
+    ],
+    "breakpoints": [
+      { "name": "app-max-width", "value": "480px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call-to-action (Start New Run, Play Again). Gold-to-orange gradient, ink-black text, scale-down press feedback.",
+      "html": "<button class=\"ds-btn-primary\">Start New Run →</button>",
+      "css": ".ds-btn-primary { background: linear-gradient(135deg, #f9c846, #f97316); color: #0f0f13; border: none; padding: 16px 52px; font-size: 16px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: opacity 0.15s; } .ds-btn-primary:hover { opacity: 0.88; } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid #f9c846; outline-offset: 2px; }"
+    },
+    {
+      "name": "Mode Chip",
+      "kind": "chip",
+      "refersTo": "chip-mode",
+      "description": "Home-screen mode selector (T20 Blast / Test Cricket / World Cup). Active chip gets an indigo border and dark gradient fill.",
+      "html": "<button class=\"ds-chip-mode ds-chip-mode--active\"><span class=\"ds-chip-icon\">⚡</span><span class=\"ds-chip-label\">T20 Blast</span></button>",
+      "css": ".ds-chip-mode { flex: 1; padding: 14px 10px; border-radius: 10px; border: 1px solid #252535; background: #111118; color: #9090a8; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-align: center; cursor: pointer; transition: all 0.15s; } .ds-chip-mode--active { background: linear-gradient(135deg, #1a1a3a, #0f0f1f); border-color: #4040a0; color: #fff; } .ds-chip-icon { font-size: 22px; display: block; margin-bottom: 4px; } .ds-chip-label { display: block; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "card-stat",
+      "description": "Most Runs / Most Wickets style tournament stat callout.",
+      "html": "<div class=\"ds-card-stat\"><div class=\"ds-card-stat-label\">Most Runs</div><div class=\"ds-card-stat-name\">Warner</div><div class=\"ds-card-stat-val\">278</div><div class=\"ds-card-stat-sub\">Tournament</div></div>",
+      "css": ".ds-card-stat { background: #13131f; border: 1px solid #252535; border-radius: 12px; padding: 11px 13px; } .ds-card-stat-label { font-size: 9px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #5858a8; margin-bottom: 5px; } .ds-card-stat-name { font-size: 15px; font-weight: 800; color: #fff; line-height: 1.1; } .ds-card-stat-val { font-size: 26px; font-weight: 900; color: #f9c846; line-height: 1; margin-top: 3px; } .ds-card-stat-sub { font-size: 10px; color: #5858a8; margin-top: 3px; }"
+    },
+    {
+      "name": "MVP Card",
+      "kind": "custom",
+      "refersTo": "card-mvp",
+      "description": "The system's showcase component: gold-bordered card with a shimmer sweep and glisten glow, used once per season review to spotlight the tournament MVP.",
+      "html": "<div class=\"ds-card-mvp\"><div class=\"ds-card-stat-label\">⭐ MVP</div><div class=\"ds-card-stat-name\">Mitchell Marsh</div><div class=\"ds-card-mvp-val\">22 runs · 11 wkts</div><div class=\"ds-card-stat-sub\">Tournament</div></div>",
+      "css": ".ds-card-mvp { position: relative; overflow: hidden; border-color: #b8922a; background: linear-gradient(135deg, #171410, #1e1a0c); border-radius: 12px; padding: 11px 13px; animation: ds-chip-glisten 2.2s ease-in-out infinite; } .ds-card-mvp::after { content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(115deg, transparent 0%, rgba(255,224,140,.5) 45%, transparent 90%); transform: skewX(-20deg); animation: ds-mvp-sweep 2.8s ease-in-out infinite; animation-delay: 1s; } .ds-card-mvp .ds-card-stat-label { color: #f9c846; } .ds-card-mvp-val { font-size: 13px; font-weight: 700; color: #e0c060; margin-top: 4px; line-height: 1.5; } @keyframes ds-chip-glisten { 0%, 100% { box-shadow: none; filter: brightness(1); } 50% { box-shadow: 0 0 10px currentColor; filter: brightness(1.3); } } @keyframes ds-mvp-sweep { 0% { left: -60%; } 45%, 100% { left: 140%; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Broadcast",
+    "overview": "19-0 looks like a live cricket broadcast graphics package running at night — a near-black studio backdrop lit only by scoreboard gold and orange, the way a stadium floodlight cuts through darkness onto the one thing that matters: the number on the board. Every screen borrows this logic. Panels sit on ink-black surfaces with barely-there borders; nothing competes for attention until a rating, a result, or a call-to-action needs to glow. This system explicitly rejects the generic SaaS/dashboard look — no cream or beige neutrals, no identical flat card grids, no tiny uppercase tracked eyebrows scaffolding every section, no gradient-text headings used as a decorative crutch (the one exception, the \"19-0\" hero wordmark, is a grandfathered brand asset, not a pattern to repeat elsewhere). It also rejects the stiff, overly official tone of a real governing body's site — this is a scrappy fan broadcast, not a corporate one.",
+    "keyCharacteristics": [
+      "Near-black studio backdrop; light comes from content, not chrome",
+      "Gold-to-orange gradient reserved for the primary action and the brand wordmark only",
+      "Flat, borderless-feeling panels distinguished by faint 1px borders, not shadows",
+      "Color carries meaning first (green=win, red=loss, amber=draw, gold=rating) and decoration second"
+    ],
+    "rules": [
+      { "name": "The Floodlight Rule", "body": "Gold/orange never covers more than the CTA, the wordmark, or a single highlighted stat at a time. If more than one element on screen is glowing gold, the hierarchy has broken down.", "section": "colors" },
+      { "name": "The Broadcast Caps Rule", "body": "Uppercase, tracked, dim labels are for metadata only (table headers, stat captions). The moment a label needs to carry real information, it drops to sentence case at full body weight.", "section": "typography" },
+      { "name": "The Flat-Studio Rule", "body": "No box-shadow for structural depth, ever. If a component needs to feel \"lifted,\" lighten its background one tonal step and/or brighten its border — don't reach for a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do reserve Scoreboard Gold (#f9c846) for the single most important element on any given screen — a CTA, a rating, an MVP badge.",
+      "Do build depth with tonal steps (Ink Black → Card Navy → Surface Navy → Panel Black) and 1px borders, never with box-shadow.",
+      "Do use the semantic result colors consistently: green = win/positive, red = loss/negative, amber = draw/neutral, exactly as already used across match summaries and season reviews.",
+      "Do keep every core interaction (draft, pick XI, sim, result) usable one-handed on mobile, per PRODUCT.md's \"One thumb, no friction\" principle.",
+      "Do gate all animation behind prefers-reduced-motion, matching the pattern already built into the season-review and home-screen entrance sequences."
+    ],
+    "donts": [
+      "Don't introduce cream, beige, or any warm-neutral background — this is a near-black system, full stop.",
+      "Don't add new gradient-text treatments beyond the existing \"19-0\" wordmark; it's a grandfathered exception, not a precedent.",
+      "Don't add tiny uppercase tracked eyebrows above every new section \"because landing pages do this\" — reserve that treatment for table headers and stat labels only.",
+      "Don't use border-left/border-right as a colored accent stripe on cards or list rows.",
+      "Don't reach for identical repeating card grids; vary layout by content type as the existing screens already do.",
+      "Don't add box-shadow-based elevation; tonal layering and borders are the only depth language this system uses."
+    ]
+  }
+}
