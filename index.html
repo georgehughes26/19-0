@@ -5442,6 +5442,8 @@
       if (localStorage.getItem('wc_unlocked') === '1') {
         var wcBtn = document.getElementById('mode-btn-wc');
         if (wcBtn) wcBtn.style.display = '';
+        var wcDevBtn = document.getElementById('wc-dev-autodraft-btn');
+        if (wcDevBtn) wcDevBtn.style.display = '';
       }
 
       var home = document.getElementById('s-home');
@@ -9888,6 +9890,38 @@
       WCS.spunYear=null;WCS.spunNation=null;updateWCDraftProgress();resetWCSpinDrum();doWCSpin();
     }
 
+    // Dev-only helper — instantly fills a valid 15-player squad, skipping the spin animation.
+    function wcAutoDraftDev(){
+      resetWCState();
+      WCS.squad=[];
+      const taken=new Set();
+      for(let i=0;i<WC_SLOT_DEFS.length;i++){
+        const slot=WC_SLOT_DEFS[i];
+        const eligible=[];
+        WC_NATIONS.forEach(nat=>{
+          const pool=WC_PDB[nat.id]||[];
+          pool.forEach(p=>{
+            if(taken.has(p.id))return;
+            if(slot.needOpener&&!p.opener)return;
+            if(slot.noOpener&&p.opener)return;
+            if(!slot.roles.includes(p.role))return;
+            const years=Object.keys(p.yearRatings);
+            if(!years.length)return;
+            const year=parseInt(years[Math.floor(Math.random()*years.length)]);
+            eligible.push({player:p,natId:nat.id,year});
+          });
+        });
+        if(!eligible.length)continue;
+        const{player,natId,year}=eligible[Math.floor(Math.random()*eligible.length)];
+        taken.add(player.id);
+        WCS.squad.push({...player,rating:player.yearRatings[year],baseRating:player.yearRatings[year],year,natId,formModifier:0,slotPos:slot.pos,slotLabel:slot.label});
+        WCS.playerForm[player.id]=0;
+      }
+      WCS.myNation=determineWCNation();
+      buildWCFixtures();
+      showWCCaptainPickerFromDraft();
+    }
+
     function renderWCSquadTracker(){
       const tracker=document.getElementById('wc-squad-tracker');if(!tracker)return;
       if(!WCS.squad.length){tracker.innerHTML='';return;}
@@ -11676,6 +11710,7 @@
       </div>
     </div>
     <button class="btn-start" onclick="startWCSquadDraft()" style="width:100%">Begin Draft →</button>
+    <button id="wc-dev-autodraft-btn" onclick="wcAutoDraftDev()" style="display:none;width:100%;margin-top:8px;padding:12px;background:#1a1400;border:1px solid #f9c846;border-radius:10px;color:#f9c846;font-size:13px;font-weight:700;cursor:pointer">⚡ Auto-Draft (Dev)</button>
   </div>
 
   <!-- WC DRAFT SPIN -->
