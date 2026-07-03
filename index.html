@@ -11102,16 +11102,19 @@
       const myXIRating=Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length);
       const allTeams=[{id:'myxi',rating:myXIRating},...WC_NATIONS.map(n=>({id:n.id,rating:WCS.cycleRatings[n.id]||n.rMin}))].sort((a,b)=>b.rating-a.rating);
       const predPos=allTeams.findIndex(t=>t.id==='myxi')+1;
-      const predTier=predPos<=2?5:predPos<=5?4:predPos<=8?3:predPos<=11?2:1;
-      const actualTier=won?6:isFinalFail?5:isSemiFail?4:inSuperSix?3:groupPos<=3?2:1;
-      const diff=actualTier-predTier;
-      const perfClass=diff>=1?'perf-over':diff===0?'perf-met':'perf-under';
-      const perfEyebrow=diff>=1?'Overperformed':diff===0?'Prediction met':'Underperformed';
-      const perfVerdict=diff>=2?'Well above the prediction':diff===1?'One tier above prediction':diff===0?'Landed exactly on the call':diff===-1?'One tier below prediction':'Well below the prediction';
+      // Predicted tier: 1=Favourites (expect to win), 2=Strong Contenders (expect Semi-Final),
+      // 3=Outsiders (expect Super Sixes), 4=No Hope (expect group knockout)
+      const predTier=predPos===1?1:predPos<=5?2:predPos<=9?3:4;
+      const predLabel=predTier===1?'Tournament Favourites':predTier===2?'Strong Contenders':predTier===3?'Outsiders':'No Hope';
+      const expectedTier={1:5,2:3,3:2,4:1}[predTier]; // maps to the actual-stage tier below
+      // Actual stage tier: 1=Group knockout, 2=Super Sixes exit, 3=Semi-Final exit, 4=Final loss, 5=Champions
+      const actualTier=won?5:isFinalFail?4:isSemiFail?3:inSuperSix?2:1;
+      const diff=actualTier-expectedTier;
+      const perfClass=diff>0?'perf-over':diff===0?'perf-met':'perf-under';
+      const perfVerdict=diff>0?'Overperformed':diff===0?'Expected':'Underperformed';
 
       // Stage strings
       const stageReached=won?'World Cup Champions':isFinalFail?'World Cup Final':isSemiFail?'Semi-Final':inSuperSix?`Super Sixes (${ordinal(superPos||0)})`:`Group Stage (${ordinal(groupPos)} in Group A)`;
-      const predLabel=predPos<=2?'Tournament favourites':predPos<=5?'Strong contenders':predPos<=9?'Mid-table':'Outsiders';
       const icon=won?'🏆':isFinalFail?'🥈':isSemiFail?'🏏':inSuperSix?'📊':'📋';
       const headerClass=won?'ov-header ovh-won':isFinalFail||isSemiFail?'ov-header ovh-final':'ov-header ovh-early';
       const headline=won?'World Cup Champions!':isFinalFail?'World Cup Runners-Up':isSemiFail?'Semi-Final Exit':inSuperSix?`Super Sixes Exit`:`Eliminated in the Group Stage`;
@@ -11180,7 +11183,6 @@
         <div class="ov-lower">
           <div class="ov-reached">
             <div class="perf-card ${perfClass}">
-              <div class="perf-eyebrow">${perfEyebrow}</div>
               <div class="perf-verdict">${perfVerdict}</div>
               <div class="perf-row"><span class="perf-label">Predicted finish</span><span class="perf-val" style="color:#9090a8">${predLabel}</span></div>
               <div class="perf-row"><span class="perf-label">Record</span><span class="perf-val" style="color:#e0e0f0">W${totalWins} L${totalLosses}</span></div>
