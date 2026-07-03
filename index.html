@@ -2969,9 +2969,64 @@
       0% { left: -60%; }
       45%, 100% { left: 140%; }
     }
+    /* ── Home screen — first-visit liveliness ─────────────────────────── */
+    @keyframes home-in {
+      0% { opacity: 0; transform: translateY(18px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes home-pop {
+      0% { opacity: 0; transform: scale(0.88); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes hero-shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    @keyframes cta-breathe {
+      0%, 100% { box-shadow: 0 0 0 rgba(249,200,70,0); }
+      50% { box-shadow: 0 0 20px rgba(249,200,70,.4); }
+    }
+    #s-home .home-badge,
+    #s-home .auth-bar,
+    #s-home .home-sub,
+    #s-home #team-name-input,
+    #s-home .home-stats {
+      animation: home-in .5s var(--ease-out-strong) both;
+    }
+    #s-home .home-badge  { animation-delay: 0ms;   }
+    #s-home .auth-bar     { animation-delay: 20ms;  }
+    #s-home .home-sub     { animation-delay: 110ms; }
+    #s-home #team-name-input { animation-delay: 260ms; }
+    #s-home .home-stats   { animation-delay: 360ms; }
+
+    #s-home .home-hero {
+      background-size: 200% auto;
+      animation: home-pop .55s var(--ease-pop) both, hero-shimmer 6s ease-in-out .65s infinite;
+    }
+    #s-home .btn-start {
+      animation: home-in .5s var(--ease-out-strong) .3s both, cta-breathe 3.2s ease-in-out 1.3s infinite;
+    }
+    #s-home .mode-btn {
+      animation: home-in .45s var(--ease-out-strong) both;
+    }
+    #s-home .mode-selector .mode-btn:nth-child(1) { animation-delay: 140ms; }
+    #s-home .mode-selector .mode-btn:nth-child(2) { animation-delay: 190ms; }
+    #s-home .mode-selector .mode-btn:nth-child(3) { animation-delay: 240ms; }
+    #s-home .setting-panel {
+      animation: home-in .4s var(--ease-out-strong) both;
+    }
+    #s-home .setting-panel:nth-child(1) { animation-delay: 210ms; }
+    #s-home .setting-panel:nth-child(2) { animation-delay: 250ms; }
+    #s-home .setting-panel:nth-child(3) { animation-delay: 290ms; }
+    #s-home .setting-panel:nth-child(4) { animation-delay: 330ms; }
+
     @media (prefers-reduced-motion: reduce) {
       .ov-reveal, .ov-row-reveal, .ov-reveal .perf-verdict { transition: opacity .25s ease !important; transform: none !important; }
       .ov-header .ov-icon, .mvp-shine::after, .chip-boost, .rating-boost { animation: none !important; }
+      #s-home .home-badge, #s-home .auth-bar, #s-home .home-sub, #s-home #team-name-input,
+      #s-home .home-stats, #s-home .home-hero, #s-home .btn-start, #s-home .mode-btn, #s-home .setting-panel {
+        animation: none !important;
+      }
     }
 
   </style>
@@ -3424,7 +3479,26 @@
     }
     fullReset();
 
-    function go(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("on")); document.getElementById(id).classList.add("on"); window.scrollTo(0, 0); }
+    function go(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("on")); document.getElementById(id).classList.add("on"); window.scrollTo(0, 0); if (id === 's-home') animateHomeStats(); }
+
+    function animateHomeStats() {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      document.querySelectorAll('#s-home .hs-n').forEach(node => {
+        const target = parseInt(node.textContent.replace(/,/g, ''), 10);
+        if (!target) return;
+        if (reduceMotion) { node.textContent = target.toLocaleString(); return; }
+        node.textContent = '0';
+        const start = performance.now(), dur = 900;
+        const tick = (now) => {
+          const p = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - p, 3);
+          node.textContent = Math.round(target * eased).toLocaleString();
+          if (p < 1) requestAnimationFrame(tick); else node.textContent = target.toLocaleString();
+        };
+        requestAnimationFrame(tick);
+        setTimeout(() => { node.textContent = target.toLocaleString(); }, dur + 80);
+      });
+    }
 
     function startDraft() {
       pingEvent('Sim_Started', { league: 'T20 Blast' });
@@ -5488,6 +5562,7 @@
   <script>
     // Append footer to home screen
     document.addEventListener('DOMContentLoaded', function() {
+      if (typeof animateHomeStats === 'function') animateHomeStats();
       // World Cup mode is dev-only for now — unlock via ?wctest=1905 once, then it persists for this browser only.
       var params = new URLSearchParams(window.location.search);
       if (params.get('wctest') === '1905') localStorage.setItem('wc_unlocked', '1');
@@ -11940,7 +12015,6 @@
   <!-- WC END SCREEN -->
   <div id="s-wc-end" class="screen">
     <div id="wc-end-content" style="width:100%"></div>
-    <button class="btn-sim" style="margin-top:16px" onclick="fullReset()">Play Again →</button>
   </div>
 
   <!-- STATS SCREEN -->
