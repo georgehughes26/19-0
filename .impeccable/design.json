@@ -28,7 +28,10 @@
       "loss-tint-border": { "role": "semantic", "displayName": "Loss Tint Border", "canonical": "#4a2020", "tonalRamp": ["#180c0c", "#241212", "#301818", "#3c1e1e", "#4a2020", "#682c2c", "#864040", "#b06868"] },
       "perf-over-label": { "role": "semantic", "displayName": "Perf Over Label", "canonical": "#6fae82", "tonalRamp": ["#1c3a24", "#284e30", "#34623c", "#40764a", "#4c8a56", "#589e64", "#6fae82", "#a0d0ac"] },
       "perf-met-label": { "role": "semantic", "displayName": "Perf Met Label", "canonical": "#9a9ad4", "tonalRamp": ["#28284a", "#363662", "#44447a", "#525292", "#6060aa", "#7878c0", "#9a9ad4", "#c8c8e8"] },
-      "perf-under-label": { "role": "semantic", "displayName": "Perf Under Label", "canonical": "#d99860", "tonalRamp": ["#3a2410", "#4e3016", "#623c1c", "#764822", "#8a5428", "#a06838", "#d99860", "#eec8a0"] }
+      "perf-under-label": { "role": "semantic", "displayName": "Perf Under Label", "canonical": "#d99860", "tonalRamp": ["#3a2410", "#4e3016", "#623c1c", "#764822", "#8a5428", "#a06838", "#d99860", "#eec8a0"] },
+      "info-tint-bg": { "role": "semantic", "displayName": "Info Tint Bg", "canonical": "#0a1420", "tonalRamp": ["#040a10", "#081018", "#0a1420", "#0e1c2c", "#122438", "#162c44", "#1a3450", "#244468"] },
+      "info-tint-border": { "role": "semantic", "displayName": "Info Tint Border", "canonical": "#1a4060", "tonalRamp": ["#0a1824", "#102838", "#1a4060", "#20507a", "#266090", "#3070a6", "#4080bc", "#60a0d8"] },
+      "info-tint-text-dim": { "role": "semantic", "displayName": "Info Tint Text Dim", "canonical": "#6090b8", "tonalRamp": ["#182430", "#203040", "#283c50", "#304860", "#406080", "#5078a0", "#6090b8", "#80b0d8"] }
     },
     "typographyMeta": {
       "display": { "displayName": "Display", "purpose": "The \"19-0\" hero wordmark only. Gradient-filled via background-clip: text — a grandfathered exception, not a reusable pattern." },

@@ -262,7 +262,7 @@
       font-size: 15px;
       color: #a8a8c0;
       line-height: 1.8;
-      margin: 0 auto 36px;
+      margin: 0 auto 28px;
       max-width: 340px;
       text-align: center
     }
@@ -284,6 +284,141 @@
 
     .btn-start:active {
       transform: scale(0.97)
+    }
+
+    /* WC INTRO */
+    .wci-tabs {
+      display: flex;
+      width: 100%;
+      border-bottom: 1px solid #1a1a24;
+      margin-bottom: 18px;
+      gap: 4px
+    }
+
+    .wci-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 0 0 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #6060a0;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s ease-out
+    }
+
+    .wci-tab::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -1px;
+      height: 2px;
+      background: #f9c846;
+      transform: scaleX(0);
+      transition: transform 0.2s ease-out
+    }
+
+    .wci-tab.active {
+      color: #fff
+    }
+
+    .wci-tab.active::after {
+      transform: scaleX(1)
+    }
+
+    .wci-panel {
+      display: none;
+      animation: wci-fade-in 0.2s ease-out
+    }
+
+    .wci-panel.active {
+      display: block
+    }
+
+    @keyframes wci-fade-in {
+      from { opacity: 0; transform: translateY(4px) }
+      to { opacity: 1; transform: translateY(0) }
+    }
+
+    .wci-card {
+      background: #0d0d12;
+      border: 1px solid #1a1a24;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left
+    }
+
+    .wci-stage-list { display: flex; flex-direction: column; gap: 8px }
+
+    .wci-stage-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0d0d12;
+      border: 1px solid #1a1a24;
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s ease-out
+    }
+
+    .wci-stage-btn.active { border-color: #33334a }
+
+    .wci-stage-num {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #17172080;
+      color: #7070a0;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .wci-stage-btn.active .wci-stage-num {
+      background: #f9c846;
+      color: #0f0f13
+    }
+
+    .wci-stage-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 700;
+      color: #c0c0d8
+    }
+
+    .wci-stage-btn.active .wci-stage-name { color: #fff }
+
+    .wci-stage-chevron {
+      color: #6060a0;
+      font-size: 11px;
+      transition: transform 0.2s ease-out
+    }
+
+    .wci-stage-btn.active .wci-stage-chevron { transform: rotate(90deg) }
+
+    .wci-stage-body {
+      display: none;
+      font-size: 13px;
+      color: #c0c0d8;
+      line-height: 1.6;
+      padding: 2px 14px 4px 46px;
+      text-align: left
+    }
+
+    .wci-stage-body.active {
+      display: block;
+      animation: wci-fade-in 0.2s ease-out
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .wci-panel, .wci-stage-body { animation: none !important }
+      .wci-tab, .wci-tab::after, .wci-stage-btn, .wci-stage-num, .wci-stage-chevron { transition: none !important }
     }
 
     .home-stats {
@@ -1749,6 +1884,30 @@
       .ovh-perfect::after { animation: none !important }
     }
 
+    /* Leaderboard podium — rank 1 gets the one gold "hero" treatment (Floodlight Rule) */
+    .lb-podium-1 {
+      background: linear-gradient(160deg, #2a1c06, #1a1000 55%, #14141a);
+      border: 1px solid #d4af37;
+      border-radius: 14px;
+      padding: 22px 12px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .lb-podium-1::after {
+      content: '';
+      position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+      background: linear-gradient(115deg, transparent 0%, rgba(255,224,140,.3) 45%, transparent 90%);
+      transform: skewX(-20deg);
+      animation: mvp-sweep 3.5s ease-in-out infinite;
+      animation-delay: 1s;
+      pointer-events: none
+    }
+    .lb-podium-me { outline: 2px solid #4040a0 }
+    @media (prefers-reduced-motion: reduce) {
+      .lb-podium-1::after { animation: none !important }
+    }
+
     .ov-icon {
       font-size: 48px;
       margin-bottom: 10px;
@@ -2338,8 +2497,55 @@
       border: 1px solid #1a1a24;
       border-radius: 14px;
       padding: 0;
-      margin-bottom: 20px;
       overflow: hidden
+    }
+
+    .settings-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #111118;
+      border: 1px solid #1e1e2a;
+      border-radius: 8px;
+      color: #c0c0d8;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 10px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      font-family: system-ui, -apple-system, sans-serif;
+      transition: color .15s, border-color .15s, background .15s
+    }
+
+    .settings-toggle:hover { color: #fff; border-color: #2a2a3a; background: #15151d }
+
+    .settings-toggle:focus-visible {
+      outline: 2px solid #f9c846;
+      outline-offset: 2px
+    }
+
+    .settings-toggle-chevron {
+      font-size: 11px;
+      transition: transform .2s ease-out
+    }
+
+    .settings-toggle.open .settings-toggle-chevron { transform: rotate(90deg) }
+
+    .settings-collapse {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .25s ease-out;
+      margin-bottom: 24px
+    }
+
+    .settings-collapse.expanded { grid-template-rows: 1fr }
+
+    .settings-collapse-inner { overflow: hidden }
+
+    @media (prefers-reduced-motion: reduce) {
+      .settings-collapse, .settings-toggle-chevron { transition: none !important }
     }
 
     /* Each setting is a self-contained stacked panel */
@@ -2353,11 +2559,9 @@
     }
 
     .setting-label {
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #6060a0;
+      font-size: 13px;
+      font-weight: 700;
+      color: #c0c0d8;
       margin-bottom: 8px
     }
 
@@ -2388,15 +2592,20 @@
       color: #8080a8
     }
 
+    .sopt:focus-visible, .mode-btn:focus-visible, .btn-start:focus-visible {
+      outline: 2px solid #f9c846;
+      outline-offset: 2px
+    }
+
     /* Colour-coded active states */
     .sopt-green.on  { background: #0a1e0e; border-color: #1a5a28; color: #4ade80 }
     .sopt-amber.on  { background: #1e1500; border-color: #5a3a00; color: #fbbf24 }
     .sopt-red.on    { background: #1e0808; border-color: #5a1818; color: #f87171 }
-    .sopt-blue.on   { background: #0a1428; border-color: #1a3a6a; color: #60a5fa }
+    .sopt-neutral.on { background: #17172a; border-color: #33334a; color: #fff }
 
     .setting-desc {
       font-size: 11px;
-      color: #404055;
+      color: #9090a8;
       margin-top: 7px;
       line-height: 1.5
     }
@@ -2743,10 +2952,14 @@
     .auth-bar {
       width: 100%; display: flex; align-items: center; justify-content: space-between;
       background: #0d0d12; border: 1px solid #1a1a24; border-radius: 10px;
-      padding: 10px 14px; margin-bottom: 16px
+      padding: 10px 14px; margin-bottom: 16px;
+      flex-wrap: wrap; row-gap: 10px
     }
-    .auth-bar-user { font-size: 13px; font-weight: 700; color: #f9c846; text-align: left }
-    .auth-bar-sub { font-size: 11px; color: #606080; margin-top: 1px; text-align: left }
+    .auth-bar-user {
+      font-size: 14px; font-weight: 800; letter-spacing: .2px; color: #f9c846; text-align: left;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%
+    }
+    .auth-bar-sub { font-size: 11px; color: #8080a0; margin-top: 3px; text-align: left; display: flex; align-items: center }
     .btn-auth-small {
       background: #1e1e2a; border: 1px solid #252535; color: #c0c0d8;
       font-size: 12px; font-weight: 700; padding: 7px 14px;
@@ -2771,7 +2984,7 @@
     .stage-bar-row:last-child { margin-bottom: 0 }
     .stage-bar-label { font-size: 12px; font-weight: 700; color: #c0c0d8; width: 110px; flex-shrink: 0 }
     .stage-bar-track { flex: 1; height: 8px; background: #1a1a24; border-radius: 4px; margin: 0 10px; overflow: hidden }
-    .stage-bar-fill { height: 100%; border-radius: 4px }
+    .stage-bar-fill { height: 100%; border-radius: 4px; transition: width .6s var(--ease-out-strong) }
     .stage-bar-pct { font-size: 12px; font-weight: 800; width: 36px; text-align: right; flex-shrink: 0 }
     .recent-run-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -2781,10 +2994,15 @@
     .stats-tab {
       flex: 1; padding: 9px 0; font-size: 12px; font-weight: 800;
       border-radius: 8px; border: 1px solid #252530; cursor: pointer;
-      letter-spacing: 0.5px; transition: background .15s, color .15s
+      letter-spacing: 0.5px; transition: background .15s, color .15s, border-color .15s
     }
     .stats-tab-active   { background: #1e1e2e; color: #fff; border-color: #3a3a50 }
-    .stats-tab-inactive { background: transparent; color: #505068; border-color: #1a1a24 }
+    .stats-tab-inactive { background: transparent; color: #9090a8; border-color: #1a1a24 }
+    .stats-tab-inactive:hover { color: #c0c0d8; border-color: #252535 }
+    .stats-tab:focus-visible, .btn-auth-small:focus-visible {
+      outline: 2px solid #f9c846;
+      outline-offset: 2px
+    }
 
     /* ── TEST MODE STYLES ─────────────────────────────────────────────────── */
     .mode-selector {
@@ -3050,6 +3268,7 @@
     @media (prefers-reduced-motion: reduce) {
       .ov-reveal, .ov-row-reveal, .ov-reveal .perf-verdict { transition: opacity .25s ease !important; transform: none !important; }
       .ov-header .ov-icon, .mvp-shine::after, .chip-boost, .rating-boost { animation: none !important; }
+      .bar-fill { transition: none !important; }
       #s-home .home-badge, #s-home .auth-bar, #s-home .home-sub, #s-home #team-name-input,
       #s-home .home-stats, #s-home .home-hero, #s-home .btn-start, #s-home .mode-btn, #s-home .setting-panel {
         animation: none !important;
@@ -3089,7 +3308,12 @@
     <div class="home-sub">Spin the county. Spin the year. Draft your all-time T20 Blast XI. 16 group games, then
       Quarter-Final, Semi Final and Final. Can you go 19-0?</div>
 
-    <div class="settings-block">
+    <button class="settings-toggle" type="button" aria-expanded="false" onclick="toggleSettings(this)">
+      <span>Customize settings</span><span class="settings-toggle-chevron">›</span>
+    </button>
+    <div class="settings-collapse">
+     <div class="settings-collapse-inner">
+      <div class="settings-block">
 
       <!-- Difficulty -->
       <div class="setting-panel">
@@ -3106,8 +3330,8 @@
       <div class="setting-panel">
         <div class="setting-label">Rating mode</div>
         <div class="setting-btns" id="opt-rating">
-          <button class="sopt sopt-blue on" onclick="setSetting('rating','year',this)">By Year</button>
-          <button class="sopt sopt-blue" onclick="setSetting('rating','prime',this)">Prime</button>
+          <button class="sopt sopt-neutral on" onclick="setSetting('rating','year',this)">By Year</button>
+          <button class="sopt sopt-neutral" onclick="setSetting('rating','prime',this)">Prime</button>
         </div>
         <div class="setting-desc" id="desc-rating">Rating reflects that specific season</div>
       </div>
@@ -3132,19 +3356,21 @@
         <div class="setting-desc" id="desc-budget">No budget limit — draft freely</div>
       </div>
 
+      </div>
+     </div>
     </div>
 
-    <div style="width:100%;margin-bottom:12px">
+    <div style="width:100%;margin-bottom:24px">
       <input id="team-name-input" type="text" maxlength="20" placeholder="Your XI"
         style="width:100%;background:#0d0d12;border:1px solid #252535;border-radius:8px;
                padding:13px 16px;font-size:15px;font-weight:700;color:#fff;outline:none;
                font-family:system-ui,-apple-system,sans-serif;text-align:center;
                transition:border-color .15s"
-        oninput="SETTINGS.teamName=this.value.trim()||'Your XI'"
+        oninput="SETTINGS.teamName=this.value.trim()||'Your XI';updateNameCounter(this,'name-counter')"
         onfocus="if(this.value==='Your XI'){this.value='';this.style.borderColor='#4040a0'}"
-        onblur="if(this.value===''){this.value='Your XI'};this.style.borderColor='#252535'"
+        onblur="if(this.value===''){this.value='Your XI';document.getElementById('name-counter').textContent=''};this.style.borderColor='#252535'"
       >
-      <div style="font-size:10px;color:#404055;text-align:center;margin-top:5px;letter-spacing:.5px">Your team name · optional · 20 chars max</div>
+      <div style="font-size:10px;color:#404055;text-align:center;margin-top:5px;letter-spacing:.5px">Your team name · optional · 20 chars max <span id="name-counter"></span></div>
     </div>
     <button class="btn-start" onclick="startDraft()">Start New Run →</button>
 
@@ -3169,29 +3395,36 @@
     <div id="home-test-content" style="display:none;width:100%">
       <div class="home-sub">Draft your all-time England Test XI. Compete in the World Test Championship across 6 series. Manage form, injuries and media drama. Can you reach the WTC Final?</div>
 
-      <div class="settings-block">
-        <div class="setting-panel">
-          <div class="setting-label">Difficulty</div>
-          <div class="setting-btns" id="opt-test-diff">
-            <button class="sopt sopt-green on" onclick="setTestSetting('diff','easy',this)">Easy</button>
-            <button class="sopt sopt-amber" onclick="setTestSetting('diff','medium',this)">Medium</button>
-            <button class="sopt sopt-red" onclick="setTestSetting('diff','hard',this)">Hard</button>
+      <button class="settings-toggle" type="button" aria-expanded="false" onclick="toggleSettings(this)">
+        <span>Customize settings</span><span class="settings-toggle-chevron">›</span>
+      </button>
+      <div class="settings-collapse">
+       <div class="settings-collapse-inner">
+        <div class="settings-block">
+          <div class="setting-panel">
+            <div class="setting-label">Difficulty</div>
+            <div class="setting-btns" id="opt-test-diff">
+              <button class="sopt sopt-green on" onclick="setTestSetting('diff','easy',this)">Easy</button>
+              <button class="sopt sopt-amber" onclick="setTestSetting('diff','medium',this)">Medium</button>
+              <button class="sopt sopt-red" onclick="setTestSetting('diff','hard',this)">Hard</button>
+            </div>
+            <div class="setting-desc" id="desc-test-diff">Unlimited re-spins</div>
           </div>
-          <div class="setting-desc" id="desc-test-diff">Unlimited re-spins</div>
-        </div>
-        <div class="setting-panel">
-          <div class="setting-label">Show ratings</div>
-          <div class="setting-btns" id="opt-test-show">
-            <button class="sopt sopt-green on" onclick="setTestSetting('show','visible',this)">Visible</button>
-            <button class="sopt sopt-red" onclick="setTestSetting('show','hidden',this)">Hidden</button>
+          <div class="setting-panel">
+            <div class="setting-label">Show ratings</div>
+            <div class="setting-btns" id="opt-test-show">
+              <button class="sopt sopt-green on" onclick="setTestSetting('show','visible',this)">Visible</button>
+              <button class="sopt sopt-red" onclick="setTestSetting('show','hidden',this)">Hidden</button>
+            </div>
+            <div class="setting-desc" id="desc-test-show">Ratings shown during draft</div>
           </div>
-          <div class="setting-desc" id="desc-test-show">Ratings shown during draft</div>
         </div>
+       </div>
       </div>
 
-      <button id="continue-test-btn" onclick="continueTestGame()" style="display:none;width:100%;margin-bottom:10px;padding:14px 16px;background:#0a1420;border:1px solid #1a4060;border-radius:12px;cursor:pointer;flex-direction:column;align-items:center;gap:3px">
+      <button id="continue-test-btn" onclick="continueTestGame()" style="display:none;width:100%;margin-bottom:16px;padding:14px 16px;background:#0a1420;border:1px solid #1a4060;border-radius:12px;cursor:pointer;flex-direction:column;align-items:center;gap:3px">
         <div style="font-size:14px;font-weight:800;color:#60a5fa;letter-spacing:0.5px">▶ Continue Saved Game</div>
-        <div id="continue-test-date" style="font-size:11px;color:#406080;letter-spacing:0.5px"></div>
+        <div id="continue-test-date" style="font-size:11px;color:#6090b8;letter-spacing:0.5px"></div>
       </button>
       <button class="btn-start" onclick="startTestDraft()">Start New Run →</button>
 
@@ -3206,32 +3439,39 @@
     <div id="home-wc-content" style="display:none;width:100%">
       <div class="home-sub">Draft an all-time World Cup XI from any nation and era. Play 6 group stage matches, reach the Super Sixes, then semi-final and final. One innings a side — every run counts.</div>
 
-      <div class="settings-block">
-        <div class="setting-panel">
-          <div class="setting-label">Difficulty</div>
-          <div class="setting-btns" id="opt-wc-diff">
-            <button class="sopt sopt-green on" onclick="setWCSetting('diff','easy',this)">Easy</button>
-            <button class="sopt sopt-amber" onclick="setWCSetting('diff','medium',this)">Medium</button>
-            <button class="sopt sopt-red" onclick="setWCSetting('diff','hard',this)">Hard</button>
+      <button class="settings-toggle" type="button" aria-expanded="false" onclick="toggleSettings(this)">
+        <span>Customize settings</span><span class="settings-toggle-chevron">›</span>
+      </button>
+      <div class="settings-collapse">
+       <div class="settings-collapse-inner">
+        <div class="settings-block">
+          <div class="setting-panel">
+            <div class="setting-label">Difficulty</div>
+            <div class="setting-btns" id="opt-wc-diff">
+              <button class="sopt sopt-green on" onclick="setWCSetting('diff','easy',this)">Easy</button>
+              <button class="sopt sopt-amber" onclick="setWCSetting('diff','medium',this)">Medium</button>
+              <button class="sopt sopt-red" onclick="setWCSetting('diff','hard',this)">Hard</button>
+            </div>
+            <div class="setting-desc" id="desc-wc-diff">Unlimited re-spins</div>
           </div>
-          <div class="setting-desc" id="desc-wc-diff">Unlimited re-spins</div>
-        </div>
-        <div class="setting-panel">
-          <div class="setting-label">Show ratings</div>
-          <div class="setting-btns" id="opt-wc-show">
-            <button class="sopt sopt-green on" onclick="setWCSetting('show','visible',this)">Visible</button>
-            <button class="sopt sopt-red" onclick="setWCSetting('show','hidden',this)">Hidden</button>
+          <div class="setting-panel">
+            <div class="setting-label">Show ratings</div>
+            <div class="setting-btns" id="opt-wc-show">
+              <button class="sopt sopt-green on" onclick="setWCSetting('show','visible',this)">Visible</button>
+              <button class="sopt sopt-red" onclick="setWCSetting('show','hidden',this)">Hidden</button>
+            </div>
+            <div class="setting-desc" id="desc-wc-show">Ratings shown during draft</div>
           </div>
-          <div class="setting-desc" id="desc-wc-show">Ratings shown during draft</div>
         </div>
+       </div>
       </div>
 
       <button class="btn-start" onclick="startWCDraft()">Start New Run →</button>
 
       <div class="home-stats">
-        <div><div class="hs-n">6</div><div class="hs-l">Group matches</div></div>
-        <div><div class="hs-n">11</div><div class="hs-l">Max matches</div></div>
         <div><div class="hs-n">14</div><div class="hs-l">Teams</div></div>
+        <div><div class="hs-n">11</div><div class="hs-l">Games to win</div></div>
+        <div><div class="hs-n">94</div><div class="hs-l">Squads</div></div>
       </div>
     </div><!-- /home-wc-content -->
 
@@ -3506,24 +3746,50 @@
     }
     fullReset();
 
-    function go(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("on")); document.getElementById(id).classList.add("on"); window.scrollTo(0, 0); if (id === 's-home') animateHomeStats(); }
+    function go(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("on")); document.getElementById(id).classList.add("on"); window.scrollTo(0, 0); if (id === 's-home') { animateHomeStats(); resetSettingsToggles(); } }
+
+    function toggleSettings(btn) {
+      const wrap = btn.nextElementSibling;
+      const expanded = wrap.classList.toggle('expanded');
+      btn.classList.toggle('open', expanded);
+      btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    }
+
+    function resetSettingsToggles() {
+      document.querySelectorAll('#s-home .settings-toggle').forEach(btn => {
+        btn.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.nextElementSibling.classList.remove('expanded');
+      });
+    }
+
+    function updateNameCounter(input, counterId) {
+      const counter = document.getElementById(counterId);
+      if (!counter) return;
+      counter.textContent = input.value ? `· ${input.value.length}/20` : '';
+    }
 
     function animateHomeStats() {
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       document.querySelectorAll('#s-home .hs-n').forEach(node => {
-        const target = parseInt(node.textContent.replace(/,/g, ''), 10);
+        // Cache the true target once so re-entrant calls (e.g. re-navigating home
+        // mid-animation) can't misread a partially-animated display value as the target.
+        if (!node.dataset.value) node.dataset.value = node.textContent.replace(/,/g, '');
+        const target = parseInt(node.dataset.value, 10);
         if (!target) return;
         if (reduceMotion) { node.textContent = target.toLocaleString(); return; }
+        if (node.dataset.animating) return;
+        node.dataset.animating = '1';
         node.textContent = '0';
         const start = performance.now(), dur = 900;
         const tick = (now) => {
           const p = Math.min(1, (now - start) / dur);
           const eased = 1 - Math.pow(1 - p, 3);
           node.textContent = Math.round(target * eased).toLocaleString();
-          if (p < 1) requestAnimationFrame(tick); else node.textContent = target.toLocaleString();
+          if (p < 1) requestAnimationFrame(tick); else { node.textContent = target.toLocaleString(); delete node.dataset.animating; }
         };
         requestAnimationFrame(tick);
-        setTimeout(() => { node.textContent = target.toLocaleString(); }, dur + 80);
+        setTimeout(() => { node.textContent = target.toLocaleString(); delete node.dataset.animating; }, dur + 80);
       });
     }
 
@@ -6025,14 +6291,14 @@
       if (!bar) return;
       if (AUTH_USER) {
         bar.innerHTML = `
-          <div style="min-width:0;flex:1">
+          <div style="min-width:0;flex:1 1 100%">
             <div class="auth-bar-user">${AUTH_USER.username}</div>
-            <div class="auth-bar-sub">Signed in</div>
+            <div class="auth-bar-sub"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4ade80;margin-right:6px;vertical-align:middle"></span>Signed in</div>
           </div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <button class="btn-auth-small" onclick="showStats()" style="border-color:#3a5a9a;color:#60a5fa">Stats</button>
-            <button class="btn-auth-small" onclick="showLeaderboard()" style="border-color:#5a3a8a;color:#c084fc">Leaderboard</button>
-            <button class="btn-auth-small" onclick="signOut()" style="border-color:#8a2a2a;color:#f87171">Sign out</button>
+          <div style="display:flex;gap:6px;width:100%;flex:1 1 100%">
+            <button class="btn-auth-small" onclick="showStats()" style="flex:1;text-align:center;border-color:#3a5a9a;color:#60a5fa">Stats</button>
+            <button class="btn-auth-small" onclick="showLeaderboard()" style="flex:1;text-align:center;border-color:#5a3a8a;color:#c084fc">Leaderboard</button>
+            <button class="btn-auth-small" onclick="signOut()" style="flex:1;text-align:center;border-color:#8a2a2a;color:#f87171">Sign out</button>
           </div>`;
       } else {
         bar.innerHTML = `
@@ -6183,15 +6449,13 @@
           document.getElementById('stats-tab-t20').classList.toggle('stats-tab-inactive', mode !== 't20');
           document.getElementById('stats-tab-test').classList.toggle('stats-tab-inactive', mode !== 'test');
 
-          if (mode === 't20') {
-            document.getElementById('stats-panel').innerHTML = buildT20Stats(runs || []);
-          } else {
-            document.getElementById('stats-panel').innerHTML = buildTestStats(testRuns || []);
-          }
+          const panel = document.getElementById('stats-panel');
+          panel.innerHTML = mode === 't20' ? buildT20Stats(runs || []) : buildTestStats(testRuns || []);
+          requestAnimationFrame(() => wireReveals(panel));
         }
 
         document.getElementById('stats-content').innerHTML = `
-          <div style="display:flex;gap:6px;margin-bottom:18px">
+          <div class="ov-reveal" style="display:flex;gap:6px;margin-bottom:18px">
             <button id="stats-tab-t20"  class="stats-tab stats-tab-active"  onclick="renderStatsTab('t20')">T20 Blast</button>
             <button id="stats-tab-test" class="stats-tab stats-tab-inactive" onclick="renderStatsTab('test')">Test Cricket</button>
           </div>
@@ -6199,6 +6463,7 @@
 
         // expose renderStatsTab globally for inline onclick
         window.renderStatsTab = renderStatsTab;
+        requestAnimationFrame(() => wireReveals(document.getElementById('s-stats')));
         renderStatsTab(_statsMode);
 
       } catch(e) {
@@ -6312,46 +6577,59 @@
 
           const top100 = board.slice(0, 100);
 
-          const wl = (entry, big) => {
+          const wl = (entry, big, countUp) => {
             const w = mode === 't20' ? entry.totalWins : entry.wins;
             const l = mode === 't20' ? entry.totalLosses : entry.losses;
-            const ws = big ? '28px' : '16px';
-            const ds = big ? '16px' : '13px';
-            return `<span style="font-size:${ws};font-weight:900;color:#4ade80">${w}</span><span style="font-size:${ds};font-weight:700;color:#606080">-</span><span style="font-size:${ws};font-weight:900;color:#f87171">${l}</span>`;
+            const ws = big ? '32px' : '16px';
+            const ds = big ? '17px' : '13px';
+            const wSpan = countUp ? `<span class="ov-count" data-count="${w}" style="font-size:${ws};font-weight:900;color:#4ade80">0</span>` : `<span style="font-size:${ws};font-weight:900;color:#4ade80">${w}</span>`;
+            const lSpan = countUp ? `<span class="ov-count" data-count="${l}" style="font-size:${ws};font-weight:900;color:#f87171">0</span>` : `<span style="font-size:${ws};font-weight:900;color:#f87171">${l}</span>`;
+            return `${wSpan}<span style="font-size:${ds};font-weight:700;color:#8080a0">-</span>${lSpan}`;
           };
 
-          // Podium
+          // Podium — rank 1 gets a distinct gold treatment (Floodlight Rule's one
+          // permitted highlighted stat) so the top run reads as the hero, not just
+          // another card in a row.
           const podiumCard = (entry, rank, big) => {
             if (!entry) return `<div style="flex:1"></div>`;
-            const rankLabel = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
-            const border = rank === 1 ? '#f9c846' : rank === 2 ? '#a0a0c0' : '#cd7f32';
-            const pad = big ? '16px 12px' : '12px 10px';
-            const nameSize = big ? '15px' : '12px';
+            const rankLabel = rank === 1 ? '👑' : rank === 2 ? '🥈' : '🥉';
             const meHighlight = entry.isMe ? ';outline:2px solid #4040a0' : '';
-            return `<div style="flex:1;background:#111118;border:1px solid ${border};border-radius:12px;padding:${pad};text-align:center${meHighlight}">
-              <div style="font-size:${big?'22px':'16px'};margin-bottom:4px">${rankLabel}</div>
-              <div style="font-size:${nameSize};font-weight:800;color:${entry.isMe?'#f9c846':'#e0e0f0'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${entry.username}${entry.isMe?' ✦':''}</div>
-              <div style="font-size:10px;color:#606080;margin:3px 0">OVR ${entry.rating||'—'}</div>
-              <div style="margin-top:4px">${wl(entry, big)}</div>
-              ${entry.date ? `<div style="font-size:9px;color:#404060;margin-top:4px">${entry.date}</div>` : ''}
+            if (rank === 1) {
+              return `<div class="lb-podium-1${entry.isMe?' lb-podium-me':''}" style="width:100%${meHighlight}">
+                <div style="font-size:30px;margin-bottom:6px">${rankLabel}</div>
+                <div style="font-size:19px;font-weight:900;color:${entry.isMe?'#fff':'#ffe9b8'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${entry.username}${entry.isMe?' ✦':''}</div>
+                <div style="font-size:11px;color:#c9a860;margin:5px 0;font-weight:700;letter-spacing:.5px">OVR ${entry.rating||'—'}</div>
+                <div style="margin-top:8px">${wl(entry, true, true)}</div>
+                ${entry.date ? `<div style="font-size:9px;color:#8a7440;margin-top:6px">${entry.date}</div>` : ''}
+              </div>`;
+            }
+            const tint = rank === 2 ? '#15151f' : '#1a140d';
+            const border = rank === 2 ? '#a0a0c0' : '#cd7f32';
+            return `<div style="flex:1;background:${tint};border:1px solid ${border};border-radius:12px;padding:12px 10px;text-align:center${meHighlight}">
+              <div style="font-size:16px;margin-bottom:4px">${rankLabel}</div>
+              <div style="font-size:12px;font-weight:800;color:${entry.isMe?'#f9c846':'#e0e0f0'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${entry.username}${entry.isMe?' ✦':''}</div>
+              <div style="font-size:10px;color:#8080a0;margin:3px 0">OVR ${entry.rating||'—'}</div>
+              <div style="margin-top:4px">${wl(entry, false)}</div>
+              ${entry.date ? `<div style="font-size:9px;color:#606080;margin-top:4px">${entry.date}</div>` : ''}
             </div>`;
           };
 
-          const podiumHTML = `<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:16px">
+          const podiumHTML = `
+          <div class="ov-reveal" style="margin-bottom:8px">${podiumCard(board[0], 1, true)}</div>
+          <div class="ov-reveal" style="display:flex;gap:8px;margin-bottom:16px">
             ${podiumCard(board[1], 2, false)}
-            ${podiumCard(board[0], 1, true)}
             ${podiumCard(board[2], 3, false)}
           </div>`;
 
           const makeRow = (entry, i, highlight) => {
             const pos = i + 1;
-            const posLabel = `<span style="font-size:12px;color:#606080;font-weight:700">${pos}</span>`;
+            const posLabel = `<span style="font-size:12px;color:#8080a0;font-weight:700">${pos}</span>`;
             const meStyle = highlight ? ';background:#0a0a18;border:1px solid #2a2a50;border-radius:8px' : '';
-            return `<div style="display:flex;align-items:center;gap:10px;padding:9px 8px${meStyle};margin-bottom:2px">
+            return `<div class="ov-row-reveal" style="display:flex;align-items:center;gap:10px;padding:9px 8px${meStyle};margin-bottom:2px">
               <div style="width:28px;text-align:center;flex-shrink:0">${posLabel}</div>
               <div style="flex:1;min-width:0;text-align:left">
                 <div style="font-size:13px;font-weight:${highlight?'900':'700'};color:${highlight?'#f9c846':'#e0e0f0'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${entry.username}${highlight?' ✦':''}</div>
-                <div style="font-size:10px;color:#606080;margin-top:1px">OVR ${entry.rating||'—'}${entry.date ? ` · ${entry.date}` : ''}</div>
+                <div style="font-size:10px;color:#8080a0;margin-top:1px">OVR ${entry.rating||'—'}${entry.date ? ` · ${entry.date}` : ''}</div>
               </div>
               <div style="text-align:right;flex-shrink:0">${wl(entry, false)}</div>
             </div>`;
@@ -6366,8 +6644,8 @@
           if (AUTH_USER && !board.some(e => e.isMe)) {
             const myEntry = mode === 't20' ? myT20RankEntry : myTestRankEntry;
             if (myEntry) {
-              myRankRow = `<div style="margin-top:10px;background:#0a0a14;border:1px solid #2a2a50;border-radius:10px;padding:6px">
-                <div style="font-size:10px;color:#6060a0;text-align:center;margin-bottom:4px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Your best winning run · #${myEntry.rank.toLocaleString()} on leaderboard</div>
+              myRankRow = `<div class="ov-stagger" style="margin-top:10px;background:#0a0a14;border:1px solid #2a2a50;border-radius:10px;padding:6px">
+                <div style="font-size:10px;color:#8080a0;text-align:center;margin-bottom:4px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Your best winning run · #${myEntry.rank.toLocaleString()} on leaderboard</div>
                 ${makeRow(myEntry, myEntry.rank - 1, true)}
               </div>`;
             }
@@ -6375,19 +6653,21 @@
 
           document.getElementById('lb-panel').innerHTML = `
             ${podiumHTML}
-            <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:8px 6px">${rows || '<div style="text-align:center;color:#606080;font-size:12px;padding:10px">No more entries</div>'}</div>
+            <div class="ov-stagger" style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:8px 6px">${rows || '<div style="text-align:center;color:#8080a0;font-size:12px;padding:10px">No more entries</div>'}</div>
             ${myRankRow}
-            <div style="font-size:10px;color:#3a3a50;text-align:center;margin-top:10px">Winners only · top 100 · ranked by wins → OVR → most recent</div>`;
+            <div style="font-size:10px;color:#5a5a70;text-align:center;margin-top:10px">Winners only · top 100 · ranked by wins → OVR → most recent</div>`;
+          requestAnimationFrame(() => wireReveals(document.getElementById('lb-panel')));
         }
 
         window.renderLbTab = renderLbTab;
         document.getElementById('lb-content').innerHTML = `
-          <div style="display:flex;gap:6px;margin-bottom:18px">
+          <div class="ov-reveal" style="display:flex;gap:6px;margin-bottom:18px">
             <button id="lb-tab-t20"  class="stats-tab stats-tab-active"  onclick="renderLbTab('t20')">T20 Blast</button>
             <button id="lb-tab-test" class="stats-tab stats-tab-inactive" onclick="renderLbTab('test')">Test Cricket</button>
           </div>
           <div id="lb-panel"></div>`;
 
+        requestAnimationFrame(() => wireReveals(document.getElementById('s-leaderboard')));
         renderLbTab(_lbMode);
 
       } catch(e) {
@@ -6398,7 +6678,7 @@
 
     function buildT20Stats(runs) {
         if (!runs.length) {
-          return `<div style="text-align:center;color:#606080;font-size:13px;padding:40px 0">
+          return `<div style="text-align:center;color:#8080a0;font-size:13px;padding:40px 0">
             No T20 runs yet — complete a Blast season to see your stats here.
           </div>`;
         }
@@ -6429,9 +6709,9 @@
         function pct(n) { return total ? Math.round((n / total) * 100) : 0; }
         function stageBarRow(label, n, color) {
           const p = pct(n);
-          return `<div class="stage-bar-row">
+          return `<div class="stage-bar-row ov-row-reveal">
             <div class="stage-bar-label">${label}</div>
-            <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${p}%;background:${color}"></div></div>
+            <div class="stage-bar-track"><div class="stage-bar-fill bar-fill" data-pct="${p}" style="width:0%;background:${color}"></div></div>
             <div class="stage-bar-pct" style="color:${color}">${p}%</div>
           </div>`;
         }
@@ -6444,10 +6724,10 @@
           else if (r.qualified)  { result = '🎟️ QF exit';     col = '#60a5fa'; }
           else                   { result = `${ordinal(r.group_pos||9)} group`; col = '#f87171'; }
           const dateStr = new Date(r.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
-          return `<div class="recent-run-row">
+          return `<div class="recent-run-row ov-row-reveal">
             <div style="text-align:left">
               <div style="font-size:13px;font-weight:700;color:${col}">${result}</div>
-              <div style="font-size:11px;color:#606080;margin-top:1px">${r.group_wins||0}W · ${16-(r.group_wins||0)}L · OVR ${r.team_rating||'—'} · ${dateStr}</div>
+              <div style="font-size:11px;color:#8080a0;margin-top:1px">${r.group_wins||0}W · ${16-(r.group_wins||0)}L · OVR ${r.team_rating||'—'} · ${dateStr}</div>
             </div>
           </div>`;
         }).join('');
@@ -6461,7 +6741,7 @@
         const brDate   = new Date(bestRun.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 
         const mostUsedHTML = topPlayers.map(([name, count], i) => `
-          <div class="recent-run-row">
+          <div class="recent-run-row ov-row-reveal">
             <div style="display:flex;align-items:center;gap:10px;text-align:left">
               <div style="font-size:13px;font-weight:800;color:${i===0?'#f9c846':'#606070'};width:16px">${i===0?'⭐':''+(i+1)}</div>
               <div style="font-size:13px;font-weight:${i===0?'800':'700'};color:${i===0?'#f9c846':'#d0d0e8'}">${name}</div>
@@ -6470,19 +6750,19 @@
           </div>`).join('');
 
         return `
-          <div class="stats-grid">
-            <div class="stats-box"><div class="stats-n" style="color:#60a5fa">${total}</div><div class="stats-l">Total drafts</div></div>
-            <div class="stats-box"><div class="stats-n" style="color:#f9c846">${finalWon}</div><div class="stats-l">Blast Wins</div></div>
+          <div class="stats-grid ov-reveal">
+            <div class="stats-box"><div class="stats-n ov-count" data-count="${total}" style="color:#60a5fa">0</div><div class="stats-l">Total drafts</div></div>
+            <div class="stats-box"><div class="stats-n ov-count" data-count="${finalWon}" style="color:#f9c846">0</div><div class="stats-l">Blast Wins</div></div>
             <div class="stats-box"><div class="stats-n" style="color:#60a5fa">${avgWins}</div><div class="stats-l">Avg wins</div></div>
             <div class="stats-box"><div class="stats-n" style="color:${ratingColor(avgRating)}">${avgRating||'—'}</div><div class="stats-l">Avg team OVR</div></div>
           </div>
 
           <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Best run</div>
-          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-bottom:8px">
+          <div class="ov-reveal" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-bottom:8px">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
                 <div style="font-size:15px;font-weight:800;color:${brCol}">${brResult}</div>
-                <div style="font-size:11px;color:#606080;margin-top:3px">OVR ${bestRun.team_rating||'—'} · ${brDate}</div>
+                <div style="font-size:11px;color:#8080a0;margin-top:3px">OVR ${bestRun.team_rating||'—'} · ${brDate}</div>
               </div>
               <div style="text-align:right">
                 <div style="font-size:22px;font-weight:900;letter-spacing:-1px"><span style="color:#4ade80">${brTotalW}W</span><span style="color:#606070">-</span><span style="color:#f87171">${brTotalL}L</span></div>
@@ -6490,10 +6770,10 @@
             </div>
           </div>
 
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">
             Knockout reach
           </div>
-          <div class="stage-bar">
+          <div class="stage-bar ov-stagger">
             ${stageBarRow('Qualified', qualified, '#60a5fa')}
             ${stageBarRow('QF won',    qfWon,     '#818cf8')}
             ${stageBarRow('SF won',    sfWon,     '#c084fc')}
@@ -6502,15 +6782,15 @@
 
           ${topPlayers.length ? `
           <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Most drafted players</div>
-          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${mostUsedHTML}</div>` : ''}
+          <div class="ov-stagger" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${mostUsedHTML}</div>` : ''}
 
           <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Recent runs</div>
-          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${recentHTML}</div>`;
+          <div class="ov-stagger" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${recentHTML}</div>`;
     }
 
     function buildTestStats(runs) {
         if (!runs || !runs.length) {
-          return `<div style="text-align:center;color:#606080;font-size:13px;padding:40px 0">
+          return `<div style="text-align:center;color:#8080a0;font-size:13px;padding:40px 0">
             No Test cycles yet — complete a WTC cycle to see your stats here.
           </div>`;
         }
@@ -6537,9 +6817,9 @@
         function pct(n) { return total ? Math.round((n / total) * 100) : 0; }
         function stageBarRow(label, n, color) {
           const p = pct(n);
-          return `<div class="stage-bar-row">
+          return `<div class="stage-bar-row ov-row-reveal">
             <div class="stage-bar-label">${label}</div>
-            <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${p}%;background:${color}"></div></div>
+            <div class="stage-bar-track"><div class="stage-bar-fill bar-fill" data-pct="${p}" style="width:0%;background:${color}"></div></div>
             <div class="stage-bar-pct" style="color:${color}">${p}%</div>
           </div>`;
         }
@@ -6550,10 +6830,10 @@
           else if (r.qualified)  { result = '🥈 WTC Finalist';   col = '#c084fc'; }
           else                   { result = `${ordinal(r.wtc_pos||9)} in WTC`;   col = '#f87171'; }
           const dateStr = new Date(r.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
-          return `<div class="recent-run-row">
+          return `<div class="recent-run-row ov-row-reveal">
             <div style="text-align:left">
               <div style="font-size:13px;font-weight:700;color:${col}">${result}</div>
-              <div style="font-size:11px;color:#606080;margin-top:1px">${r.wins||0}W · ${r.draws||0}D · ${r.losses||0}L · OVR ${r.team_rating||'—'} · ${dateStr}</div>
+              <div style="font-size:11px;color:#8080a0;margin-top:1px">${r.wins||0}W · ${r.draws||0}D · ${r.losses||0}L · OVR ${r.team_rating||'—'} · ${dateStr}</div>
             </div>
           </div>`;
         }).join('');
@@ -6563,7 +6843,7 @@
         const brDate   = new Date(bestRun.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 
         const mostUsedHTML = topPlayers.map(([name, count], i) => `
-          <div class="recent-run-row">
+          <div class="recent-run-row ov-row-reveal">
             <div style="display:flex;align-items:center;gap:10px;text-align:left">
               <div style="font-size:13px;font-weight:800;color:${i===0?'#f9c846':'#606070'};width:16px">${i===0?'⭐':''+(i+1)}</div>
               <div style="font-size:13px;font-weight:${i===0?'800':'700'};color:${i===0?'#f9c846':'#d0d0e8'}">${name}</div>
@@ -6572,41 +6852,41 @@
           </div>`).join('');
 
         return `
-          <div class="stats-grid">
-            <div class="stats-box"><div class="stats-n" style="color:#60a5fa">${total}</div><div class="stats-l">Total cycles</div></div>
-            <div class="stats-box"><div class="stats-n" style="color:#f9c846">${finalWon}</div><div class="stats-l">WTC Wins</div></div>
+          <div class="stats-grid ov-reveal">
+            <div class="stats-box"><div class="stats-n ov-count" data-count="${total}" style="color:#60a5fa">0</div><div class="stats-l">Total cycles</div></div>
+            <div class="stats-box"><div class="stats-n ov-count" data-count="${finalWon}" style="color:#f9c846">0</div><div class="stats-l">WTC Wins</div></div>
             <div class="stats-box"><div class="stats-n" style="color:#60a5fa">${avgWins}</div><div class="stats-l">Avg test wins</div></div>
             <div class="stats-box"><div class="stats-n" style="color:${ratingColor(avgRating)}">${avgRating||'—'}</div><div class="stats-l">Avg team OVR</div></div>
           </div>
 
           <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Best cycle</div>
-          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-bottom:8px">
+          <div class="ov-reveal" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-bottom:8px">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="text-align:left">
                 <div style="font-size:15px;font-weight:800;color:${brCol}">${brResult}</div>
-                <div style="font-size:11px;color:#606080;margin-top:3px">OVR ${bestRun.team_rating||'—'} · ${brDate}</div>
+                <div style="font-size:11px;color:#8080a0;margin-top:3px">OVR ${bestRun.team_rating||'—'} · ${brDate}</div>
               </div>
               <div style="text-align:right">
                 <div style="font-size:22px;font-weight:900;letter-spacing:-1px">
                   <span style="color:#4ade80">${bestRun.wins||0}W</span><span style="color:#fbbf24"> ${bestRun.draws||0}D</span><span style="color:#606070"> </span><span style="color:#f87171">${bestRun.losses||0}L</span>
                 </div>
-                <div style="font-size:11px;color:#606080">${ordinal(bestRun.wtc_pos||9)} in WTC · ${bestRun.pct||0}%</div>
+                <div style="font-size:11px;color:#8080a0">${ordinal(bestRun.wtc_pos||9)} in WTC · ${bestRun.pct||0}%</div>
               </div>
             </div>
           </div>
 
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">WTC stage reached</div>
-          <div class="stage-bar">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">WTC stage reached</div>
+          <div class="stage-bar ov-stagger">
             ${stageBarRow('Final reached', qualified, '#c084fc')}
             ${stageBarRow('WTC Champions', finalWon,  '#f9c846')}
           </div>
 
           ${topPlayers.length ? `
           <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Most drafted players</div>
-          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${mostUsedHTML}</div>` : ''}
+          <div class="ov-stagger" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${mostUsedHTML}</div>` : ''}
 
           <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Recent cycles</div>
-          <div style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${recentHTML}</div>`;
+          <div class="ov-stagger" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${recentHTML}</div>`;
     }
 
     function closeSignupNudge() {
@@ -9906,6 +10186,33 @@
     function startWCDraft() {
       resetWCState();
       go('s-wc-intro');
+      wciReset();
+    }
+
+    function wciReset() {
+      wciShow('squad');
+      wciStage(0);
+    }
+
+    function wciShow(name) {
+      document.querySelectorAll('#s-wc-intro .wci-tab').forEach(t => {
+        const on = t.dataset.wci === name;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      document.querySelectorAll('#s-wc-intro .wci-panel').forEach(p => {
+        p.classList.toggle('active', p.dataset.wciPanel === name);
+      });
+    }
+
+    function wciStage(idx) {
+      idx = String(idx);
+      document.querySelectorAll('#s-wc-intro .wci-stage-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.stage === idx);
+      });
+      document.querySelectorAll('#s-wc-intro .wci-stage-body').forEach(b => {
+        b.classList.toggle('active', b.dataset.stageBody === idx);
+      });
     }
 
     function startWCSquadDraft() {
@@ -11236,6 +11543,76 @@
       }else{WCS.qualified=false;WCS.finalResult='eliminated';buildWCEndScreen();go('s-wc-end');}
     }
 
+    // Shared "feels alive" reveal system: fades/slides sections in as they enter view,
+    // staggers list rows, counts up headline numbers, and animates progress-bar fills.
+    // Used by the season-review screen and the stats page for a consistent motion language.
+    function animateCountUp(node){
+      const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const target=parseInt(node.dataset.count,10)||0;
+      if(reduceMotion||!target){node.textContent=target.toLocaleString();return;}
+      const start=performance.now(),dur=800;
+      const tick=(now)=>{
+        const p=Math.min(1,(now-start)/dur);
+        const eased=1-Math.pow(1-p,3);
+        node.textContent=Math.round(target*eased).toLocaleString();
+        if(p<1)requestAnimationFrame(tick);else node.textContent=target.toLocaleString();
+      };
+      requestAnimationFrame(tick);
+      // Safety net: if rAF stalls (e.g. a backgrounded tab), guarantee the true value lands.
+      setTimeout(()=>{node.textContent=target.toLocaleString();},dur+80);
+    }
+    function wireReveals(el){
+      if(!el)return;
+      const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // Guard against wiring the same element twice (e.g. an outer container call
+      // running after an inner container was already wired for the same nodes).
+      const notWired=n=>!n.dataset.ovWired;
+      const markWired=n=>{n.dataset.ovWired='1';return n;};
+      const revealEls=Array.from(el.querySelectorAll('.ov-reveal')).filter(notWired).map(markWired);
+      const obs=new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          if(!entry.isIntersecting)return;
+          entry.target.classList.add('ov-in');
+          entry.target.querySelectorAll('.ov-count').forEach(animateCountUp);
+          obs.unobserve(entry.target);
+        });
+      },{threshold:0.15,rootMargin:'0px 0px 250px 0px'});
+      revealEls.forEach(node=>obs.observe(node));
+
+      const staggerEls=Array.from(el.querySelectorAll('.ov-stagger')).filter(notWired).map(markWired);
+      const rowObs=new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          if(!entry.isIntersecting)return;
+          entry.target.querySelectorAll('.ov-row-reveal').forEach((row,i)=>{
+            row.style.transitionDelay=reduceMotion?'0ms':`${Math.min(i*35,250)}ms`;
+            row.classList.add('ov-in');
+          });
+          entry.target.querySelectorAll('.bar-fill[data-pct]').forEach((bar,i)=>{
+            const pct=bar.dataset.pct;
+            if(reduceMotion){bar.style.width=pct+'%';return;}
+            bar.style.transitionDelay=`${Math.min(i*35,250)}ms`;
+            requestAnimationFrame(()=>requestAnimationFrame(()=>{bar.style.width=pct+'%';}));
+          });
+          rowObs.unobserve(entry.target);
+        });
+      },{threshold:0.1,rootMargin:'0px 0px 250px 0px'});
+      staggerEls.forEach(node=>rowObs.observe(node));
+
+      // Safety net: guarantee every section is visible even if IntersectionObserver
+      // never fires (e.g. suspended in a backgrounded/headless tab).
+      setTimeout(()=>{
+        revealEls.forEach(node=>{
+          if(node.classList.contains('ov-in'))return;
+          node.classList.add('ov-in');
+          node.querySelectorAll('.ov-count').forEach(animateCountUp);
+        });
+        staggerEls.forEach(node=>{
+          node.querySelectorAll('.ov-row-reveal').forEach(row=>row.classList.add('ov-in'));
+          node.querySelectorAll('.bar-fill[data-pct]').forEach(bar=>{bar.style.width=bar.dataset.pct+'%';});
+        });
+      },1400);
+    }
+
     function buildWCEndScreen(){
       const el=document.getElementById('wc-end-content');if(!el)return;
       const won=WCS.finalResult==='W';
@@ -11398,46 +11775,7 @@
 
       // Reveal each section as the user scrolls through their tournament run,
       // with staggered rows for lists and a count-up for the headline numbers.
-      requestAnimationFrame(()=>{
-        const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const animateCount=(node)=>{
-          const target=parseInt(node.dataset.count,10)||0;
-          if(reduceMotion||!target){node.textContent=target;return;}
-          const start=performance.now(),dur=800;
-          const tick=(now)=>{
-            const p=Math.min(1,(now-start)/dur);
-            const eased=1-Math.pow(1-p,3);
-            node.textContent=Math.round(target*eased);
-            if(p<1)requestAnimationFrame(tick);else node.textContent=target;
-          };
-          requestAnimationFrame(tick);
-          // Safety net: if rAF stalls (e.g. a backgrounded tab), guarantee the true value lands.
-          setTimeout(()=>{node.textContent=target;},dur+80);
-        };
-        const revealEls=el.querySelectorAll('.ov-reveal');
-        const obs=new IntersectionObserver((entries)=>{
-          entries.forEach(entry=>{
-            if(!entry.isIntersecting)return;
-            entry.target.classList.add('ov-in');
-            entry.target.querySelectorAll('.ov-count').forEach(animateCount);
-            obs.unobserve(entry.target);
-          });
-        },{threshold:0.15,rootMargin:'0px 0px 250px 0px'});
-        revealEls.forEach(node=>obs.observe(node));
-
-        const staggerEls=el.querySelectorAll('.ov-stagger');
-        const rowObs=new IntersectionObserver((entries)=>{
-          entries.forEach(entry=>{
-            if(!entry.isIntersecting)return;
-            entry.target.querySelectorAll('.ov-row-reveal').forEach((row,i)=>{
-              row.style.transitionDelay=reduceMotion?'0ms':`${Math.min(i*35,250)}ms`;
-              row.classList.add('ov-in');
-            });
-            rowObs.unobserve(entry.target);
-          });
-        },{threshold:0.1,rootMargin:'0px 0px 250px 0px'});
-        staggerEls.forEach(node=>rowObs.observe(node));
-      });
+      requestAnimationFrame(()=>wireReveals(el));
 
       if(isPerfectRun){launchConfetti(320,true);setTimeout(()=>launchConfetti(200,true),900);}
       else if(won)launchConfetti();
@@ -11898,39 +12236,47 @@
 
   <!-- WC INTRO -->
   <div id="s-wc-intro" class="screen">
-    <div style="width:100%;text-align:left;margin-bottom:24px">
+    <div style="width:100%;text-align:left;margin-bottom:20px">
       <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">World Cup · How It Works</div>
       <div style="font-size:26px;font-weight:900;color:#fff;line-height:1.1">Build your squad.<br>Win the World Cup.</div>
     </div>
-    <div style="width:100%;display:flex;flex-direction:column;gap:14px;margin-bottom:28px">
-      <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
-        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Your Squad</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Spin a <span style="color:#f9c846;font-weight:800">squad of 15</span> World Cup players from any nation. Each spin picks a nation, year, and player. The nation with <span style="color:#f9c846;font-weight:800">the most players</span> in your squad is the team you represent. Pick an <span style="color:#f9c846;font-weight:800">XI for every match</span>.</div>
-      </div>
-      <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
-        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">ODI Format</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6"><span style="color:#f9c846;font-weight:800">One innings per side</span>, 50 overs maximum. Win by wickets chasing, or defend your total. No draws.</div>
-      </div>
-      <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
-        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:10px">The Tournament</div>
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div>
-            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:5px">Group Stage</div>
-            <div style="font-size:13px;color:#c0c0d8;line-height:1.6">14 teams, 2 groups of 7. Your XI are in Group A and play all 6 other Group A teams. The <span style="color:#f9c846;font-weight:800">top 3</span> from each group advance. Group B teams play each other at the same time.</div>
-          </div>
-          <div>
-            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:5px">Super Sixes</div>
-            <div style="font-size:13px;color:#c0c0d8;line-height:1.6">All 6 qualifiers enter one table. Group A teams play <span style="color:#f9c846;font-weight:800">3 new matches against the Group B qualifiers only</span>. No rematches against your own group. Points earned against qualifying teams from your group carry forward into the table.</div>
-          </div>
-          <div>
-            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:5px">Semi-Finals &amp; Final</div>
-            <div style="font-size:13px;color:#c0c0d8;line-height:1.6">Top 4 from the Super Sixes reach the semi-finals. Win both to reach the Final. Win the Final to lift the Cup.</div>
-          </div>
+    <div class="wci-tabs" role="tablist">
+      <button class="wci-tab active" data-wci="squad" role="tab" aria-selected="true" onclick="wciShow('squad')">Squad</button>
+      <button class="wci-tab" data-wci="format" role="tab" aria-selected="false" onclick="wciShow('format')">Format</button>
+      <button class="wci-tab" data-wci="tournament" role="tab" aria-selected="false" onclick="wciShow('tournament')">Tournament</button>
+      <button class="wci-tab" data-wci="form" role="tab" aria-selected="false" onclick="wciShow('form')">Form</button>
+    </div>
+    <div style="width:100%;margin-bottom:24px">
+      <div class="wci-panel active" data-wci-panel="squad">
+        <div class="wci-card">
+          <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Spin a <span style="color:#f9c846;font-weight:800">squad of 15</span> World Cup players from any nation. Each spin picks a nation, year, and player. The nation with <span style="color:#f9c846;font-weight:800">the most players</span> in your squad is the team you represent. Pick an <span style="color:#f9c846;font-weight:800">XI for every match</span>.</div>
         </div>
       </div>
-      <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
-        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Form</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Form shifts match by match. Big scores and wicket hauls push ratings up, poor performances pull them down. Rotate your XI to manage workloads.</div>
+      <div class="wci-panel" data-wci-panel="format">
+        <div class="wci-card">
+          <div style="font-size:14px;color:#c0c0d8;line-height:1.6"><span style="color:#f9c846;font-weight:800">One innings per side</span>, 50 overs maximum. Win by wickets chasing, or defend your total. No draws.</div>
+        </div>
+      </div>
+      <div class="wci-panel" data-wci-panel="tournament">
+        <div class="wci-stage-list">
+          <button class="wci-stage-btn active" data-stage="0" onclick="wciStage(0)">
+            <span class="wci-stage-num">1</span><span class="wci-stage-name">Group Stage</span><span class="wci-stage-chevron">›</span>
+          </button>
+          <div class="wci-stage-body active" data-stage-body="0">14 teams, 2 groups of 7. Your XI are in Group A and play all 6 other Group A teams. The <span style="color:#f9c846;font-weight:800">top 3</span> from each group advance. Group B teams play each other at the same time.</div>
+          <button class="wci-stage-btn" data-stage="1" onclick="wciStage(1)">
+            <span class="wci-stage-num">2</span><span class="wci-stage-name">Super Sixes</span><span class="wci-stage-chevron">›</span>
+          </button>
+          <div class="wci-stage-body" data-stage-body="1">All 6 qualifiers enter one table. Group A teams play <span style="color:#f9c846;font-weight:800">3 new matches against the Group B qualifiers only</span>. No rematches against your own group. Points earned against qualifying teams from your group carry forward into the table.</div>
+          <button class="wci-stage-btn" data-stage="2" onclick="wciStage(2)">
+            <span class="wci-stage-num">3</span><span class="wci-stage-name">Semi-Finals &amp; Final</span><span class="wci-stage-chevron">›</span>
+          </button>
+          <div class="wci-stage-body" data-stage-body="2">Top 4 from the Super Sixes reach the semi-finals. Win both to reach the Final. Win the Final to lift the Cup.</div>
+        </div>
+      </div>
+      <div class="wci-panel" data-wci-panel="form">
+        <div class="wci-card">
+          <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Form shifts match by match. Big scores and wicket hauls push ratings up, poor performances pull them down. Rotate your XI to manage workloads.</div>
+        </div>
       </div>
     </div>
     <button class="btn-start" onclick="startWCSquadDraft()" style="width:100%">Begin Draft →</button>
@@ -12070,19 +12416,22 @@
 
   <!-- STATS SCREEN -->
   <div id="s-leaderboard" class="screen">
-    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div class="ov-reveal" style="width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div style="text-align:left;min-width:0;flex:1">
         <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">Global</div>
         <div style="font-size:24px;font-weight:900;color:#fff">Leaderboard</div>
       </div>
-      <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-auth-small" onclick="showStats()" style="background:#1a1a2e;border-color:#3a3a60;color:#a0a0d0">📊 Stats</button>
+        <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
+      </div>
     </div>
-    <div id="lb-loading" style="text-align:center;color:#606080;font-size:13px;padding:40px 0">Loading…</div>
+    <div id="lb-loading" style="text-align:center;color:#8080a0;font-size:13px;padding:40px 0">Loading…</div>
     <div id="lb-content" style="width:100%;display:none"></div>
   </div>
 
   <div id="s-stats" class="screen">
-    <div style="width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div class="ov-reveal" style="width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div style="text-align:left;min-width:0;flex:1">
         <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">Your Stats</div>
         <div style="font-size:24px;font-weight:900;color:#fff" id="stats-username-title">—</div>
@@ -12092,7 +12441,7 @@
         <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
       </div>
     </div>
-    <div id="stats-loading" style="text-align:center;color:#606080;font-size:13px;padding:40px 0">Loading stats…</div>
+    <div id="stats-loading" style="text-align:center;color:#8080a0;font-size:13px;padding:40px 0">Loading stats…</div>
     <div id="stats-content" style="width:100%;display:none"></div>
   </div>
 

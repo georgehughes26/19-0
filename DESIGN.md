@@ -32,6 +32,9 @@ colors:
   perf-over-label: "#6fae82"
   perf-met-label: "#9a9ad4"
   perf-under-label: "#d99860"
+  info-tint-bg: "#0a1420"
+  info-tint-border: "#1a4060"
+  info-tint-text-dim: "#6090b8"
 typography:
   display:
     fontFamily: "system-ui, -apple-system, sans-serif"
@@ -145,6 +148,7 @@ Added after a `/impeccable critique` pass found these already in production use 
 - **Text Highlight** (#e0e0f0), **Text Muted Alt** (#606080), **Border Muted** (#2a2a50), **Text Secondary** (#8080c0), **Fallback Gray** (#aaaaaa): secondary text/border tones used in the season-review perf-card and share-card builders.
 - **Loss Tint Bg** (#1a1010) / **Loss Tint Border** (#4a2020): the dark red-tinted background/border pairing for a below-target ("Eliminated in Group Stage") share-card finish badge.
 - **Perf Over/Met/Under Label** (#6fae82 / #9a9ad4 / #d99860): brightened replacements for the original `.perf-label` colors (#4a7a5a / #6868a0 / #8a5030), which measured under 3.6:1 contrast against their card backgrounds. These pass ≥4.5:1 while keeping the same green/indigo/orange hue coding.
+- **Info Tint Bg** (#0a1420) / **Info Tint Border** (#1a4060) / **Info Tint Text Dim** (#6090b8): the dark blue-tinted background/border/secondary-text set for the "Continue Saved Game" resume affordance on the Test Cricket home tab, tonally paired with Info Blue the same way Loss Tint pairs with Loss Red. The text-dim value was brightened from an initial #406080 (~2.8:1) to #6090b8 (~5.4:1) to clear WCAG AA for the saved-date caption.
 
 ### Named Rules
 **The Floodlight Rule.** Gold/orange never covers more than the CTA, the wordmark, or a single highlighted stat at a time. If more than one element on screen is glowing gold, the hierarchy has broken down.
