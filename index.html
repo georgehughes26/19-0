@@ -2481,6 +2481,132 @@
       border: 1px solid #5a1a1a
     }
 
+    /* WC live scorecard — motion + emphasis so the match view feels like a broadcast,
+       not a static data dump. The overs bar is a single-row ticker capped at 10 —
+       once full, the oldest over is dropped as each new one comes in, so it always
+       reads as "recent overs" scrolling along the top rather than growing to 4+ rows. */
+    .sc-overs-bar.wm-overbar {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow: hidden;
+      gap: 4px;
+    }
+
+    .wm-overbar .sc-over {
+      flex: 0 0 calc((100% - 36px) / 10);
+      width: auto;
+      height: 26px;
+    }
+
+    @keyframes wm-over-slide-in {
+      0% { opacity: 0; transform: translateX(8px) }
+      100% { opacity: 1; transform: translateX(0) }
+    }
+
+    .wm-overbar .sc-over.vis {
+      animation: wm-over-slide-in .25s ease-out
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .wm-overbar .sc-over.vis { animation: none !important }
+    }
+
+    .sc-over.boundary {
+      background: #16341c;
+      color: #5fe08a;
+      font-weight: 900;
+      transform: scale(1.08)
+    }
+
+    @keyframes wm-score-pop {
+      0% { transform: scale(1.16) }
+      100% { transform: scale(1) }
+    }
+
+    .wm-score-pop {
+      animation: wm-score-pop .38s var(--ease-pop, ease-out)
+    }
+
+    @keyframes wm-wicket-flash {
+      0% { color: #ff4444 }
+      100% { color: #f9c846 }
+    }
+
+    .wm-wicket-flash {
+      animation: wm-wicket-flash 1.1s ease-out
+    }
+
+    .wm-milestone-glow {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* A gold panel wipes left-to-right across the row, then fades — the sweep reads
+       as a broadcast "milestone" transition instead of a flat background flash. */
+    @keyframes wm-milestone-wipe {
+      0% { transform: scaleX(0); opacity: 1 }
+      40% { transform: scaleX(1); opacity: 1 }
+      75% { transform: scaleX(1); opacity: 1 }
+      100% { transform: scaleX(1); opacity: 0 }
+    }
+
+    .wm-milestone-glow::before {
+      content: '';
+      position: absolute; inset: 0;
+      transform-origin: left center;
+      background: linear-gradient(90deg, #3a2c00, #6a5218 60%, #3a2c00);
+      animation: wm-milestone-wipe 2s ease-out;
+      z-index: 0;
+    }
+
+    .wm-milestone-glow > span:not(.wm-milestone-badge) {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes wm-milestone-runs-pop {
+      0% { transform: scale(1.5); color: #fff }
+      40% { transform: scale(1.5); color: #fff }
+      100% { transform: scale(1) }
+    }
+
+    .wm-milestone-glow .sc-batter-runs {
+      display: inline-block;
+      animation: wm-milestone-runs-pop 2s cubic-bezier(.2,.8,.2,1)
+    }
+
+    /* The 50/100 badge pops up dead-centre of the row (not tucked beside the score
+       columns), timed to land just after the wipe has swept across. */
+    @keyframes wm-milestone-badge {
+      0% { opacity: 0; transform: translate(-50%,-50%) scale(.6) }
+      20% { opacity: 1; transform: translate(-50%,-50%) scale(1.15) }
+      35% { transform: translate(-50%,-50%) scale(1) }
+      80% { opacity: 1; transform: translate(-50%,-50%) scale(1) }
+      100% { opacity: 0; transform: translate(-50%,-50%) scale(.92) }
+    }
+
+    .wm-milestone-badge {
+      position: absolute; left: 50%; top: 50%;
+      font-size: 13px; font-weight: 900; color: #0f0f13; background: #f9c846;
+      padding: 4px 14px; border-radius: 20px; letter-spacing: .5px; white-space: nowrap;
+      animation: wm-milestone-badge 1.7s ease-out .4s both; pointer-events: none; z-index: 2;
+    }
+
+    @keyframes wm-live-pulse {
+      0%, 100% { opacity: 1 }
+      50% { opacity: .25 }
+    }
+
+    .wm-live-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: #ff4444; margin-right: 6px; vertical-align: middle;
+      animation: wm-live-pulse 1.1s ease-in-out infinite
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .wm-score-pop, .wm-wicket-flash, .wm-milestone-glow::before, .wm-milestone-glow .sc-batter-runs, .wm-milestone-badge, .wm-live-dot { animation: none !important }
+    }
+
     .sc-result-banner {
       width: 100%;
       padding: 20px;
@@ -3718,6 +3844,15 @@
               <button class="sopt sopt-red" onclick="setWCSetting('show','hidden',this)">Hidden</button>
             </div>
             <div class="setting-desc" id="desc-wc-show">Ratings shown during draft</div>
+          </div>
+          <div class="setting-panel">
+            <div class="setting-label">Match speed</div>
+            <div class="setting-btns" id="opt-wc-speed">
+              <button class="sopt sopt-amber" onclick="setWCSetting('speed','over',this)">Over Intervals</button>
+              <button class="sopt sopt-amber" onclick="setWCSetting('speed','five',this)">5 Over Intervals</button>
+              <button class="sopt sopt-green on" onclick="setWCSetting('speed','innings',this)">Innings</button>
+            </div>
+            <div class="setting-desc" id="desc-wc-speed">Innings appear complete, instantly</div>
           </div>
         </div>
        </div>
@@ -7287,8 +7422,10 @@
           squad:        squadJson,
         });
         if (error) console.error('wc_runs insert failed:', error.message, error);
-        // Clear saved game — run is complete, nothing to continue
-        sb.from('wc_saves').delete().eq('user_id', AUTH_USER.id);
+        // Clear saved game — run is complete, nothing to continue.
+        // NOTE: the postgrest-js query builder only fires its request once something
+        // consumes it (.then()/await) — an unawaited call here is silently never sent.
+        await sb.from('wc_saves').delete().eq('user_id', AUTH_USER.id);
       } catch(e) {
         console.warn('Could not save WC run:', e);
       }
@@ -10436,7 +10573,7 @@
       { id:'zim', name:'Zimbabwe',     flag:'🇿🇼', rMin:59, rMax:66 },
     ];
 
-    const WC_SETTINGS = { diff:'easy', show:'visible' };
+    const WC_SETTINGS = { diff:'easy', show:'visible', speed:'innings' };
     const WC_RESPIN_LIMITS = { easy:Infinity, medium:3, hard:0 };
 
     function setWCSetting(key, val, btn) {
@@ -10448,6 +10585,7 @@
       if (desc) {
         if (key==='diff') desc.textContent = val==='easy'?'Unlimited re-spins':val==='medium'?'3 re-spins per pick':'No re-spins';
         if (key==='show') desc.textContent = val==='visible'?'Ratings shown during draft':'Ratings hidden until draft ends';
+        if (key==='speed') desc.textContent = val==='over'?'Plays out over-by-over, live':val==='five'?'Plays out 5 overs at a time, live':'Innings appear complete, instantly';
       }
     }
 
@@ -10482,7 +10620,7 @@
         groupTeams:{A:[],B:[]}, groupTable:{A:{},B:{}}, preResults:{}, pendingAI:{A:[],B:[],super6:[]},
         superSixTeams:[], superSixTable:{}, otherSemi:null,
         cycleRatings:{}, qualified:false, finalResult:null,
-        phase:'group', knockoutOpp:null, semiResult:null, myNation:null,
+        phase:'group', knockoutOpp:null, semiResult:null, myNation:null, hostNationId:null, winStreak:0,
       };
       WC_NATIONS.forEach(n => {
         WCS.cycleRatings[n.id] = n.rMin + Math.floor(Math.random()*(n.rMax-n.rMin+1));
@@ -10499,6 +10637,11 @@
 
     function buildWCFixtures() {
       const myNat=WCS.myNation;
+      // World Cups are hosted in a single country for the whole tournament — pick it once,
+      // uniformly across all 14 nations, so there's exactly a 1-in-14 chance it's the nation
+      // you're representing. Whichever match your XI plays, it's ALL home or ALL away —
+      // never a per-match coin flip — because the tournament itself only moves once.
+      WCS.hostNationId=WC_NATIONS[Math.floor(Math.random()*WC_NATIONS.length)].id;
       const myXIRating=WCS.squad.length?Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length):75;
       // Your XI replaces whichever nation you drafted the most players from —
       // that nation is dropped from the AI pool so the total stays at 14 teams,
@@ -10536,7 +10679,7 @@
       // AI-vs-AI matches are simulated in round-synced chunks (see simulateAIRoundChunk),
       // right after each of your own matches — not all upfront before you've played one.
       WCS.pendingAI={A:yourRoundsA.map(r=>r.otherPairs),B:roundRobinRounds(WCS.groupTeams.B)};
-      WCS.matches=yourRoundsA.map(r=>({opp:{...r.opp,rating:WCS.cycleRatings[r.opp.id],home:Math.random()<0.45},completed:false,result:null,matchData:null}));
+      WCS.matches=yourRoundsA.map(r=>({opp:{...r.opp,rating:WCS.cycleRatings[r.opp.id],home:WCS.hostNationId===myNat.id},completed:false,result:null,matchData:null}));
       WCS.currentMatchIdx=-1;
     }
 
@@ -10588,7 +10731,10 @@
       const results=[];
       taken.forEach(pairs=>{
         pairs.forEach(([a,b])=>{
-          const rA=WCS.cycleRatings[a.id]||a.rating||70,rB=WCS.cycleRatings[b.id]||b.rating||70;
+          let rA=WCS.cycleRatings[a.id]||a.rating||70,rB=WCS.cycleRatings[b.id]||b.rating||70;
+          // The host nation gets its home-advantage boost in AI-vs-AI matches too — hosting
+          // is a tournament-wide effect, not something that only touches your own games.
+          if(a.id===WCS.hostNationId)rA+=3;else if(b.id===WCS.hostNationId)rB+=3;
           const aWins=Math.random()<Math.pow(rA,2)/(Math.pow(rA,2)+Math.pow(rB,2));
           const[winner,loser]=aWins?[a,b]:[b,a];
           table[winner.id].p++;table[winner.id].w++;table[winner.id].pts+=2;
@@ -10602,7 +10748,9 @@
 
     function startWCDraft() {
       resetWCState();
-      if (AUTH_USER) sb.from('wc_saves').delete().eq('user_id', AUTH_USER.id);
+      // .then() forces the request to actually send — an unconsumed postgrest-js
+      // query builder call is otherwise silently never dispatched.
+      if (AUTH_USER) sb.from('wc_saves').delete().eq('user_id', AUTH_USER.id).then(()=>{});
       go('s-wc-intro');
       wciReset();
     }
@@ -11310,6 +11458,23 @@
       const playerToWatch=[...WCS.squad].sort((a,b)=>b.rating-a.rating)[0];
       const dangerTeam=[...WCS.matches].map(m=>m.opp).sort((a,b)=>b.rating-a.rating)[0];
 
+      // World Cups are hosted in a single country — reveal it here. If it happens to be
+      // the nation you're representing (a 1-in-14 chance), this is a home World Cup and
+      // gets the one "Floodlight" gold highlight on the page; otherwise it's just informational.
+      const hostNat=WC_NATIONS.find(n=>n.id===WCS.hostNationId);
+      const isHomeWC=WCS.hostNationId===myNat.id;
+      const hostCardHTML=hostNat?`
+        <div class="ov-reveal" style="width:100%;border-radius:12px;padding:14px 16px;margin-bottom:18px;${isHomeWC?'background:linear-gradient(160deg,#1a1400,#0d0d12 60%);border:1px solid #6a5218;':'background:#0d0d12;border:1px solid #1a1a2a;'}">
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:${isHomeWC?'#f9c846':'#8080a0'};font-weight:800;margin-bottom:8px">${isHomeWC?'🏠 Home World Cup':'Tournament Host'}</div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:30px">${hostNat.flag}</span>
+            <div style="min-width:0">
+              <div style="font-size:17px;font-weight:900;color:#fff">${hostNat.name}</div>
+              <div style="font-size:11px;color:${isHomeWC?'#c9a860':'#6060a0'};margin-top:2px">${isHomeWC?'Every match played on home soil — a genuine edge all tournament long.':`Hosting the whole tournament — expect a home boost whenever ${hostNat.name} play.`}</div>
+            </div>
+          </div>
+        </div>`:'';
+
       el.innerHTML=`
         <div class="ov-reveal">
           <div style="margin-bottom:8px">
@@ -11318,6 +11483,8 @@
           <div style="font-size:24px;font-weight:900;color:#fff;line-height:1.15;margin-bottom:14px">${cap?.name||'Your captain'} named to lead Your XI into the World Cup</div>
           ${firstOpp?`<div style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#4ade80;background:#081a08;border:1px solid #1a3a1a;border-radius:6px;padding:4px 10px;margin-bottom:20px">First up: ${firstOpp.flag} ${firstOpp.name} · ${firstOpp.home?'Home':'Away'}</div>`:'<div style="margin-bottom:14px"></div>'}
         </div>
+
+        ${hostCardHTML}
 
         <div class="ov-reveal" style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 10px;margin-bottom:18px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
@@ -11435,22 +11602,28 @@
         <div class="ov-reveal" style="width:100%;margin-bottom:16px;text-align:left">
           <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
             <div style="font-size:22px;font-weight:900;color:#fff">${title}</div>
-            ${wl?`<div style="font-size:13px;font-weight:700;flex-shrink:0">${wl}</div>`:''}
+            ${wl?`<div style="font-size:22px;font-weight:900;flex-shrink:0">${wl}</div>`:''}
           </div>
           ${sub?`<div style="font-size:12px;color:#6060a0;margin-top:2px">${sub}</div>`:''}
         </div>`;
 
+      // Total W/L across the whole tournament so far (group + Super Sixes + semi + final) —
+      // this is the tally shown in the header, not any single phase's table record, so it
+      // doesn't reset back to 0-0 when you move into the next stage.
+      const totalW=(WCS.matchHistory||[]).filter(m=>m.result==='W').length;
+      const totalL=(WCS.matchHistory||[]).filter(m=>m.result==='L').length;
+      const wlHTML=`<span style="color:#4ade80">${totalW}W</span> <span style="color:#f87171">${totalL}L</span>`;
+
       if(phase==='group'){
         const sA=sortT(WCS.groupTable.A),sB=sortT(WCS.groupTable.B);
         const myPos=sA.findIndex(t=>t.id==='myxi')+1;
-        const myRec=WCS.groupTable.A['myxi'];
         const doneMatches=WCS.matches.filter(m=>m.completed);
         const done=doneMatches.length;
         const allDone=WCS.matches.every(m=>m.completed);
         const nextIdx=WCS.matches.findIndex(m=>!m.completed);
         if(eyebrowEl)eyebrowEl.textContent='World Cup · Group Stage';
         el.innerHTML=`
-          ${header(allDone?'Complete':done===0?'Match 1 of 6':`Match ${done+1} of 6`,`<span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span>`)}
+          ${header(allDone?'Complete':done===0?'Match 1 of 6':`Match ${done+1} of 6`,wlHTML)}
           ${pipelineHTML}
           ${nextIdx>=0?heroCard(WCS.matches[nextIdx].opp.flag,WCS.matches[nextIdx].opp.name,`${WCS.matches[nextIdx].opp.home?'Home':'Away'} ODI`,'Group A',`startWCMatch(${nextIdx})`):''}
 
@@ -11474,14 +11647,13 @@
       } else if(phase==='super6'){
         const sS=sortT(WCS.superSixTable);
         const myPos=sS.findIndex(t=>t.id==='myxi')+1;
-        const myRec=WCS.superSixTable['myxi'];
         const doneMatches=WCS.matches.filter(m=>m.completed);
         const done=doneMatches.length;
         const allDone=WCS.matches.every(m=>m.completed);
         const nextIdx=WCS.matches.findIndex(m=>!m.completed);
         if(eyebrowEl)eyebrowEl.textContent='World Cup · Super Sixes';
         el.innerHTML=`
-          ${header(allDone?'Complete':done===0?'Begins':`Match ${done+1} of 3`,`<span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span>`)}
+          ${header(allDone?'Complete':done===0?'Begins':`Match ${done+1} of 3`,wlHTML)}
           ${pipelineHTML}
           ${nextIdx>=0?heroCard(WCS.matches[nextIdx].opp.flag,WCS.matches[nextIdx].opp.name,`${WCS.matches[nextIdx].opp.home?'Home':'Away'} ODI`,'Super Sixes',`startWCMatch(${nextIdx})`):''}
 
@@ -11496,7 +11668,7 @@
       } else {
         if(eyebrowEl)eyebrowEl.textContent=`World Cup · ${phase==='semi'?'Semi-Finals':'The Final'}`;
         el.innerHTML=`
-          ${header(phase==='semi'?'Semi-Final':'World Cup Final',null,`${WCS.myNation?.flag||''} Your XI vs ${WCS.knockoutOpp?.flag||''} ${WCS.knockoutOpp?.name||'TBC'}`)}
+          ${header(phase==='semi'?'Semi-Final':'World Cup Final',wlHTML,`${WCS.myNation?.flag||''} Your XI vs ${WCS.knockoutOpp?.flag||''} ${WCS.knockoutOpp?.name||'TBC'}`)}
           ${pipelineHTML}
           ${heroCard(WCS.knockoutOpp?.flag||'🏏',WCS.knockoutOpp?.name||'TBC',phase==='semi'?'Semi-Final · ODI':'World Cup Final · ODI',phase==='semi'?'Semi-Final':'The Final','startWCKnockout()')}
         `;
@@ -11531,13 +11703,18 @@
       const match=isKnockout?null:WCS.matches[WCS.currentMatchIdx];
       const opp=isKnockout?WCS.knockoutOpp:match.opp;
       const isHome=opp.home||false;
+      // Home advantage now belongs to whichever nation is actually hosting the tournament —
+      // not to whoever the "isHome" cosmetic flag says. If you're not the host, an opponent
+      // who also isn't the host gets no boost either — most of your "away" matches are truly
+      // neutral, not automatically tilted towards whoever you're facing that day.
+      const amHost=WCS.hostNationId===WCS.myNation?.id;
+      const oppIsHost=opp.id===WCS.hostNationId;
 
       document.getElementById('wm-match-label').textContent=
         WCS.phase==='final'?`🏆 World Cup Final · vs ${opp.name}`:
         WCS.phase==='semi'?`🏏 Semi-Final · vs ${opp.name}`:
         WCS.phase==='super6'?`Super Sixes Match ${WCS.currentMatchIdx+1} of 3 · vs ${opp.name}`:
         `Group A Match ${WCS.currentMatchIdx+1} of 6 · vs ${opp.name}`;
-      document.getElementById('wm-matchup').textContent=isHome?`Your XI vs ${opp.name}`:`${opp.name} vs Your XI`;
       document.getElementById('wm-phase-label').textContent=isHome?'🏠 Home ODI':'✈️ Away ODI';
 
       [1,2].forEach(i=>{
@@ -11551,10 +11728,10 @@
       document.getElementById('wm-next-btn').style.display='none';
 
       const homeAdv=3;
-      const engBat=Math.min(99,getWCEngBatRating()+(isHome?homeAdv:0));
-      const oppBat=Math.min(99,opp.rating+(isHome?0:homeAdv));
-      const engBowl=Math.min(99,getWCBowlRating(WCS.currentXI.filter(Boolean))+(isHome?2:0));
-      const oppBowl=Math.min(99,opp.rating+(isHome?0:2));
+      const engBat=Math.min(99,getWCEngBatRating()+(amHost?homeAdv:0));
+      const oppBat=Math.min(99,opp.rating+(oppIsHost?homeAdv:0));
+      const engBowl=Math.min(99,getWCBowlRating(WCS.currentXI.filter(Boolean))+(amHost?2:0));
+      const oppBowl=Math.min(99,opp.rating+(oppIsHost?2:0));
 
       const matchData=simWCMatch(engBat,oppBat,engBowl,oppBowl,isHome,opp);
       playWCMatchLive(matchData,opp);
@@ -11671,34 +11848,179 @@
         const tmp=striker;striker=nonStriker;nonStriker=tmp;
         bowler.overs++;activeBowlerOvs++;bowler.runs+=overRuns;if(dotBalls===6)bowler.maidens++;
         const prevWkts=oversLog.length?oversLog[oversLog.length-1].totalWkts:0;
-        oversLog.push({runs:overRuns,total:totalRuns,wkts:wkts-prevWkts,totalWkts:wkts});ovCount++;
+        // Snapshots of batter/bowler state as it stood right after this over — lets the
+        // live scorecard reveal progressively over-by-over instead of only the final tally.
+        oversLog.push({
+          over:ov+1,runs:overRuns,total:totalRuns,wkts:wkts-prevWkts,totalWkts:wkts,
+          batterSnap:batters.map(b=>({...b})),
+          bowlerSnap:bwlrs.filter(b=>b.overs>0).map(b=>({...b})),
+        });ovCount++;
       }
       return{runs:totalRuns,wkts,oversPlayed:ovCount,allOut:wkts>=10,chaseWon:target!==undefined&&totalRuns>=target,overs:oversLog,_batters:batters,_bowlers:bwlrs.filter(b=>b.overs>0)};
     }
 
     // ── WC MATCH LIVE DISPLAY ────────────────────────────────────────────────
+    // "Innings" speed shows each innings' final scorecard instantly, same as before.
+    // "Over"/"5 Over" speeds replay the already-simulated innings progressively from
+    // its per-over batterSnap/bowlerSnap history (see simODIInnings), giving a live
+    // TV-scorecard feel without changing the underlying (already-determined) result.
+    let wmTimer=null;
 
     function playWCMatchLive(matchData,opp){
       const{innings}=matchData;
-      [1,2].forEach(n=>{const b=document.getElementById(`wm-inn${n}-block`);if(b)b.style.display='none';});
+      if(wmTimer)clearTimeout(wmTimer);
+      [1,2].forEach(n=>{
+        const b=document.getElementById(`wm-inn${n}-block`);if(b)b.style.display='none';
+        const bar=document.getElementById(`wm-inn${n}-overbar`);if(bar){bar.style.display='none';bar.innerHTML='';}
+      });
       document.getElementById('wm-result-block').style.display='none';
+      document.getElementById('wm-next-btn').style.display='none';
       let currentInn=0;
-      function showCurrentInnings(){
-        const inn=innings[currentInn];const innNum=currentInn+1;
-        const block=document.getElementById(`wm-inn${innNum}-block`);if(block)block.style.display='';
-        const teamName=inn.team==='eng'?'Your XI':opp.name;
-        document.getElementById(`wm-inn${innNum}-title`).textContent=`${innNum===1?'1st':'2nd'} Innings — ${teamName}`;
+
+      // Restarts a CSS animation on an element even if its class never changed —
+      // needed since the score/overs text gets a fresh "pop" every single chunk.
+      function pulse(el,cls){
+        if(!el)return;
+        el.classList.remove(cls);
+        void el.offsetWidth;
+        el.classList.add(cls);
+      }
+
+      function setLiveTitle(innNum,teamName,isLive){
+        const titleEl=document.getElementById(`wm-inn${innNum}-title`);
+        if(!titleEl)return;
+        titleEl.innerHTML=`${isLive?'<span class="wm-live-dot"></span>LIVE · ':''}${innNum===1?'1st':'2nd'} Innings — ${teamName}`;
+      }
+
+      function finalizeInnings(inn,innNum,teamName,fieldingTeam){
+        setLiveTitle(innNum,teamName,false);
         const scoreEl=document.getElementById(`wm-inn${innNum}-score`);const oversEl=document.getElementById(`wm-inn${innNum}-overs`);
         if(scoreEl)scoreEl.textContent=inn.allOut?`${inn.runs} all out`:`${inn.runs}/${inn.wkts}`;
-        if(oversEl){if(inn.target)oversEl.textContent=inn.chaseWon?`Target ${inn.target} — reached! (${inn.oversPlayed} ov)`:`Target ${inn.target} — fell ${inn.target-inn.runs} short (${inn.oversPlayed} ov)`;else oversEl.textContent=`${inn.oversPlayed} overs`;}
+        if(oversEl){
+          if(inn.target)oversEl.innerHTML=inn.chaseWon?`<span style="color:#4ade80;font-weight:900">Target ${inn.target} reached!</span> <span style="color:#8080a0">(${inn.oversPlayed} ov)</span>`:`<span style="color:#f87171;font-weight:900">Fell ${inn.target-inn.runs} short</span> <span style="color:#8080a0">of ${inn.target} (${inn.oversPlayed} ov)</span>`;
+          else oversEl.innerHTML=`${inn.oversPlayed} overs · <span style="color:#f9c846;font-weight:900">RR ${(inn.runs/Math.max(1,inn.oversPlayed)).toFixed(2)}</span>`;
+        }
         const batEl=document.getElementById(`wm-inn${innNum}-batters`);if(batEl)batEl.innerHTML=renderODIBatters(inn._batters,inn.wkts);
         const bowlEl=document.getElementById(`wm-inn${innNum}-bowling`);
-        if(bowlEl){bowlEl.innerHTML=renderODIBowling(inn._bowlers,inn.team==='eng'?opp.name:'England');bowlEl.style.display='';}
+        if(bowlEl){bowlEl.innerHTML=renderODIBowling(inn._bowlers,fieldingTeam);bowlEl.style.display='';}
+      }
+
+      function advanceOrFinish(){
         const nextBtn=document.getElementById('wm-next-btn');
         if(nextBtn){nextBtn.style.display='';
           if(innings[currentInn+1]){nextBtn.textContent='2nd Innings →';nextBtn.onclick=()=>{currentInn++;showCurrentInnings();};}
           else showWCResult(matchData,opp);
         }
+        // The innings that just finished can be well above the fold by now — bring the
+        // "Continue" action into view instead of leaving the player to scroll for it.
+        setTimeout(()=>{if(nextBtn)nextBtn.scrollIntoView({behavior:'smooth',block:'center'});},60);
+      }
+
+      function showCurrentInnings(){
+        const inn=innings[currentInn];const innNum=currentInn+1;
+        const block=document.getElementById(`wm-inn${innNum}-block`);if(block)block.style.display='';
+        const teamName=inn.team==='eng'?'Your XI':opp.name;
+        const fieldingTeam=inn.team==='eng'?opp.name:'Your XI';
+        setLiveTitle(innNum,teamName,false);
+        const barEl=document.getElementById(`wm-inn${innNum}-overbar`);
+        const batEl=document.getElementById(`wm-inn${innNum}-batters`);
+        const bowlEl=document.getElementById(`wm-inn${innNum}-bowling`);
+        const scoreEl=document.getElementById(`wm-inn${innNum}-score`);
+        const oversEl=document.getElementById(`wm-inn${innNum}-overs`);
+        const speed=WC_SETTINGS.speed;
+
+        if((speed!=='over'&&speed!=='five')||!inn.overs||!inn.overs.length){
+          if(barEl)barEl.style.display='none';
+          finalizeInnings(inn,innNum,teamName,fieldingTeam);
+          advanceOrFinish();
+          return;
+        }
+
+        const chunkSize=speed==='five'?5:1;
+        if(barEl){barEl.style.display='';barEl.innerHTML='';}
+        if(bowlEl){bowlEl.style.display='';bowlEl.innerHTML='';}
+        if(batEl)batEl.innerHTML='';
+        if(scoreEl)scoreEl.textContent='0/0';
+        if(oversEl)oversEl.textContent='0.0 overs';
+        setLiveTitle(innNum,teamName,true);
+
+        let idx=0,prevBatterSnap=null;
+        function nextChunk(){
+          if(idx>=inn.overs.length){
+            finalizeInnings(inn,innNum,teamName,fieldingTeam);
+            advanceOrFinish();
+            return;
+          }
+          const chunkEnd=Math.min(idx+chunkSize,inn.overs.length);
+          let chunkHadWicket=false;
+          for(let i=idx;i<chunkEnd;i++){
+            const ov=inn.overs[i];
+            if(ov.wkts>0)chunkHadWicket=true;
+            if(barEl){
+              const pill=document.createElement('div');
+              // Boundary-heavy overs (two-plus sixes' worth of runs) get the biggest,
+              // brightest pill — a small broadcast-style flourish, not just a number.
+              const cls=ov.wkts>0?'wicket':ov.runs>=14?'boundary':ov.runs>=10?'high':'mid';
+              pill.className=`sc-over ${cls}`;
+              pill.textContent=ov.wkts>0?`${ov.runs}/${ov.wkts}`:`${ov.runs}`;
+              barEl.appendChild(pill);
+              requestAnimationFrame(()=>pill.classList.add('vis'));
+              // Ticker cap — keep only the 10 most recent overs on screen, dropping the
+              // oldest as each new one lands, instead of growing the bar indefinitely.
+              while(barEl.children.length>10)barEl.removeChild(barEl.firstChild);
+            }
+          }
+          const lastOv=inn.overs[chunkEnd-1];
+          if(scoreEl){
+            scoreEl.textContent=`${lastOv.total}/${lastOv.totalWkts}`;
+            pulse(scoreEl,'wm-score-pop');
+            if(chunkHadWicket)pulse(scoreEl,'wm-wicket-flash');
+          }
+          if(oversEl){
+            const rr=(lastOv.total/lastOv.over).toFixed(2);
+            if(inn.target){
+              const rem=inn.target-lastOv.total;
+              const oversLeft=50-lastOv.over;
+              if(rem<=0){
+                oversEl.innerHTML=`<span style="color:#4ade80;font-weight:900">Target reached!</span> <span style="color:#8080a0">(${lastOv.over} ov)</span>`;
+              } else {
+                const reqRR=oversLeft>0?(rem/oversLeft).toFixed(2):'—';
+                oversEl.innerHTML=`${lastOv.over}.0 overs · <span style="color:#f97316;font-weight:900">need ${rem} more</span> · <span style="color:#c0c0d8;font-weight:700">Req RR ${reqRR}</span>`;
+              }
+            } else {
+              oversEl.innerHTML=`${lastOv.over}.0 overs · <span style="color:#f9c846;font-weight:900">RR ${rr}</span>`;
+            }
+          }
+          if(batEl){
+            batEl.innerHTML=renderODIBatters(lastOv.batterSnap,lastOv.totalWkts);
+            // Milestone flash — highlight a batter's row the moment they cross 50/100,
+            // comparing against the last chunk we actually rendered (not every over,
+            // since a 5-over jump can skip straight past the milestone boundary).
+            if(prevBatterSnap){
+              lastOv.batterSnap.forEach(b=>{
+                const prev=prevBatterSnap.find(p=>p.name===b.name);
+                if(!prev||b.out)return;
+                const hit100=prev.runs<100&&b.runs>=100,hit50=prev.runs<50&&b.runs>=50;
+                if(hit100||hit50){
+                  const row=batEl.querySelector(`[data-player="${CSS.escape(b.name)}"]`);
+                  if(row){
+                    row.classList.add('wm-milestone-glow');
+                    const badge=document.createElement('span');
+                    badge.className='wm-milestone-badge';
+                    badge.textContent=hit100?'💯 CENTURY':'🏏 FIFTY';
+                    row.appendChild(badge);
+                    setTimeout(()=>badge.remove(),2400);
+                  }
+                }
+              });
+            }
+            prevBatterSnap=lastOv.batterSnap;
+          }
+          if(bowlEl)bowlEl.innerHTML=renderODIBowling(lastOv.bowlerSnap,fieldingTeam);
+          idx=chunkEnd;
+          wmTimer=setTimeout(nextChunk,simDelay(chunkSize===5?1400:800));
+        }
+        nextChunk();
       }
       showCurrentInnings();
     }
@@ -11715,7 +12037,7 @@
         const howCol=b.out?'color:#6060a0':'color:#4ade80';
         const howText=b.out?b.how:isBatting?'batting':'not out';
         const runsCls=b.runs>=100?'hundred':b.runs>=50?'fifty':'';
-        return`<div style="${ROW}">
+        return`<div style="${ROW}" data-player="${b.name}">
           <span style="font-size:12px;font-weight:700;${nameCol};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${isBatting?'▶ ':''}${shortName(b.name)}</span>
           <span style="font-size:10px;${howCol};padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${howText}</span>
           <span class="sc-batter-runs${runsCls?' '+runsCls:''}">${b.runs}</span>
@@ -11800,8 +12122,6 @@
           else if(runs>=100)delta=2;else if(runs>=50)delta=1;else if(runs>=25)delta=0;else if(runs>=10)delta=-1;else delta=-2;
         }
 
-        const oppAdj=opp.rating>=83?1:opp.rating<=65?-1:0;
-        if(delta>0)delta=Math.max(0,delta+oppAdj);
         if(result==='L')delta=Math.max(-2,delta-1);
         delta=Math.max(-2,Math.min(2,delta));
 
@@ -11810,6 +12130,24 @@
         WCS.playerForm[p.id]=Math.max(-8,Math.min(Math.min(8,headroom),currentForm+delta));
         return{player:p,delta,runs,balls,wkts,overs};
       });
+
+      // Captain form bonus for a hot streak — every time the win streak hits a multiple
+      // of 3 (3 in a row, 6 in a row, etc.), the captain gets a form boost, mirroring
+      // Test mode's whitewash bonus but keyed to consecutive wins rather than a series sweep.
+      let capStreakBoost=false;
+      if(result==='W'){
+        WCS.winStreak=(WCS.winStreak||0)+1;
+        if(WCS.winStreak%3===0&&WCS.captain){
+          const cap=WCS.squad.find(p=>p.id===WCS.captain);
+          if(cap){
+            const capMax=Math.min(8,99-cap.rating);
+            WCS.playerForm[WCS.captain]=Math.min(capMax,(WCS.playerForm[WCS.captain]||0)+3);
+            capStreakBoost=true;
+          }
+        }
+      } else {
+        WCS.winStreak=0;
+      }
 
       const el=document.getElementById('wc-summary-content');
       const resCol=result==='W'?'#4ade80':'#f87171';
@@ -11822,6 +12160,7 @@
           <div style="font-size:24px;font-weight:900;color:${resCol}">${resLabel}</div>
           <div style="font-size:13px;color:#9090a8;margin-top:4px">${headline}</div>
         </div>
+        ${capStreakBoost?`<div style="text-align:center;margin-bottom:16px;font-size:12px;font-weight:700;color:#f9c846;background:#1a1400;border:1px solid #6a5218;border-radius:8px;padding:8px 12px">🔥 ${WCS.winStreak} wins in a row — ${WCS.squad.find(p=>p.id===WCS.captain)?.name||'the captain'} gets a form boost</div>`:''}
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Player Ratings After This Match</div>
         ${changes.map(({player,delta,runs,balls,wkts,overs})=>{
           const newEff=player.rating+(WCS.playerForm[player.id]||0);
@@ -11903,7 +12242,7 @@
         if(result==='W'){
           WCS.phase='final';
           const finalTeam=WCS.otherSemi.winner;
-          WCS.knockoutOpp={...finalTeam,home:false};
+          WCS.knockoutOpp={...finalTeam,home:WCS.hostNationId===WCS.myNation.id};
           showWCFinalMatchup(opp,WCS.otherSemi,WCS.knockoutOpp,()=>startWCKnockout());
         } else{WCS.finalResult='L';buildWCEndScreen();go('s-wc-end');}
         return;
@@ -11922,8 +12261,11 @@
       const bench=WCS.squad.filter(p=>!xi.some(x=>x&&x.id===p.id));
 
       const ROLE_MIN={batsman:5,allrounder:2,bowler:3};
+      // "Spareable" means squad-wide depth in that role, not XI depth — the XI is
+      // drafted to exactly fill each role's minimum requirement, so checking against
+      // it can never pass and these events would never fire. Check the full squad.
       const canSpare=role=>{
-        const available=notInjured.filter(p=>p.role===role).length;
+        const available=WCS.squad.filter(p=>p.role===role&&!WCS.playerInjured[p.id]).length;
         return available>(ROLE_MIN[role]||1);
       };
       const spareableNonKeepers=nonKeepers.filter(p=>canSpare(p.role));
@@ -12218,7 +12560,8 @@
       // are simulated round-by-round alongside your own 3 matches, not all at once.
       WCS.pendingAI.super6=bipartiteRounds(topA.filter(t=>t.id!=='myxi'),topB);
       // Player plays 3 new matches vs the 3 Group B qualifiers
-      WCS.matches=topB.map(t=>{const nation=WC_NATIONS.find(n=>n.id===t.id)||WC_NATIONS[0];return{opp:{...nation,rating:WCS.cycleRatings[nation.id],home:Math.random()<0.45},completed:false,result:null,matchData:null};});
+      const amHost=WCS.hostNationId===WCS.myNation.id;
+      WCS.matches=topB.map(t=>{const nation=WC_NATIONS.find(n=>n.id===t.id)||WC_NATIONS[0];return{opp:{...nation,rating:WCS.cycleRatings[nation.id],home:amHost},completed:false,result:null,matchData:null};});
       WCS.currentMatchIdx=-1;
       go('s-wc-hub');buildWCHub();
     }
@@ -12233,14 +12576,16 @@
         const myIdx=top4.findIndex(t=>t.id==='myxi');
         const semiOppRow=top4[3-myIdx];
         const semiNation=WC_NATIONS.find(n=>n.id===semiOppRow?.id)||WC_NATIONS[0];
-        WCS.knockoutOpp={...semiNation,rating:WCS.cycleRatings[semiNation.id],home:false};
+        WCS.knockoutOpp={...semiNation,rating:WCS.cycleRatings[semiNation.id],home:WCS.hostNationId===WCS.myNation.id};
 
         // The other semi-final plays out at the same time as yours — simulate it now
-        // so the result is ready to reveal once you've played your own.
+        // so the result is ready to reveal once you've played your own. The host nation
+        // (if it's one of these two AI teams) still gets its home-advantage boost here.
         const others=top4.filter((t,i)=>i!==myIdx&&t.id!==semiOppRow.id);
         const oNatA=WC_NATIONS.find(n=>n.id===others[0]?.id)||WC_NATIONS[0];
         const oNatB=WC_NATIONS.find(n=>n.id===others[1]?.id)||WC_NATIONS[1];
-        const rA=WCS.cycleRatings[oNatA.id]||70,rB=WCS.cycleRatings[oNatB.id]||70;
+        let rA=WCS.cycleRatings[oNatA.id]||70,rB=WCS.cycleRatings[oNatB.id]||70;
+        if(oNatA.id===WCS.hostNationId)rA+=3;else if(oNatB.id===WCS.hostNationId)rB+=3;
         const aWins=Math.random()<Math.pow(rA,2)/(Math.pow(rA,2)+Math.pow(rB,2));
         const teamA={...oNatA,rating:rA},teamB={...oNatB,rating:rB};
         WCS.otherSemi={a:teamA,b:teamB,winner:aWins?teamA:teamB};
@@ -13059,7 +13404,6 @@
     <div class="sim-topbar">
       <div style="text-align:left">
         <div class="sim-title" id="wm-match-label">Match 1</div>
-        <div style="font-size:11px;color:#8080a0;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-top:1px" id="wm-matchup">England vs Australia</div>
       </div>
       <div style="text-align:right">
         <div style="font-size:12px;font-weight:700;color:#f9c846" id="wm-phase-label">ODI</div>
@@ -13073,7 +13417,8 @@
         <div class="innings-header" style="margin:0" id="wm-inn1-title">1st Innings</div>
         <div style="font-size:20px;font-weight:900;letter-spacing:-1px;color:#f9c846" id="wm-inn1-score">—</div>
       </div>
-      <div style="font-size:11px;color:#6060a0;margin-bottom:8px" id="wm-inn1-overs"></div>
+      <div style="font-size:13px;font-weight:700;color:#c0c0d8;margin-bottom:8px" id="wm-inn1-overs"></div>
+      <div id="wm-inn1-overbar" class="sc-overs-bar wm-overbar" style="display:none;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;margin-bottom:10px;min-height:32px;padding:8px 10px"></div>
       <div id="wm-inn1-batters" style="width:100%;background:#0a0a0f;border-radius:8px;overflow:hidden"></div>
       <div id="wm-inn1-bowling" style="display:none;width:100%;margin-top:6px"></div>
     </div>
@@ -13084,7 +13429,8 @@
         <div class="innings-header" style="margin:0" id="wm-inn2-title">2nd Innings</div>
         <div style="font-size:20px;font-weight:900;letter-spacing:-1px;color:#f9c846" id="wm-inn2-score">—</div>
       </div>
-      <div style="font-size:11px;color:#6060a0;margin-bottom:8px" id="wm-inn2-overs"></div>
+      <div style="font-size:13px;font-weight:700;color:#c0c0d8;margin-bottom:8px" id="wm-inn2-overs"></div>
+      <div id="wm-inn2-overbar" class="sc-overs-bar wm-overbar" style="display:none;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;margin-bottom:10px;min-height:32px;padding:8px 10px"></div>
       <div id="wm-inn2-batters" style="width:100%;background:#0a0a0f;border-radius:8px;overflow:hidden"></div>
       <div id="wm-inn2-bowling" style="display:none;width:100%;margin-top:6px"></div>
     </div>
