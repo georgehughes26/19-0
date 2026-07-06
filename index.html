@@ -448,16 +448,19 @@
     .pick-header {
       width: 100%;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      justify-content: space-between;
+      row-gap: 8px;
       margin-bottom: 14px
     }
 
     .pick-num {
+      flex: 1 1 100%;
       font-size: 11px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #787890
+      color: #787890;
+      white-space: nowrap
     }
 
     .pick-slots {
@@ -501,10 +504,58 @@
       background: #16161f;
       border: 1px solid #252535;
       border-radius: 16px;
-      padding: 16px 20px 14px;
+      padding: 16px 12px 14px;
       margin-bottom: 14px;
       position: relative;
       overflow: hidden
+    }
+
+    .drum-card.drum-land {
+      animation: drum-land .4s var(--ease-pop)
+    }
+
+    @keyframes drum-land {
+      0% { transform: scale(0.95) }
+      60% { transform: scale(1.025) }
+      100% { transform: scale(1) }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .drum-card.drum-land, .player-card.card-in, .st-slot.slot-new, .wcs-row.slot-new { animation: none !important }
+      .drum-inner, .wc-drum-row { transition: none !important; filter: none !important }
+    }
+
+    /* WC drum — nation and year get their own box instead of sharing one
+       row split by a divider, so each has its own centered space to fit. */
+    .wc-drum-row {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+      transition: filter .08s linear;
+    }
+
+    .wc-drum-box {
+      flex: 1;
+      min-width: 0;
+      background: #111118;
+      border: 1px solid #22222e;
+      border-radius: 10px;
+      padding: 14px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .wc-drum-text {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     .drum-glow {
@@ -523,6 +574,7 @@
       align-items: center;
       justify-content: center;
       gap: 0;
+      transition: filter .08s linear;
     }
 
     .drum-county {
@@ -535,7 +587,11 @@
       justify-content: flex-end;
       letter-spacing: -0.5px;
       flex: 1;
+      min-width: 0;
       text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .drum-divider {
@@ -667,29 +723,17 @@
       overflow: hidden
     }
 
-    .player-card::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px
+    /* Role coloring lives on the .role-header group above each set of cards
+       (rh-bat/rh-wk/rh-all/rh-bowl) — cards themselves stay neutral, no
+       redundant per-card left-border accent stripe. */
+
+    .player-card.card-in {
+      animation: card-in .3s var(--ease-out-strong) both
     }
 
-    .pc-bat::before {
-      background: #60a5fa
-    }
-
-    .pc-wk::before {
-      background: #fb923c
-    }
-
-    .pc-all::before {
-      background: #c084fc
-    }
-
-    .pc-bowl::before {
-      background: #4ade80
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(8px) }
+      to { opacity: 1; transform: translateY(0) }
     }
 
     .player-card:hover:not(.dimmed) {
@@ -848,6 +892,13 @@
       margin-top: 16px
     }
 
+    .squad-tracker:empty {
+      display: none;
+      border: none;
+      padding: 0;
+      margin: 0
+    }
+
     .st-title {
       font-size: 9px;
       letter-spacing: 2.5px;
@@ -903,8 +954,7 @@
       align-items: center;
       padding: 0 8px;
       gap: 6px;
-      flex: 1;
-      min-width: 0;
+      flex: 1 1 140px;
       position: relative;
       overflow: hidden
     }
@@ -933,44 +983,153 @@
       background: #04100a
     }
 
-    .st-slot-bat::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #1e3a5a
+    /* WC squad tracker — full 15-slot team sheet, always visible */
+    .wcs-board {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      align-items: flex-start
     }
 
-    .st-slot-wk::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #3a1e0a
+    .wcs-xi, .wcs-extras {
+      flex: 1 1 50%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px
     }
 
-    .st-slot-all::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #2a1a4a
+    .wcs-row {
+      height: 30px;
+      border-radius: 6px;
+      border: 1px dashed #1e1e2a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      position: relative;
+      overflow: hidden
     }
 
-    .st-slot-bowl::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #0e2a18
+    .wcs-row.filled {
+      border-style: solid
+    }
+
+    .wcs-bat.filled { border-color: #1e3a5a; background: #0a1422 }
+    .wcs-wk.filled  { border-color: #3a1e0a; background: #140a04 }
+    .wcs-all.filled { border-color: #2a1a4a; background: #0e0818 }
+    .wcs-bowl.filled{ border-color: #0e2a18; background: #04100a }
+
+    .wcs-pos {
+      width: 16px;
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 800;
+      color: #4a4a60
+    }
+
+    .wcs-row.filled .wcs-pos { color: #7a7a9a }
+
+    .wcs-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #4a4a60;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .wcs-row.filled .wcs-name {
+      color: #e8e8f2
+    }
+
+    .wcs-rating {
+      font-size: 11px;
+      font-weight: 800;
+      color: #6a6a8a;
+      flex-shrink: 0
+    }
+
+    /* Role coloring for tracker slots comes from the tinted background/border
+       set on .st-slot-*.filled above — no extra left-border accent stripe. */
+
+    .st-slot.slot-new, .wcs-row.slot-new {
+      animation: slot-fill-pulse .5s ease-out
+    }
+
+    @keyframes slot-fill-pulse {
+      0% { box-shadow: 0 0 0 rgba(249, 200, 70, 0); transform: scale(1) }
+      30% { box-shadow: 0 0 10px rgba(249, 200, 70, .4); transform: scale(1.04) }
+      100% { box-shadow: 0 0 0 rgba(249, 200, 70, 0); transform: scale(1) }
+    }
+
+    /* WC captain picker */
+    .wc-cap-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #1a1a2a;
+      background: #0d0d12;
+      cursor: pointer;
+      margin-bottom: 6px;
+      transition: border-color .15s, background .15s, transform .12s
+    }
+
+    .wc-cap-row:hover { border-color: #33334a }
+
+    .wc-cap-row:active { transform: scale(0.98) }
+
+    .wc-cap-row:focus-visible {
+      outline: 2px solid #f9c846;
+      outline-offset: 2px
+    }
+
+    .wc-cap-row.is-captain { border-color: #f9c846; background: #1a1400 }
+    .wc-cap-row.is-vc { border-color: #7a7ac0; background: #12121e }
+
+    .wc-cap-row.just-picked { animation: slot-fill-pulse .5s ease-out }
+
+    .wc-cap-info { flex: 1; min-width: 0 }
+
+    .wc-cap-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .wc-cap-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      font-size: 10px;
+      color: #8080a0
+    }
+
+    .wc-cap-tag {
+      font-size: 11px;
+      font-weight: 900;
+      min-width: 28px;
+      text-align: center;
+      border-radius: 6px;
+      padding: 3px 6px;
+      flex-shrink: 0
+    }
+
+    .wc-cap-tag.tag-c { color: #f9c846; border: 1px solid #f9c846; background: rgba(249, 200, 70, .12) }
+    .wc-cap-tag.tag-vc { color: #a0a0e8; border: 1px solid #7a7ac0; background: rgba(122, 122, 192, .14) }
+
+    @media (prefers-reduced-motion: reduce) {
+      .wc-cap-row { transition: none !important }
+      .wc-cap-row.just-picked { animation: none !important }
     }
 
     .st-slot.filled .st-slot-bat::before {
@@ -3074,6 +3233,49 @@
     .pill-l { background: #2a0a0a; color: #f87171 }
     .pill-d { background: #1a1a0a; color: #fbbf24 }
     .pill-upcoming { background: #0a2a0a; color: #4ade80 }
+    .pill-next { background: #241a00; color: #f9c846 }
+
+    /* WC hub — tournament progress pipeline */
+    .wch-pipeline { display: flex; align-items: flex-start; width: 100%; margin-bottom: 20px }
+    .wch-stage { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative }
+    .wch-stage-dot {
+      width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 900; background: #15151f; border: 2px solid #262636; color: #4a4a60; z-index: 1;
+    }
+    .wch-stage.done .wch-stage-dot { background: #0a2a0a; border-color: #1a5a28; color: #4ade80 }
+    .wch-stage.active .wch-stage-dot { background: #241a00; border-color: #f9c846; color: #f9c846 }
+    .wch-stage-line { position: absolute; top: 10px; left: -50%; width: 100%; height: 2px; background: #262636; z-index: 0 }
+    .wch-stage:first-child .wch-stage-line { display: none }
+    .wch-stage.done .wch-stage-line, .wch-stage.active .wch-stage-line { background: #1a5a28 }
+    .wch-stage-label { font-size: 9px; letter-spacing: .5px; text-transform: uppercase; font-weight: 700; color: #4a4a60; margin-top: 6px; text-align: center }
+    .wch-stage.done .wch-stage-label { color: #6fae82 }
+    .wch-stage.active .wch-stage-label { color: #f9c846 }
+
+    /* WC hub — hero next-match card */
+    .wch-hero {
+      width: 100%; background: linear-gradient(160deg, #1a1400, #0d0d12 60%); border: 1px solid #6a5218;
+      border-radius: 14px; padding: 16px; margin-bottom: 18px; cursor: pointer; position: relative; overflow: hidden;
+    }
+    .wch-hero-tag { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #f9c846; font-weight: 800; margin-bottom: 8px }
+    .wch-hero-flag { font-size: 34px; margin-right: 12px }
+    .wch-hero-name { font-size: 18px; font-weight: 900; color: #fff }
+    .wch-hero-meta { font-size: 11px; color: #c9a860; margin-top: 2px }
+    .wch-hero-cta { font-size: 11px; font-weight: 800; color: #0f0f13; background: #f9c846; padding: 6px 12px; border-radius: 20px; letter-spacing: .5px; flex-shrink: 0 }
+    /* Result variants — win/loss trim on the round-results "Your Result" card, instead of the default gold "next up" trim */
+    .wch-hero-win { border-color: #2e6a3a; background: linear-gradient(160deg, #0f1e12, #0d0d12 60%) }
+    .wch-hero-win .wch-hero-tag { color: #5fc97a }
+    .wch-hero-loss { border-color: #6a2e2e; background: linear-gradient(160deg, #1e0f0f, #0d0d12 60%) }
+    .wch-hero-loss .wch-hero-tag { color: #e06a6a }
+
+    /* WC hub — qualification-line divider inside standings tables */
+    .wtc-table tr.wch-qual-line td { border-bottom: 2px solid #6a5218; padding-bottom: 4px }
+
+    /* WC hub — compact match history */
+    .wch-hist-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #1a1a24 }
+    .wch-hist-row:last-child { border-bottom: none }
+    .wch-hist-flag { font-size: 16px; flex-shrink: 0 }
+    .wch-hist-name { font-size: 12px; font-weight: 700; color: #e0e0f0 }
+    .wch-hist-margin { font-size: 10px; color: #6a6a8a; margin-top: 1px }
 
     /* Session sim */
     .session-block {
@@ -3156,6 +3358,61 @@
     .smr-stat-block { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.35; min-width: 36px }
     .smr-stat-val { font-size: 11px; font-weight: 700; color: #c0c0d8; font-variant-numeric: tabular-nums }
     .smr-stat-lbl { font-size: 9px; color: #505070; white-space: nowrap }
+
+    /* WC XI picker — compact, aligned player rows */
+    .wc-xi-card {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 9px; border-radius: 8px; margin-bottom: 4px;
+      background: #0d0d12; border: 1px solid #1a1a2a;
+      transition: border-color .15s, background .15s, opacity .15s;
+    }
+    .wc-xi-card.wc-xi-clickable { cursor: pointer }
+    .wc-xi-card.wc-xi-clickable:hover { border-color: #33334a }
+    .wc-xi-card.wc-xi-empty { border-style: dashed; opacity: .55 }
+    .wc-xi-card.wc-xi-target { border-color: #4ade80; background: #0a1a08; cursor: pointer }
+    .wc-xi-card.wc-xi-source { border-color: #f9c846; background: #1a1400 }
+    .wc-xi-card.wc-xi-dimmed { opacity: .3 }
+    .wc-xi-num { width: 16px; flex-shrink: 0; font-size: 11px; font-weight: 900; color: #383850; text-align: left }
+    .wc-xi-num.wc-xi-num-filled { color: #f9c846 }
+    .wc-xi-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px }
+    .wc-xi-toprow { display: flex; align-items: center; gap: 6px }
+    .wc-xi-name { font-size: 12.5px; font-weight: 800; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+    .wc-xi-tag { font-size: 10px; font-weight: 800; flex-shrink: 0 }
+    .wc-xi-formrating { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0 }
+    .wc-xi-form { font-size: 10px; font-weight: 700; min-width: 16px; text-align: right }
+    .wc-xi-rating-mini {
+      width: 32px; height: 26px; border-radius: 6px; font-size: 13px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; letter-spacing: -.5px;
+    }
+    .wc-xi-subrow { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #6060a0 }
+    .wc-xi-role { flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; text-align: left }
+    .wc-xi-stats-inline { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #565678; text-align: left }
+    .wc-xi-stats-inline b { color: #8a8aa8; font-weight: 700 }
+    .wc-xi-warn { color: #f97316 }
+    .wc-xi-swap-btn {
+      font-size: 13px; font-weight: 800; color: #6a6a90; background: #0d0d18;
+      border: 1px solid #252540; border-radius: 5px; padding: 1px 6px; cursor: pointer; flex-shrink: 0; line-height: 1.5;
+    }
+    .wc-xi-swap-btn:hover { border-color: #f9c846; color: #f9c846 }
+    .wc-xi-swap-btn.wc-xi-swap-active { color: #f9c846; border-color: #f9c846; background: #1a1400 }
+    .wc-xi-swap-btn.wc-xi-swap-go { color: #4ade80; border-color: #1a3a08; background: #081a08 }
+    .wc-xi-card.wc-xi-bench-card { background: #0a0a10 }
+    .wc-xi-bench-in {
+      font-size: 10px; font-weight: 800; color: #4ade80; background: #081a08;
+      border: 1px solid #1a3a08; border-radius: 5px; padding: 2px 8px; cursor: pointer; flex-shrink: 0;
+    }
+    .wc-xi-bench-in.wc-xi-bench-in-active { background: #0a2a0a; border-color: #4ade80 }
+    .wc-xi-bench-tag {
+      font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 5px; flex-shrink: 0;
+    }
+    @keyframes wc-xi-swap-pop {
+      0% { transform: scale(1.04); border-color: #f9c846; background: #1a1400; }
+      100% { transform: scale(1); }
+    }
+    .wc-xi-card.wc-xi-just-moved { animation: wc-xi-swap-pop .4s var(--ease-pop, ease-out); }
+    @media (prefers-reduced-motion: reduce) {
+      .wc-xi-card.wc-xi-just-moved { animation: none !important; }
+    }
     @keyframes glisten {
       0%, 100% { filter: brightness(1); text-shadow: none; }
       50% { filter: brightness(1.55); text-shadow: 0 0 8px currentColor; }
@@ -3466,6 +3723,10 @@
        </div>
       </div>
 
+      <button id="continue-wc-btn" onclick="continueWCGame()" style="display:none;width:100%;margin-bottom:16px;padding:14px 16px;background:#0a1420;border:1px solid #1a4060;border-radius:12px;cursor:pointer;flex-direction:column;align-items:center;gap:3px">
+        <div style="font-size:14px;font-weight:800;color:#60a5fa;letter-spacing:0.5px">▶ Continue Saved Game</div>
+        <div id="continue-wc-date" style="font-size:11px;color:#6090b8;letter-spacing:0.5px"></div>
+      </button>
       <button class="btn-start" onclick="startWCDraft()">Start New Run →</button>
 
       <div class="home-stats">
@@ -5713,6 +5974,7 @@
       return "Didn't make the knockouts. Back to the drafting table.";
     }
     function ordinal(n) { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+    function cap1(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
     function launchConfetti(count, goldHeavy) {
       pingEvent('Finals_Won', { league: 'T20 Blast' });
@@ -6950,6 +7212,86 @@
       document.getElementById('home-wc-content').style.display = mode === 'wc' ? '' : 'none';
       document.getElementById('home-badge').textContent = mode === 't20' ? 'T20 Blast · Draft Simulator' : mode === 'test' ? 'Test Cricket · WTC Simulator' : 'World Cup · ODI Simulator';
       if (mode === 'test') checkForSavedTestGame();
+      if (mode === 'wc') checkForSavedWCGame();
+    }
+
+    async function checkForSavedWCGame() {
+      const btn = document.getElementById('continue-wc-btn');
+      if (!btn) return;
+      if (!AUTH_USER) { btn.style.display = 'none'; return; }
+
+      const { data } = await sb.from('wc_saves').select('updated_at').eq('user_id', AUTH_USER.id).single();
+      if (data) {
+        const d = new Date(data.updated_at);
+        btn.querySelector('#continue-wc-date').textContent = 'Last saved ' + d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+        btn.style.display = 'flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
+    async function continueWCGame() {
+      if (!AUTH_USER) { openAuthModal(); return; }
+      const { data, error } = await sb.from('wc_saves').select('state').eq('user_id', AUTH_USER.id).single();
+      if (error || !data) { alert('No saved game found.'); return; }
+      try {
+        Object.assign(WCS, data.state);
+        if (Array.isArray(WCS.usedYears)) WCS.usedYears = new Set(WCS.usedYears);
+        else if (!(WCS.usedYears instanceof Set)) WCS.usedYears = new Set();
+        if (Array.isArray(WCS.usedEvents)) WCS.usedEvents = new Set(WCS.usedEvents);
+        else if (!(WCS.usedEvents instanceof Set)) WCS.usedEvents = new Set();
+        go('s-wc-hub');
+        buildWCHub();
+      } catch(e) {
+        alert('Could not load saved game. It may be corrupted.');
+      }
+    }
+
+    async function saveWCGame() {
+      if (!AUTH_USER) {
+        const el = document.getElementById('wc-save-nudge');
+        if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 4000); }
+        return;
+      }
+      const btn = document.getElementById('wc-save-btn');
+      if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+      const saveState = JSON.parse(JSON.stringify(WCS, (k, v) => v instanceof Set ? [...v] : v));
+      const { error } = await sb.from('wc_saves').upsert({ user_id: AUTH_USER.id, state: saveState, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      if (btn) {
+        btn.disabled = false;
+        if (error) { btn.textContent = '💾 Save'; alert('Save failed. Please try again.'); }
+        else { btn.textContent = '✓ Saved!'; setTimeout(() => btn.textContent = '💾 Save', 2000); }
+      }
+    }
+
+    async function saveWCRun() {
+      if (!AUTH_USER) return;
+      try {
+        const won = WCS.finalResult === 'W';
+        const groupTable = Object.entries(WCS.groupTable.A || {}).map(([id,t]) => ({id,...t})).sort((a,b)=>b.pts-a.pts);
+        const groupPos = groupTable.findIndex(t=>t.id==='myxi')+1;
+        const inSuperSix = WCS.superSixTable && Object.keys(WCS.superSixTable).length > 0;
+        const totalWins = (WCS.matchHistory||[]).filter(m=>m.result==='W').length;
+        const totalLosses = (WCS.matchHistory||[]).filter(m=>m.result==='L').length;
+        const squadJson = WCS.squad ? WCS.squad.map(p => ({ n: p.name, r: p.rating, role: p.role, y: p.year })) : [];
+        const avgRating = squadJson.length ? Math.round(squadJson.reduce((s,p)=>s+(p.r||0),0)/squadJson.length) : null;
+        const { error } = await sb.from('wc_runs').insert({
+          user_id:      AUTH_USER.id,
+          group_pos:    groupPos || null,
+          wins:         totalWins,
+          losses:       totalLosses,
+          qualified:    !!inSuperSix,
+          semi_reached: WCS.phase === 'semi' || WCS.phase === 'final',
+          final_won:    won,
+          team_rating:  avgRating,
+          squad:        squadJson,
+        });
+        if (error) console.error('wc_runs insert failed:', error.message, error);
+        // Clear saved game — run is complete, nothing to continue
+        sb.from('wc_saves').delete().eq('user_id', AUTH_USER.id);
+      } catch(e) {
+        console.warn('Could not save WC run:', e);
+      }
     }
 
     async function checkForSavedTestGame() {
@@ -10079,6 +10421,7 @@
 
     const WC_NATIONS = [
       { id:'aus', name:'Australia',    flag:'🇦🇺', rMin:82, rMax:88 },
+      { id:'eng', name:'England',      flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', rMin:76, rMax:85 },
       { id:'ind', name:'India',        flag:'🇮🇳', rMin:80, rMax:87 },
       { id:'pak', name:'Pakistan',     flag:'🇵🇰', rMin:74, rMax:82 },
       { id:'nz',  name:'New Zealand',  flag:'🇳🇿', rMin:74, rMax:81 },
@@ -10111,19 +10454,20 @@
     const WC_SLOT_DEFS = [
       {pos:1,  label:'Opener',        desc:'Opening batsman', needOpener:true,  roles:['batsman']},
       {pos:2,  label:'Opener',        desc:'Opening batsman', needOpener:true,  roles:['batsman']},
-      {pos:3,  label:'Top-order bat', desc:'Batsman',         needOpener:false, noOpener:true, roles:['batsman']},
+      {pos:3,  label:'Batter',        desc:'Batsman',         needOpener:false, noOpener:true, roles:['batsman']},
       {pos:4,  label:'Batter',        desc:'Batsman',         needOpener:false, noOpener:true, roles:['batsman']},
       {pos:5,  label:'Batter',        desc:'Batsman',         needOpener:false, noOpener:true, roles:['batsman']},
       {pos:6,  label:'Batter',        desc:'Batsman',         needOpener:false, noOpener:true, roles:['batsman']},
       {pos:7,  label:'Wicket-keeper', desc:'Keeper-batsman',  needOpener:false, roles:['wicketkeeper']},
-      {pos:8,  label:'All-rounder',   desc:'All-rounder',     needOpener:false, roles:['allrounder']},
+      {pos:8,  label:'Wicket-keeper', desc:'Keeper-batsman',  needOpener:false, roles:['wicketkeeper']},
       {pos:9,  label:'All-rounder',   desc:'All-rounder',     needOpener:false, roles:['allrounder']},
       {pos:10, label:'All-rounder',   desc:'All-rounder',     needOpener:false, roles:['allrounder']},
-      {pos:11, label:'Bowler',        desc:'Bowler',          needOpener:false, roles:['bowler']},
+      {pos:11, label:'All-rounder',   desc:'All-rounder',     needOpener:false, roles:['allrounder']},
       {pos:12, label:'Bowler',        desc:'Bowler',          needOpener:false, roles:['bowler']},
       {pos:13, label:'Bowler',        desc:'Bowler',          needOpener:false, roles:['bowler']},
       {pos:14, label:'Bowler',        desc:'Bowler',          needOpener:false, roles:['bowler']},
       {pos:15, label:'Bowler',        desc:'Bowler',          needOpener:false, roles:['bowler']},
+      {pos:16, label:'Bowler',        desc:'Bowler',          needOpener:false, roles:['bowler']},
     ];
 
     let WCS = {};
@@ -10135,8 +10479,8 @@
         respinsUsed:0, spunYear:null, spunNation:null, spinCandidates:[], usedYears:new Set(),
         matches:[], currentMatchIdx:-1, playerForm:{}, oneMatchBonus:{}, matchHistory:[],
         playerInjured:{}, usedEvents:new Set(), pendingEvent:null, pendingWCContinuation:null,
-        groupTeams:{A:[],B:[]}, groupTable:{A:{},B:{}}, preResults:{},
-        superSixTeams:[], superSixTable:{},
+        groupTeams:{A:[],B:[]}, groupTable:{A:{},B:{}}, preResults:{}, pendingAI:{A:[],B:[],super6:[]},
+        superSixTeams:[], superSixTable:{}, otherSemi:null,
         cycleRatings:{}, qualified:false, finalResult:null,
         phase:'group', knockoutOpp:null, semiResult:null, myNation:null,
       };
@@ -10156,10 +10500,13 @@
     function buildWCFixtures() {
       const myNat=WCS.myNation;
       const myXIRating=WCS.squad.length?Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length):75;
-      // All 13 WC nations shuffled — Group A gets 6, Group B gets 7. Your XI is the 14th team in Group A.
-      const shuffled=[...WC_NATIONS].sort(()=>Math.random()-0.5);
+      // Your XI replaces whichever nation you drafted the most players from —
+      // that nation is dropped from the AI pool so the total stays at 14 teams,
+      // not 13 AI nations + Your XI as an added 15th.
+      const others=WC_NATIONS.filter(n=>n.id!==myNat.id);
+      const shuffled=[...others].sort(()=>Math.random()-0.5);
       const groupANations=shuffled.slice(0,6);
-      const groupBNations=shuffled.slice(6,13);
+      const groupBNations=shuffled.slice(6);
       const myEntry={id:'myxi',name:'Your XI',flag:myNat.flag,rating:myXIRating,isMyTeam:true};
       WCS.groupTeams={
         A:[myEntry,...groupANations.map(n=>({...n,rating:WCS.cycleRatings[n.id]}))],
@@ -10169,22 +10516,93 @@
       WCS.groupTeams.A.forEach(t=>{WCS.groupTable.A[t.id]={id:t.id,name:t.name,flag:t.flag,p:0,w:0,l:0,pts:0,isMyTeam:!!t.isMyTeam};});
       WCS.groupTeams.B.forEach(t=>{WCS.groupTable.B[t.id]={id:t.id,name:t.name,flag:t.flag,p:0,w:0,l:0,pts:0};});
       WCS.preResults={};
-      const preMatch=(a,b,grp)=>{
-        const rA=a.rating||70,rB=b.rating||70;
-        const aWins=Math.random()<Math.pow(rA,2)/(Math.pow(rA,2)+Math.pow(rB,2));
-        const[winner,loser]=aWins?[a,b]:[b,a];
-        WCS.preResults[[a.id,b.id].sort().join('_')]=winner.id;
-        WCS.groupTable[grp][winner.id].p++;WCS.groupTable[grp][winner.id].w++;WCS.groupTable[grp][winner.id].pts+=2;
-        WCS.groupTable[grp][loser.id].p++;WCS.groupTable[grp][loser.id].l++;
-      };
-      for(let i=0;i<groupANations.length;i++)for(let j=i+1;j<groupANations.length;j++)preMatch(groupANations[i],groupANations[j],'A');
-      for(let i=0;i<groupBNations.length;i++)for(let j=i+1;j<groupBNations.length;j++)preMatch(groupBNations[i],groupBNations[j],'B');
-      WCS.matches=groupANations.map(opp=>({opp:{...opp,rating:WCS.cycleRatings[opp.id],home:Math.random()<0.45},completed:false,result:null,matchData:null}));
+      // Group A's schedule is ONE unified round-robin over all 7 teams (you + 6 AI),
+      // so "your opponent this round" can never also appear in that same round's other
+      // pairs — a round-robin guarantees each team appears at most once per round.
+      // With 7 teams the schedule has 7 rounds and you sit out exactly one (a bye);
+      // that leftover round's pairs are tacked onto the last one you play, mirroring
+      // how Group B (7 AI teams, also 7 rounds) folds its own unavoidable extra round.
+      const scheduleA=roundRobinRounds(WCS.groupTeams.A);
+      const yourRoundsA=[],byeRoundsA=[];
+      scheduleA.forEach(round=>{
+        const idx=round.findIndex(([a,b])=>a.id==='myxi'||b.id==='myxi');
+        if(idx>=0){
+          const[a,b]=round[idx];
+          const opp=a.id==='myxi'?b:a;
+          yourRoundsA.push({opp,otherPairs:round.filter((_,i)=>i!==idx)});
+        } else byeRoundsA.push(round);
+      });
+      if(byeRoundsA.length) yourRoundsA[yourRoundsA.length-1].otherPairs=[...yourRoundsA[yourRoundsA.length-1].otherPairs,...byeRoundsA.flat()];
+      // AI-vs-AI matches are simulated in round-synced chunks (see simulateAIRoundChunk),
+      // right after each of your own matches — not all upfront before you've played one.
+      WCS.pendingAI={A:yourRoundsA.map(r=>r.otherPairs),B:roundRobinRounds(WCS.groupTeams.B)};
+      WCS.matches=yourRoundsA.map(r=>({opp:{...r.opp,rating:WCS.cycleRatings[r.opp.id],home:Math.random()<0.45},completed:false,result:null,matchData:null}));
       WCS.currentMatchIdx=-1;
+    }
+
+    // Standard "circle method" round-robin scheduler. Returns an array of rounds;
+    // each round is an array of [a,b] pairs where NO team appears twice — real
+    // tournament scheduling, not a random slice of the full pairing list (which could
+    // put the same team in two "simultaneous" matches).
+    function roundRobinRounds(teams){
+      const arr=[...teams];
+      if(arr.length%2!==0)arr.push(null); // null = bye slot for odd-sized groups
+      const n=arr.length;
+      const fixed=arr[0];
+      let rotating=arr.slice(1);
+      const rounds=[];
+      for(let r=0;r<n-1;r++){
+        const lineup=[fixed,...rotating];
+        const pairs=[];
+        for(let i=0;i<n/2;i++){
+          const a=lineup[i],b=lineup[n-1-i];
+          if(a&&b)pairs.push([a,b]);
+        }
+        rounds.push(pairs);
+        rotating.unshift(rotating.pop());
+      }
+      return rounds.sort(()=>Math.random()-0.5);
+    }
+
+    // Bipartite scheduler for Super Sixes: Group A qualifiers (excluding you) vs
+    // Group B qualifiers, rotating so every A-B combination happens exactly once
+    // and no team plays twice within the same round.
+    function bipartiteRounds(teamsA,teamsB){
+      const rounds=[];
+      for(let r=0;r<teamsB.length;r++){
+        const pairs=[];
+        teamsA.forEach((a,i)=>{pairs.push([a,teamsB[(r+i)%teamsB.length]]);});
+        rounds.push(pairs);
+      }
+      return rounds;
+    }
+
+    // Reveals one (or more, if catching up) whole scheduled round(s) of AI-vs-AI
+    // matches per your own match, sized so the schedule empties out exactly as your
+    // own fixtures do — standings only ever show results for rounds that have
+    // actually happened, in step with you, with no team double-booked in a reveal.
+    function simulateAIRoundChunk(schedule,table,roundsLeft){
+      if(!schedule||!schedule.length||roundsLeft<=0)return[];
+      const roundsToTake=roundsLeft<=1?schedule.length:1;
+      const taken=schedule.splice(0,roundsToTake);
+      const results=[];
+      taken.forEach(pairs=>{
+        pairs.forEach(([a,b])=>{
+          const rA=WCS.cycleRatings[a.id]||a.rating||70,rB=WCS.cycleRatings[b.id]||b.rating||70;
+          const aWins=Math.random()<Math.pow(rA,2)/(Math.pow(rA,2)+Math.pow(rB,2));
+          const[winner,loser]=aWins?[a,b]:[b,a];
+          table[winner.id].p++;table[winner.id].w++;table[winner.id].pts+=2;
+          table[loser.id].p++;table[loser.id].l++;
+          WCS.preResults[[a.id,b.id].sort().join('_')]=winner.id;
+          results.push({a,b,winner,loser});
+        });
+      });
+      return results;
     }
 
     function startWCDraft() {
       resetWCState();
+      if (AUTH_USER) sb.from('wc_saves').delete().eq('user_id', AUTH_USER.id);
       go('s-wc-intro');
       wciReset();
     }
@@ -10225,6 +10643,7 @@
 
     function resetWCSpinDrum() {
       document.getElementById('wcd-era').textContent='—';
+      document.getElementById('wcd-era').style.fontSize='24px';
       document.getElementById('wcd-era').style.color='#606070';
       document.getElementById('wcd-year').textContent='—';
       document.getElementById('wcd-year').style.color='#606070';
@@ -10238,15 +10657,22 @@
     function updateWCDraftProgress() {
       const n=WCS.squad.length;
       const slot=WC_SLOT_DEFS[n];
-      document.getElementById('wc-pick-num').textContent=`Pick ${n+1} of 15`;
-      document.getElementById('wc-pbar').style.width=(n/15*100)+'%';
-      document.getElementById('wc-slot-label').textContent=`Slot ${slot.pos} — ${slot.label}`;
-      document.getElementById('wc-slot-desc').textContent=slot.desc;
-      const pips=document.getElementById('wc-pick-slots');
-      pips.innerHTML=Array.from({length:15},(_,i)=>
-        `<div class="slot-pip ${i<n?'done':i===n?'active':''}"></div>`
-      ).join('');
+      document.getElementById('wc-pick-num').textContent=`Pick ${n+1} of ${WC_SLOT_DEFS.length} (${slot.label})`;
+      document.getElementById('wc-pbar').style.width=(n/WC_SLOT_DEFS.length*100)+'%';
       renderWCSquadTracker();
+    }
+
+    // Nation names vary a lot in length ("Fiji" vs "South Africa"); size down
+    // just enough for longer ones so nothing ellipsis-truncates, while short
+    // names get to be as big as the box allows.
+    function wcNationFontSize(name){
+      const n=name.length;
+      if(n<=6)return 24;
+      if(n<=8)return 22;
+      if(n<=9)return 21;
+      if(n<=10)return 19;
+      if(n<=11)return 18;
+      return 16;
     }
 
     function doWCSpin() {
@@ -10281,33 +10707,78 @@
       });
       if(!eligibleCombos.length){btn.disabled=false;btn.textContent='Spin';return;}
 
-      let ticks=0,maxTicks=18+Math.floor(Math.random()*10);
-      const interval=setInterval(()=>{
+      // Fruit-machine feel: fast+blurred ticks that decelerate into the final
+      // few "clunks" as the reel settles, rather than a flat-speed flicker.
+      // The deceleration ramps exponentially (like real reel friction) rather
+      // than linearly, and keeps a soft opacity cross-fade + lingering blur
+      // through the slow ticks so each swap eases rather than hard-cutting.
+      const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const drumInner=document.querySelector('#wc-drum-card .wc-drum-row');
+      const maxTicks=18+Math.floor(Math.random()*10);
+      const decelCount=Math.min(8,maxTicks-1);
+      const decelFrom=Math.max(0,maxTicks-decelCount);
+      let ticks=0;
+      const eraEl=document.getElementById('wcd-era');
+      const yearEl=document.getElementById('wcd-year');
+      const tick=()=>{
         const combo=eligibleCombos[Math.floor(Math.random()*eligibleCombos.length)];
-        document.getElementById('wcd-era').textContent=`${combo.nat.flag} ${combo.nat.name.toUpperCase()}`;
-        document.getElementById('wcd-era').style.color='#9090a8';
-        document.getElementById('wcd-year').textContent=combo.year;
-        document.getElementById('wcd-year').style.color='#f9c846';
-        ticks++;
-        if(ticks>=maxTicks){
-          clearInterval(interval);
-          const final=eligibleCombos[Math.floor(Math.random()*eligibleCombos.length)];
-          document.getElementById('wcd-era').textContent=`${final.nat.flag} ${final.nat.name.toUpperCase()}`;
-          document.getElementById('wcd-era').style.color='#f9c846';
-          document.getElementById('wcd-year').textContent=final.year;
-          document.getElementById('wcd-label').textContent=`${final.nat.name} · ${final.year} · ${slot.label}`;
-          document.getElementById('wcd-label').style.color='#f9c846';
-          WCS.spunYear=final.year;WCS.spunNation=final.natId;
-          showWCCandidates(final.year,slot,final.natId);
-          const limit=WC_RESPIN_LIMITS[WC_SETTINGS.diff];
-          const used=WCS.respinsUsed||0;
-          const canRespin=limit===Infinity||used<limit;
-          btn.disabled=!canRespin;
-          if(WC_SETTINGS.diff==='easy')btn.textContent='Spin again';
-          else if(WC_SETTINGS.diff==='medium'){const left=Math.max(0,limit-used);btn.textContent=left>0?`Spin again · ${left} left`:'No re-spins left';}
-          else btn.textContent='No re-spins (Hard)';
+        const nameU=combo.nat.name.toUpperCase();
+        const inDecel=ticks>=decelFrom;
+        if(inDecel&&!reduceMotion){
+          eraEl.style.transition='opacity .12s ease-out';
+          yearEl.style.transition='opacity .12s ease-out';
+          eraEl.style.opacity='0.25';
+          yearEl.style.opacity='0.25';
         }
-      },60);
+        eraEl.textContent=nameU;
+        eraEl.style.fontSize=wcNationFontSize(nameU)+'px';
+        eraEl.style.color='#9090a8';
+        yearEl.textContent=combo.year;
+        yearEl.style.color='#f9c846';
+        if(inDecel&&!reduceMotion){
+          requestAnimationFrame(()=>{eraEl.style.opacity='1';yearEl.style.opacity='1';});
+        }
+        ticks++;
+        if(ticks<maxTicks){
+          let delay=45,blur=2;
+          if(ticks>=decelFrom){
+            const p=(ticks-decelFrom)/(maxTicks-decelFrom);
+            delay=45*Math.pow(190/45,p);
+            blur=p<0.7?2:2*(1-(p-0.7)/0.3);
+          }
+          if(!reduceMotion)drumInner.style.filter=blur>0.05?`blur(${blur.toFixed(2)}px)`:'none';
+          setTimeout(tick,reduceMotion?45:delay);
+          return;
+        }
+        drumInner.style.filter='none';
+        const final=eligibleCombos[Math.floor(Math.random()*eligibleCombos.length)];
+        const finalNameU=final.nat.name.toUpperCase();
+        if(!reduceMotion){
+          eraEl.style.transition='opacity .12s ease-out';
+          yearEl.style.transition='opacity .12s ease-out';
+          eraEl.style.opacity='0.25';yearEl.style.opacity='0.25';
+        }
+        eraEl.textContent=finalNameU;
+        eraEl.style.fontSize=wcNationFontSize(finalNameU)+'px';
+        eraEl.style.color='#f9c846';
+        yearEl.textContent=final.year;
+        if(!reduceMotion)requestAnimationFrame(()=>{eraEl.style.opacity='1';yearEl.style.opacity='1';});
+        document.getElementById('wcd-label').textContent=slot.label;
+        document.getElementById('wcd-label').style.color='#f9c846';
+        WCS.spunYear=final.year;WCS.spunNation=final.natId;
+        showWCCandidates(final.year,slot,final.natId);
+        const drum=document.getElementById('wc-drum-card');
+        drum.classList.remove('drum-land'); void drum.offsetWidth; drum.classList.add('drum-land');
+        document.getElementById('wc-roster-area').scrollIntoView({behavior:'smooth', block:'start'});
+        const limit=WC_RESPIN_LIMITS[WC_SETTINGS.diff];
+        const used=WCS.respinsUsed||0;
+        const canRespin=limit===Infinity||used<limit;
+        btn.disabled=!canRespin;
+        if(WC_SETTINGS.diff==='easy')btn.textContent='Spin again';
+        else if(WC_SETTINGS.diff==='medium'){const left=Math.max(0,limit-used);btn.textContent=left>0?`Spin again · ${left} left`:'No re-spins left';}
+        else btn.textContent='No re-spins (Hard)';
+      };
+      tick();
     }
 
     function showWCCandidates(year,slot,natId){
@@ -10325,13 +10796,14 @@
       WCS.spinCandidates=candidates;
       const area=document.getElementById('wc-roster-area');
       if(!candidates.length){area.innerHTML=`<div style="text-align:center;color:#f87171;padding:20px;font-size:13px">No ${slot.label}s available for ${nat?.name||natId} in ${year}. Re-spin!</div>`;return;}
-      const showR=WC_SETTINGS.show==='visible'||(WCS.squad&&WCS.squad.length>=15);
+      const showR=WC_SETTINGS.show==='visible'||(WCS.squad&&WCS.squad.length>=WC_SLOT_DEFS.length);
       const roleOrder=['batsman','wicketkeeper','allrounder','bowler'];
       const roleMeta={batsman:{label:'Batters',css:'bat'},wicketkeeper:{label:'Keeper',css:'wk'},allrounder:{label:'All-rounders',css:'all'},bowler:{label:'Bowlers',css:'bowl'}};
       const grouped={};roleOrder.forEach(r=>{grouped[r]=candidates.filter(p=>p.role===r);});
+      let cardIdx=0;
       area.innerHTML=roleOrder.map(role=>{
         const group=grouped[role];if(!group.length)return'';
-        return`<div class="role-section"><div class="role-header rh-${roleMeta[role].css}"><span class="rh-title">${roleMeta[role].label}</span><span class="rh-slots">${group.length} available</span></div>${group.map(p=>{const rc=ratingBadgeClass(p.rating);const bi=p.canBowl&&p.bowlingStyle?` · ${p.bowlingStyle}`:'';return`<div class="player-card pc-${roleMeta[role].css}" onclick="pickWCPlayer('${p.id}',${year},'${natId}')"><div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0"><div class="pc-name">${p.name}</div><div class="pc-meta">${roleLabel(p.role)}${bi}</div></div>${showR?`<div class="rating-badge ${rc}">${p.rating}</div>`:''}</div>`;}).join('')}</div>`;
+        return`<div class="role-section"><div class="role-header rh-${roleMeta[role].css}"><span class="rh-title">${roleMeta[role].label}</span><span class="rh-slots">${group.length} available</span></div>${group.map(p=>{const rc=ratingBadgeClass(p.rating);const bi=p.canBowl&&p.bowlingStyle?` · ${p.bowlingStyle}`:'';const delay=Math.min(cardIdx++*30,300);return`<div class="player-card pc-${roleMeta[role].css} card-in" style="animation-delay:${delay}ms" onclick="pickWCPlayer('${p.id}',${year},'${natId}')"><div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0"><div class="pc-name">${p.name}</div><div class="pc-meta">${roleLabel(p.role)}${bi}</div></div>${showR?`<div class="rating-badge ${rc}">${p.rating}</div>`:''}</div>`;}).join('')}</div>`;
       }).join('');
     }
 
@@ -10341,13 +10813,15 @@
       const slotDef=WC_SLOT_DEFS[WCS.squad.length];
       WCS.squad.push({...player,rating:player.yearRatings[year],baseRating:player.yearRatings[year],year,natId,formModifier:0,slotPos:slotDef.pos,slotLabel:slotDef.label});
       WCS.playerForm[id]=0;WCS.usedYears.add(year);WCS.slot++;
-      if(WCS.squad.length>=15){
+      if(WCS.squad.length>=WC_SLOT_DEFS.length){
         WCS.myNation=determineWCNation();
         buildWCFixtures();
         showWCCaptainPickerFromDraft();
         return;
       }
-      WCS.spunYear=null;WCS.spunNation=null;updateWCDraftProgress();resetWCSpinDrum();doWCSpin();
+      WCS.spunYear=null;WCS.spunNation=null;updateWCDraftProgress();resetWCSpinDrum();
+      document.getElementById('s-wc-spin').scrollIntoView({behavior:'smooth', block:'start'});
+      doWCSpin();
     }
 
     // Dev-only helper — instantly fills a valid 15-player squad, skipping the spin animation.
@@ -10382,14 +10856,38 @@
       showWCCaptainPickerFromDraft();
     }
 
+    // Full 15-slot "team sheet": batting order 1-11 on the left, the 4 extra
+    // reserve bowlers on the right. Every slot is always rendered — filled ones
+    // show the player, unfilled ones show the role that will land there, so the
+    // shape of the squad you're building is visible from pick 1.
+    const WC_ROLE_CSS = {batsman:'bat', wicketkeeper:'wk', allrounder:'all', bowler:'bowl'};
+
     function renderWCSquadTracker(){
       const tracker=document.getElementById('wc-squad-tracker');if(!tracker)return;
-      if(!WCS.squad.length){tracker.innerHTML='';return;}
-      const roleGroups=[{role:'batsman',label:'Batters',css:'bat'},{role:'wicketkeeper',label:'Keeper',css:'wk'},{role:'allrounder',label:'All-rounders',css:'all'},{role:'bowler',label:'Bowlers',css:'bowl'}];
-      tracker.innerHTML=`<div class="st-title">Squad so far (${WCS.squad.length}/15)</div>`+roleGroups.map(g=>{
-        const players=WCS.squad.filter(p=>p.role===g.role);if(!players.length)return'';
-        return`<div class="st-group"><div class="st-group-label stgl-${g.css}">${g.label}</div><div class="st-slots">${players.map(p=>`<div class="st-slot st-slot-${g.css} filled"><span style="font-size:10px;font-weight:700;color:#c0c0d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name.split(' ').slice(-1)[0]}</span><span style="font-size:10px;color:#6060a0;margin-left:auto">${p.rating}</span></div>`).join('')}</div></div>`;
-      }).join('');
+      const lastId=WCS.squad.length?WCS.squad[WCS.squad.length-1].id:null;
+      const byPos={};
+      WCS.squad.forEach(p=>{byPos[p.slotPos]=p;});
+      const row=(pos)=>{
+        const def=WC_SLOT_DEFS[pos-1];
+        const css=WC_ROLE_CSS[def.roles[0]];
+        const p=byPos[pos];
+        if(p){
+          return `<div class="wcs-row wcs-${css} filled${p.id===lastId?' slot-new':''}"><span class="wcs-pos">${pos}</span><span class="wcs-name">${p.name.split(' ').slice(-1)[0]}</span><span class="wcs-rating">${p.rating}</span></div>`;
+        }
+        return `<div class="wcs-row wcs-${css}"><span class="wcs-pos">${pos}</span><span class="wcs-name wcs-placeholder">${def.label}</span></div>`;
+      };
+      // Alternate left/right by position (1 left, 2 right, 3 left...) so both
+      // columns fill evenly, instead of one tall XI column towering over a
+      // short extras column.
+      const total=WC_SLOT_DEFS.length;
+      const leftCount=Math.ceil(total/2),rightCount=Math.floor(total/2);
+      const leftHTML=Array.from({length:leftCount},(_,i)=>row(i*2+1)).join('');
+      const rightHTML=Array.from({length:rightCount},(_,i)=>row(i*2+2)).join('');
+      tracker.innerHTML=`<div class="st-title">Squad so far (${WCS.squad.length}/${total})</div>
+        <div class="wcs-board">
+          <div class="wcs-xi">${leftHTML}</div>
+          <div class="wcs-extras">${rightHTML}</div>
+        </div>`;
     }
 
     // ── WC XI PICKER ──────────────────────────────────────────────────────────
@@ -10422,6 +10920,7 @@
         WCS.xiSlots=Array(11).fill(null);autoFillWCXI();
       }
       go('s-wc-squad');renderWCXIPickerUI();
+      requestAnimationFrame(()=>wireReveals(document.getElementById('s-wc-squad')));
     }
 
     function autoFillWCXI(){
@@ -10460,123 +10959,161 @@
       WCS.bench=WCS.squad.filter(p=>!used.has(p.id));
     }
 
-    function _wcStatsHtml(p){
+    function _wcAvgs(p){
       const ps=WCS.playerStats[p.id]||{runs:0,inns:0,dismissed:0,wickets:0,runsConceded:0};
       const batAvg=ps.dismissed?(ps.runs/ps.dismissed).toFixed(1):'—';
       const bowlAvg=ps.wickets?(ps.runsConceded/ps.wickets).toFixed(1):'—';
-      const runsDisp=ps.inns?ps.runs:'—';
-      const wktsDisp=ps.wickets||'—';
-      return`<div class="smr-stat-block"><div class="smr-stat-val">${runsDisp}</div><div class="smr-stat-lbl">avg ${batAvg}</div></div>
-        <div class="smr-stat-block"><div class="smr-stat-val">${wktsDisp}</div><div class="smr-stat-lbl">avg ${bowlAvg}</div></div>`;
+      return{batAvg,bowlAvg};
+    }
+    function _wcStatChips(p){
+      const{batAvg,bowlAvg}=_wcAvgs(p);
+      const form=WCS.playerForm[p.id]||0;
+      const formStr=form>0?`<b class="form-up">▲${form}</b>`:form<0?`<b class="form-down">▼${Math.abs(form)}</b>`:'<b style="color:#4a4a60">—</b>';
+      return`Bat <b>${batAvg}</b> · Bowl <b>${bowlAvg}</b>`;
     }
 
+    // Selection state while rearranging the XI is unified as WCS.xiState = {type:'slot',idx} |
+    // {type:'bench',id} | null — a single source that can be completed by tapping EITHER an XI
+    // slot OR a bench player, whichever direction the swap was started from.
     function renderWCXIPickerUI(){
       const xiEl=document.getElementById('wc-xi-list');const benchEl=document.getElementById('wc-bench-list');if(!xiEl||!benchEl)return;
       const state=WCS.xiState;
-      const placingPlayer=state&&state.mode==='placing'?WCS.bench.find(b=>b.id===state.benchId):null;
+      const benchSource=state&&state.type==='bench'?WCS.bench.find(b=>b.id===state.id):null;
+      const slotSource=state&&state.type==='slot'?WCS.xiSlots[state.idx]:null;
 
       xiEl.innerHTML=XI_POS_DEFS.map((def,idx)=>{
         const p=WCS.xiSlots[idx];
-        const canPlace=placingPlayer&&def.test(placingPlayer);
+        const isSource=state&&state.type==='slot'&&state.idx===idx;
+        const isTarget=!isSource&&((benchSource&&def.test(benchSource))||(slotSource&&def.test(slotSource)));
+        const isDimmed=state&&!isSource&&!isTarget;
         if(!p){
-          return`<div class="squad-mgmt-row" style="${canPlace?'border-color:#4ade80;cursor:pointer;':'opacity:0.35;'}" ${canPlace?`onclick="wcPlaceInSlot(${idx})"`:''}>
-            <div class="smr-num" style="color:${canPlace?'#4ade80':'#282838'};font-size:11px">${def.pos}</div>
-            <div style="flex:1;min-width:0">
-              <div class="smr-name" style="color:${canPlace?'#c0c0d8':'#2a2a3a'}">${def.label}</div>
-              <div style="font-size:10px;color:${canPlace?'#4a6050':'#1e1e2e'}">${def.sublabel}</div>
+          return`<div class="wc-xi-card wc-xi-empty ${isTarget?'wc-xi-target wc-xi-clickable':''} ${isDimmed?'wc-xi-dimmed':''}" ${isTarget?`onclick="wcCompleteToSlot(${idx})"`:''}>
+            <div class="wc-xi-num">${def.pos}</div>
+            <div class="wc-xi-body">
+              <div class="wc-xi-toprow">
+                <span class="wc-xi-name" style="color:${isTarget?'#c0c0d8':'#4a4a60'}">${def.label} · ${def.sublabel}</span>
+                ${isTarget?`<span class="wc-xi-bench-tag" style="color:#4ade80;background:#081a08;border:1px solid #1a4028">TAP TO PLACE</span>`:''}
+              </div>
             </div>
-            ${canPlace?`<div style="font-size:10px;color:#4ade80;font-weight:700;padding:2px 8px;border:1px solid #1a4028;border-radius:5px;background:#081a08">PLACE</div>`:''}
           </div>`;
         }
         const form=WCS.playerForm[p.id]||0;const eff=p.rating+form;
         const penalty=posBatPenalty(p,idx);
         const effWithPos=Math.max(52,eff-penalty);
-        const formStr=form>0?`<span class="form-up">▲${form}</span>`:form<0?`<span class="form-down">▼${Math.abs(form)}</span>`:'<span style="color:#4a4a60">—</span>';
-        const ctag=wcCaptainTag(p);const ctagHtml=ctag?` <span style="color:${ctag==='C'?'#f9c846':'#9090b8'};font-weight:700">(${ctag})</span>`:'';
-        const isSource=state&&state.mode==='swapping'&&state.slotIdx===idx;
-        const isXISwapTarget=state&&state.mode==='swapping'&&idx!==state.slotIdx&&wcCanXISwap(state.slotIdx,idx);
-        const isBenchSwapTarget=canPlace;
-        const isDimmed=state&&!isSource&&!isXISwapTarget&&!(state.mode==='placing'&&canPlace);
-        let rowStyle='';
-        if(isSource)rowStyle='border-color:#f9c846;background:#1a1400;';
-        else if(isXISwapTarget||isBenchSwapTarget)rowStyle='border-color:#4ade80;cursor:pointer;';
-        else if(isDimmed)rowStyle='opacity:0.3;';
-        const clickHandler=isXISwapTarget?`onclick="wcCompleteSwap(${idx})"`:isBenchSwapTarget?`onclick="wcPlaceInSlot(${idx})"`:'' ;
-        const ratingHtml=penalty>0
-          ?`<div style="text-align:right;line-height:1.2"><div class="smr-rating" style="color:#fbbf24">${effWithPos}</div><div style="font-size:9px;color:#f97316;font-weight:700">−${penalty} pos</div></div>`
-          :`<div class="smr-rating" style="color:${ratingColor(eff)}">${eff}</div>`;
-        return`<div class="squad-mgmt-row smr-in" style="${rowStyle}" ${clickHandler}>
-          <div class="smr-num" style="color:#f9c846">${def.pos}</div>
-          <div style="flex:1;min-width:0;text-align:left">
-            <div class="smr-name">${p.name}${ctagHtml}</div>
-            <div style="font-size:10px;color:#6060a0">${_rl(p)} · ${p.year}</div>
+        const ctag=wcCaptainTag(p);const ctagHtml=ctag?`<span class="wc-xi-tag" style="color:${ctag==='C'?'#f9c846':'#9090b8'}">${ctag}</span>`:'';
+        const formStr=form>0?`<span class="wc-xi-form form-up">▲${form}</span>`:form<0?`<span class="wc-xi-form form-down">▼${Math.abs(form)}</span>`:'<span class="wc-xi-form" style="color:#4a4a60">—</span>';
+        let cardClass='';
+        if(isSource)cardClass='wc-xi-source';
+        else if(isTarget)cardClass='wc-xi-target wc-xi-clickable';
+        else if(isDimmed)cardClass='wc-xi-dimmed';
+        const clickHandler=isTarget?`onclick="wcCompleteToSlot(${idx})"`:'';
+        const ratingBadge=`<div class="wc-xi-rating-mini ${ratingBadgeClass(effWithPos)}">${effWithPos}</div>`;
+        const actionBtn=isSource
+          ?`<button class="wc-xi-swap-btn wc-xi-swap-active" onclick="event.stopPropagation();WCS.xiState=null;renderWCXIPickerUI()">✕</button>`
+          :isTarget
+            ?`<button class="wc-xi-swap-btn wc-xi-swap-go" onclick="event.stopPropagation();wcCompleteToSlot(${idx})">⇄</button>`
+            :`<button class="wc-xi-swap-btn" onclick="event.stopPropagation();wcInitiateSwap(${idx})">⇄</button>`;
+        const justMoved=WCS.xiJustMoved&&WCS.xiJustMoved.includes(p.id)?' wc-xi-just-moved':'';
+        return`<div class="wc-xi-card ${cardClass}${justMoved}" ${clickHandler}>
+          <div class="wc-xi-num wc-xi-num-filled">${def.pos}</div>
+          <div class="wc-xi-body">
+            <div class="wc-xi-toprow">
+              <span class="wc-xi-name">${p.name}</span>${ctagHtml}
+            </div>
+            <div class="wc-xi-subrow">
+              <span class="wc-xi-role">${_rl(p)} · ${p.year}</span>
+              <span class="wc-xi-stats-inline">${_wcStatChips(p)}${penalty>0?` · <span class="wc-xi-warn">−${penalty} pos</span>`:''}</span>
+            </div>
           </div>
-          ${_wcStatsHtml(p)}
-          <div style="font-size:11px;font-weight:700;min-width:28px;text-align:right">${formStr}</div>
-          ${ratingHtml}
-          ${isSource
-            ?`<button onclick="WCS.xiState=null;renderWCXIPickerUI()" style="padding:2px 7px;background:#1a1400;border:1px solid #f9c846;border-radius:5px;color:#f9c846;font-size:11px;cursor:pointer">✕</button>`
-            :(isXISwapTarget||isBenchSwapTarget)
-              ?`<button onclick="${isXISwapTarget?`wcCompleteSwap(${idx})`:`wcPlaceInSlot(${idx})`}" style="padding:2px 7px;background:#0a2a0a;border:1px solid #4ade80;border-radius:5px;color:#4ade80;font-size:10px;font-weight:700;cursor:pointer">SWAP</button>`
-              :`<button onclick="event.stopPropagation();wcInitiateSwap(${idx})" style="padding:2px 7px;background:#0d0d18;border:1px solid #252540;border-radius:5px;color:#6060a0;font-size:11px;cursor:pointer" title="Swap position">⇄</button>`}
+          <div class="wc-xi-formrating">${formStr}${ratingBadge}${actionBtn}</div>
         </div>`;
       }).join('');
 
-      if(state&&state.mode==='placing'){
-        xiEl.innerHTML+=`<button onclick="WCS.xiState=null;renderWCXIPickerUI()" style="width:100%;margin-top:6px;padding:7px;background:#0d0d12;border:1px solid #1a1a24;border-radius:8px;color:#6060a0;font-size:11px;cursor:pointer">Cancel</button>`;
+      if(state){
+        xiEl.innerHTML+=`<button onclick="WCS.xiState=null;renderWCXIPickerUI()" style="width:100%;margin-top:2px;padding:7px;background:#0d0d12;border:1px solid #1a1a24;border-radius:8px;color:#6060a0;font-size:11px;cursor:pointer">Cancel</button>`;
       }
 
       benchEl.innerHTML=WCS.bench.length===0
         ?`<div style="font-size:12px;color:#4a4a60;padding:8px 0">All players in XI</div>`
         :WCS.bench.map(p=>{
-          const form=WCS.playerForm[p.id]||0;const eff=p.rating+form;
-          const isActive=state&&state.mode==='placing'&&state.benchId===p.id;
-          const hasSlot=XI_POS_DEFS.some(def=>def.test(p));
-          const ctag=wcCaptainTag(p);const ctagHtml=ctag?` <span style="color:${ctag==='C'?'#f9c846':'#9090b8'};font-weight:700">(${ctag})</span>`:'';
+          const isSource=benchSource&&benchSource.id===p.id;
+          const isTarget=!isSource&&slotSource&&XI_POS_DEFS[state.idx].test(p);
+          const hasAnySlot=XI_POS_DEFS.some(def=>def.test(p));
+          const ctag=wcCaptainTag(p);const ctagHtml=ctag?`<span class="wc-xi-tag" style="color:${ctag==='C'?'#f9c846':'#9090b8'}">${ctag}</span>`:'';
           const inj=WCS.playerInjured[p.id];const unavail=!!inj;
           const injLabel=inj?.reason==='birth'?'Paternity Leave':inj?.type==='tournament'?'Out for the Tournament':'Misses Next Match';
-          return`<div class="squad-mgmt-row" style="${isActive?'border-color:#4ade80;background:#061206;':unavail?'opacity:0.5;':''}">
-            <div style="flex:1;min-width:0;text-align:left">
-              <div class="smr-name" style="color:#9090a8">${p.name}${ctagHtml}</div>
-              <div style="font-size:10px;color:#4a4a60">${_rl(p)} · ${p.year}${unavail?` · <span style="color:${inj.type==='tournament'?'#f87171':'#fbbf24'}">${injLabel}</span>`:''}</div>
+          const form=WCS.playerForm[p.id]||0;const eff=p.rating+form;
+          const formStr=form>0?`<span class="wc-xi-form form-up">▲${form}</span>`:form<0?`<span class="wc-xi-form form-down">▼${Math.abs(form)}</span>`:'<span class="wc-xi-form" style="color:#4a4a60">—</span>';
+          const ratingBadge=`<div class="wc-xi-rating-mini ${ratingBadgeClass(eff)}" style="opacity:.85">${eff}</div>`;
+          const actionBtn=unavail
+            ?`<div class="wc-xi-bench-tag" style="color:#f87171;background:#1a0808;border:1px solid #3a1414">OUT</div>`
+            :isSource
+              ?`<button class="wc-xi-bench-in wc-xi-bench-in-active" onclick="wcStartPlacing('${p.id}')">CANCEL</button>`
+              :isTarget
+                ?`<button class="wc-xi-bench-in wc-xi-bench-in-active" onclick="wcCompleteToBench('${p.id}')">⇄ SWAP</button>`
+                :hasAnySlot
+                  ?`<button class="wc-xi-bench-in" onclick="wcStartPlacing('${p.id}')">IN</button>`
+                  :`<div class="wc-xi-bench-tag" style="color:#3a3a50;background:#14141c;border:1px solid #1e1e2a">FULL</div>`;
+          const dimmed=state&&!isSource&&!isTarget&&!unavail&&state.type==='bench';
+          const justMoved=WCS.xiJustMoved&&WCS.xiJustMoved.includes(p.id)?' wc-xi-just-moved':'';
+          return`<div class="wc-xi-card wc-xi-bench-card ${isSource?'wc-xi-source':''} ${isTarget?'wc-xi-target':''} ${unavail||dimmed?'wc-xi-dimmed':''}${justMoved}">
+            <div class="wc-xi-body">
+              <div class="wc-xi-toprow">
+                <span class="wc-xi-name" style="color:#9090a8">${p.name}</span>${ctagHtml}
+              </div>
+              <div class="wc-xi-subrow">
+                <span class="wc-xi-role">${_rl(p)} · ${p.year}${unavail?` · <span style="color:${inj.type==='tournament'?'#f87171':'#fbbf24'}">${injLabel}</span>`:''}</span>
+                <span class="wc-xi-stats-inline">${_wcStatChips(p)}</span>
+              </div>
             </div>
-            ${_wcStatsHtml(p)}
-            <div class="smr-rating" style="color:#6060a0;opacity:0.7">${eff}</div>
-            ${unavail
-              ?`<div style="font-size:10px;color:#f87171;padding:2px 8px">OUT</div>`
-              :hasSlot
-                ?`<button onclick="wcStartPlacing('${p.id}')" style="padding:3px 9px;background:${isActive?'#0a2a0a':'#081a08'};border:1px solid ${isActive?'#4ade80':'#1a3a08'};border-radius:5px;color:#4ade80;font-size:10px;font-weight:700;cursor:pointer">${isActive?'CANCEL':'IN'}</button>`
-                :`<div style="font-size:10px;color:#2a2a40;padding:2px 8px">FULL</div>`}
+            <div class="wc-xi-formrating">${formStr}${ratingBadge}${actionBtn}</div>
           </div>`;
         }).join('');
+      WCS.xiJustMoved=null;
     }
 
+    function wcResetToBestXI(){autoFillWCXI();WCS.xiState=null;renderWCXIPickerUI();}
+
+    // Started from a bench player's IN button — tap an XI slot to complete.
     function wcStartPlacing(benchId){
-      if(WCS.xiState&&WCS.xiState.mode==='placing'&&WCS.xiState.benchId===benchId){WCS.xiState=null;}
-      else{WCS.xiState={mode:'placing',benchId};}
+      if(WCS.xiState&&WCS.xiState.type==='bench'&&WCS.xiState.id===benchId){WCS.xiState=null;}
+      else{WCS.xiState={type:'bench',id:benchId};}
       renderWCXIPickerUI();
     }
-    function wcPlaceInSlot(slotIdx){
-      if(!WCS.xiState||WCS.xiState.mode!=='placing')return;
-      const incoming=WCS.bench.find(b=>b.id===WCS.xiState.benchId);
-      if(!incoming||!XI_POS_DEFS[slotIdx].test(incoming))return;
-      const prev=WCS.xiSlots[slotIdx];
+    // Started from an XI slot's swap button — tap another slot OR a bench player to complete.
+    function wcInitiateSwap(slotIdx){WCS.xiState={type:'slot',idx:slotIdx};renderWCXIPickerUI();}
+
+    function wcPlaceBenchIntoSlot(benchId,targetIdx){
+      const incoming=WCS.bench.find(b=>b.id===benchId);
+      if(!incoming||!XI_POS_DEFS[targetIdx].test(incoming))return;
+      const prev=WCS.xiSlots[targetIdx];
       if(prev)WCS.bench.push(prev);
-      WCS.xiSlots[slotIdx]=incoming;
+      WCS.xiSlots[targetIdx]=incoming;
       WCS.bench=WCS.bench.filter(b=>b.id!==incoming.id);
+    }
+    // Completes onto an XI slot, regardless of whether the selection started on a slot or the bench.
+    // WCS.xiJustMoved records who just changed places, so the next render can pop-animate them.
+    function wcCompleteToSlot(targetIdx){
+      if(!WCS.xiState)return;
+      if(WCS.xiState.type==='slot'){
+        const src=WCS.xiState.idx;
+        if(src===targetIdx)return;
+        const tmp=WCS.xiSlots[src];WCS.xiSlots[src]=WCS.xiSlots[targetIdx];WCS.xiSlots[targetIdx]=tmp;
+        WCS.xiJustMoved=[WCS.xiSlots[src]?.id,WCS.xiSlots[targetIdx]?.id].filter(Boolean);
+      } else {
+        const displaced=WCS.xiSlots[targetIdx];
+        wcPlaceBenchIntoSlot(WCS.xiState.id,targetIdx);
+        WCS.xiJustMoved=[WCS.xiState.id,displaced?.id].filter(Boolean);
+      }
       WCS.xiState=null;renderWCXIPickerUI();
     }
-    function wcInitiateSwap(slotIdx){WCS.xiState={mode:'swapping',slotIdx};renderWCXIPickerUI();}
-    function wcCompleteSwap(targetIdx){
-      if(!WCS.xiState||WCS.xiState.mode!=='swapping')return;
-      const src=WCS.xiState.slotIdx;
-      const tmp=WCS.xiSlots[src];WCS.xiSlots[src]=WCS.xiSlots[targetIdx];WCS.xiSlots[targetIdx]=tmp;
+    // Completes onto a bench player — only reachable when the selection started on an XI slot.
+    function wcCompleteToBench(benchId){
+      if(!WCS.xiState||WCS.xiState.type!=='slot')return;
+      const displaced=WCS.xiSlots[WCS.xiState.idx];
+      wcPlaceBenchIntoSlot(benchId,WCS.xiState.idx);
+      WCS.xiJustMoved=[benchId,displaced?.id].filter(Boolean);
       WCS.xiState=null;renderWCXIPickerUI();
-    }
-    function wcCanXISwap(slotA,slotB){
-      const pA=WCS.xiSlots[slotA],pB=WCS.xiSlots[slotB];
-      if(!pA||!pB)return false;
-      return XI_POS_DEFS[slotB].test(pA)&&XI_POS_DEFS[slotA].test(pB);
     }
 
     function confirmWCXI(){
@@ -10592,27 +11129,41 @@
 
     function showWCCaptainPickerFromDraft(){
       go('s-wc-captain');renderWCCaptainPicker();
+      requestAnimationFrame(()=>wireReveals(document.getElementById('s-wc-captain')));
     }
 
-    function renderWCCaptainPicker(){
+    function renderWCCaptainPicker(justPickedId){
       const el=document.getElementById('wc-captain-player-list');if(!el)return;
       const c=WCS.captain,vc=WCS.viceCaptain;
-      el.innerHTML=WCS.squad.map(p=>{
+      const heading=document.getElementById('wc-captain-heading');
+      if(heading)heading.textContent=!c?'Choose Your Captain':'Choose Your Vice-Captain';
+      const ordered=[...WCS.squad].sort((a,b)=>b.rating-a.rating);
+      el.innerHTML=`<div class="ov-stagger">`+ordered.map(p=>{
         const isC=p.id===c,isVC=p.id===vc;const tag=isC?'C':isVC?'VC':null;
-        const tagCol=isC?'#f9c846':'#c0c0d8';const border=isC?'#f9c846':isVC?'#9090c0':'#1a1a2a';const bg=isC?'#1a1400':isVC?'#0e0e18':'#0d0d12';
-        return`<div onclick="selectWCCaptain('${p.id}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid ${border};background:${bg};cursor:pointer;margin-bottom:6px"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:800;color:#fff">${p.name}</div><div style="font-size:10px;color:#6060a0">${_rl(p)} · ${p.year}</div></div><div style="font-size:12px;color:#6060a0">${p.rating}</div>${tag?`<div style="font-size:11px;font-weight:900;color:${tagCol};min-width:24px;text-align:center;border:1px solid ${tagCol};border-radius:5px;padding:1px 5px">${tag}</div>`:`<div style="min-width:34px"></div>`}</div>`;
-      }).join('');
+        const stateClass=isC?' is-captain':isVC?' is-vc':'';
+        const pickClass=p.id===justPickedId?' just-picked':'';
+        const roleCss=WC_ROLE_CSS[p.role]||'bat';
+        return`<div class="wc-cap-row ov-row-reveal${stateClass}${pickClass}" tabindex="0" onclick="selectWCCaptain('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectWCCaptain('${p.id}');}">
+          <div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:38px;height:38px;font-size:14px;flex-shrink:0">${p.rating}</div>
+          <div class="wc-cap-info">
+            <div class="wc-cap-name">${p.name}</div>
+            <div class="wc-cap-meta"><span class="rp-badge rpb-${roleCss}">${_rl(p)}</span><span>${p.year}</span></div>
+          </div>
+          ${tag?`<div class="wc-cap-tag tag-${tag.toLowerCase()}">${tag}</div>`:''}
+        </div>`;
+      }).join('')+`</div>`;
+      requestAnimationFrame(()=>wireReveals(el));
       const confirmBtn=document.getElementById('wc-captain-confirm-btn');const hint=document.getElementById('wc-captain-hint');
-      if(!c){hint.textContent='Select your captain';confirmBtn.style.display='none';}
-      else if(!vc){hint.textContent='Now select your vice-captain';confirmBtn.style.display='none';}
-      else{const cN=WCS.squad.find(p=>p.id===c)?.name||'';const vcN=WCS.squad.find(p=>p.id===vc)?.name||'';hint.textContent=`${cN} (C) · ${vcN} (VC)`;confirmBtn.style.display='';}
+      if(!c){hint.textContent='Select your captain';hint.style.color='#8080a0';confirmBtn.style.display='none';}
+      else if(!vc){hint.textContent='Now select your vice-captain';hint.style.color='#f9c846';confirmBtn.style.display='none';}
+      else{const cN=WCS.squad.find(p=>p.id===c)?.name||'';const vcN=WCS.squad.find(p=>p.id===vc)?.name||'';hint.textContent=`${cN} (C) · ${vcN} (VC)`;hint.style.color='#f9c846';confirmBtn.style.display='';}
     }
 
     function selectWCCaptain(id){
       if(!WCS.captain)WCS.captain=id;
       else if(!WCS.viceCaptain){if(id===WCS.captain)WCS.captain=null;else WCS.viceCaptain=id;}
       else{if(id===WCS.captain){WCS.captain=null;WCS.viceCaptain=null;}else if(id===WCS.viceCaptain)WCS.viceCaptain=null;else WCS.viceCaptain=id;}
-      renderWCCaptainPicker();
+      renderWCCaptainPicker(WCS.captain===id||WCS.viceCaptain===id?id:null);
     }
 
     function confirmWCCaptains(){
@@ -10634,10 +11185,11 @@
       const myXIRating=Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length);
       const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
 
-      // Predicted tournament position based on rating vs all 14 teams
+      // Predicted tournament position based on rating vs all 14 teams. Your XI
+      // replaces the nation it represents, so that nation is excluded here too.
       const allTeams=[
         {id:'myxi',name:'Your XI',flag:myNat.flag,rating:myXIRating},
-        ...WC_NATIONS.map(n=>({id:n.id,name:n.name,flag:n.flag,rating:WCS.cycleRatings[n.id]||n.rMin})),
+        ...WC_NATIONS.filter(n=>n.id!==myNat.id).map(n=>({id:n.id,name:n.name,flag:n.flag,rating:WCS.cycleRatings[n.id]||n.rMin})),
       ].sort((a,b)=>b.rating-a.rating);
       const predPos=allTeams.findIndex(t=>t.id==='myxi')+1;
       const predLabel=predPos===1?'Tournament favourites':predPos<=3?'Strong contenders':predPos<=7?'Mid-table':predPos<=10?'Outsiders':'Dark horses';
@@ -10657,7 +11209,7 @@
       const oddsRows=allTeams.map(t=>{
         const dec=totalWeight/oddsWeight(t.rating);
         const isMine=t.id==='myxi';
-        return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a2a${isMine?';background:#0a0a0f':''}">
+        return`<div class="ov-row-reveal" style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a2a${isMine?';background:#0a0a0f':''}">
           <span style="font-size:14px">${t.flag}</span>
           <span style="font-size:12px;font-weight:${isMine?'900':'600'};color:${isMine?'#f9c846':'#c0c0d8'};flex:1">${t.name} (${t.rating} ovr)</span>
           <span style="font-size:12px;font-weight:700;color:${isMine?'#f9c846':'#9090a8'}">${toFrac(dec)}</span>
@@ -10665,7 +11217,7 @@
       }).join('');
 
       // Fixture schedule
-      const fixtureRows=WCS.matches.map((m,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1a1a2a">
+      const fixtureRows=WCS.matches.map((m,i)=>`<div class="ov-row-reveal" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1a1a2a">
         <span style="font-size:18px">${m.opp.flag}</span>
         <div style="flex:1"><span style="font-size:12px;font-weight:700;color:#fff">${m.opp.name}</span><span style="font-size:11px;color:#6060a0;margin-left:6px">${m.opp.home?'Home':'Away'} ODI</span></div>
         <span style="font-size:10px;color:${m.opp.home?'#4ade80':'#fb923c'};font-weight:700">${m.opp.home?'HOME':'AWAY'}</span>
@@ -10752,98 +11304,79 @@
       const shuffled=[...allPundits].sort(()=>Math.random()-0.5).slice(0,3);
       const [p1,p2,p3]=shuffled.map(p=>({...p,quote:pick(p.quotes)}));
 
-      const batVerdict=avgBat>=85?'formidable':avgBat>=80?'solid':avgBat>=75?'decent':'concerning';
-      const bowlVerdict=avgBowl>=85?'world-class':avgBowl>=80?'strong':avgBowl>=75?'workmanlike':'thin';
-      const keeper=WCS.squad.find(p=>p.role==='wicketkeeper');
       const homeCount=WCS.matches.filter(m=>m.opp.home).length;
       const awayCount=WCS.matches.filter(m=>!m.opp.home).length;
+      const firstOpp=WCS.matches[0]?.opp;
+      const playerToWatch=[...WCS.squad].sort((a,b)=>b.rating-a.rating)[0];
+      const dangerTeam=[...WCS.matches].map(m=>m.opp).sort((a,b)=>b.rating-a.rating)[0];
 
       el.innerHTML=`
-        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">Cricket World Cup</div>
-        <div style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px">${cap?.name||'Your captain'} named to lead Your XI into the World Cup</div>
-        <div style="font-size:12px;color:#6060a0;margin-bottom:20px">${vc?.name||'Vice-captain'} as vice-captain · Squad of 15 confirmed · Representing ${myNat.flag} ${myNat.name}</div>
+        <div class="ov-reveal">
+          <div style="margin-bottom:8px">
+            <span style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#0f0f13;background:#f9c846;font-weight:800;padding:2px 7px;border-radius:3px">Breaking News</span>
+          </div>
+          <div style="font-size:24px;font-weight:900;color:#fff;line-height:1.15;margin-bottom:14px">${cap?.name||'Your captain'} named to lead Your XI into the World Cup</div>
+          ${firstOpp?`<div style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#4ade80;background:#081a08;border:1px solid #1a3a1a;border-radius:6px;padding:4px 10px;margin-bottom:20px">First up: ${firstOpp.flag} ${firstOpp.name} · ${firstOpp.home?'Home':'Away'}</div>`:'<div style="margin-bottom:14px"></div>'}
+        </div>
 
-        <div style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 16px;margin-bottom:18px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div class="ov-reveal" style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 10px;margin-bottom:18px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
             <div style="flex:1;text-align:center">
-              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px">Predicted Finish</div>
-              <div style="font-size:36px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px">${ordinal(predPos)}</div>
-              <div style="font-size:12px;color:#8080a0">${predLabel}</div>
+              <div style="font-size:9px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Predicted Finish</div>
+              <div style="font-size:30px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px">${ordinal(predPos)}</div>
+              <div style="font-size:11px;color:#8080a0">${predLabel}</div>
             </div>
             <div style="width:1px;background:#252535;margin:4px 0"></div>
             <div style="flex:1;text-align:center">
-              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px">Odds to Win</div>
-              <div style="font-size:36px;font-weight:900;color:#ffd700;line-height:1;margin-bottom:4px">${myOdds}</div>
-              <div style="font-size:12px;color:#8080a0">to lift the Cup</div>
+              <div style="font-size:9px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Team Rating</div>
+              <div class="ov-count" data-count="${myXIRating}" style="font-size:30px;font-weight:900;color:${ratingColor(myXIRating)};line-height:1;margin-bottom:4px">0</div>
+              <div style="font-size:11px;color:#8080a0">${predPos<=5?'competitive':'building'}</div>
+            </div>
+            <div style="width:1px;background:#252535;margin:4px 0"></div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:9px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Odds to Win</div>
+              <div style="font-size:30px;font-weight:900;color:#ffd700;line-height:1;margin-bottom:4px">${myOdds}</div>
+              <div style="font-size:11px;color:#8080a0">to lift the Cup</div>
             </div>
           </div>
         </div>
 
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Squad Analysis</div>
-        <div style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 16px;margin-bottom:18px">
-          <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:14px">
-            <div style="flex:1;text-align:center">
-              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Batting avg</div>
-              <div style="font-size:28px;font-weight:900;color:#fff;line-height:1">${avgBat}</div>
-              <div style="font-size:11px;color:#8080a0;margin-top:2px">${batVerdict}</div>
-            </div>
-            <div style="width:1px;background:#252535"></div>
-            <div style="flex:1;text-align:center">
-              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Bowling avg</div>
-              <div style="font-size:28px;font-weight:900;color:#fff;line-height:1">${avgBowl}</div>
-              <div style="font-size:11px;color:#8080a0;margin-top:2px">${bowlVerdict}</div>
-            </div>
-            <div style="width:1px;background:#252535"></div>
-            <div style="flex:1;text-align:center">
-              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Squad ovr</div>
-              <div style="font-size:28px;font-weight:900;color:#fff;line-height:1">${myXIRating}</div>
-              <div style="font-size:11px;color:#8080a0;margin-top:2px">${predPos<=5?'competitive':'building'}</div>
-            </div>
-          </div>
-          ${bestBat?`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #1a1a2a">
-            <div style="font-size:10px;color:#6060a0;text-transform:uppercase;letter-spacing:1px;min-width:70px">Key bat</div>
-            <div style="flex:1;font-size:12px;font-weight:700;color:#fff">${bestBat.name} <span style="color:#6060a0;font-weight:400">${bestBat.year}</span></div>
-            <div style="font-size:13px;font-weight:900;color:${ratingColor(bestBat.rating)}">${bestBat.rating}</div>
+        <div class="ov-stagger" style="display:flex;gap:8px;margin-bottom:18px">
+          ${playerToWatch?`<div class="ov-row-reveal" style="flex:1;min-width:0;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 10px;text-align:center">
+            <div style="font-size:9px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Player to Watch</div>
+            <div class="rating-badge ${ratingBadgeClass(playerToWatch.rating)}" style="width:40px;height:40px;font-size:15px;margin:0 auto 8px">${playerToWatch.rating}</div>
+            <div style="font-size:12px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${playerToWatch.name}</div>
+            <div style="margin-top:6px"><span class="rp-badge rpb-${WC_ROLE_CSS[playerToWatch.role]||'bat'}">${_rl(playerToWatch)}</span></div>
           </div>`:''}
-          ${bestBowl?`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #1a1a2a">
-            <div style="font-size:10px;color:#6060a0;text-transform:uppercase;letter-spacing:1px;min-width:70px">Key bowl</div>
-            <div style="flex:1;font-size:12px;font-weight:700;color:#fff">${bestBowl.name} <span style="color:#6060a0;font-weight:400">${bestBowl.year}</span></div>
-            <div style="font-size:13px;font-weight:900;color:${ratingColor(bestBowl.rating)}">${bestBowl.rating}</div>
-          </div>`:''}
-          ${keeper?`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #1a1a2a">
-            <div style="font-size:10px;color:#6060a0;text-transform:uppercase;letter-spacing:1px;min-width:70px">Keeper</div>
-            <div style="flex:1;font-size:12px;font-weight:700;color:#fff">${keeper.name} <span style="color:#6060a0;font-weight:400">${keeper.year}</span></div>
-            <div style="font-size:13px;font-weight:900;color:${ratingColor(keeper.rating)}">${keeper.rating}</div>
+          ${dangerTeam?`<div class="ov-row-reveal" style="flex:1;min-width:0;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 10px;text-align:center">
+            <div style="font-size:9px;color:#8080a0;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Danger Team</div>
+            <div style="width:40px;height:40px;border-radius:10px;background:#15151f;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 8px">${dangerTeam.flag}</div>
+            <div style="font-size:12px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${dangerTeam.name}</div>
+            <div style="margin-top:6px"><span class="rp-badge" style="background:${ratingColor(dangerTeam.rating)}26;color:${ratingColor(dangerTeam.rating)}">${dangerTeam.rating} OVR</span></div>
           </div>`:''}
         </div>
 
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Group Stage Schedule</div>
-        <div style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:10px 14px;margin-bottom:18px">${fixtureRows}</div>
+        <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Group Stage Schedule</div>
+        <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:10px 14px;margin-bottom:18px">${fixtureRows}</div>
 
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">The Appointment</div>
-        <div style="font-size:13px;color:#c0c0d8;line-height:1.7;margin-bottom:18px">${capAnalysis} Your XI face <strong style="color:#fff">${homeCount} home</strong> and <strong style="color:#fff">${awayCount} away</strong> matches in Group A. Top 3 from each group advance to the Super Sixes. The top 4 from there reach the semi-finals.</div>
+        <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">The Appointment</div>
+        <div class="ov-reveal" style="font-size:13px;color:#c0c0d8;line-height:1.7;margin-bottom:18px">${capAnalysis} Your XI face <strong style="color:#fff">${homeCount} home</strong> and <strong style="color:#fff">${awayCount} away</strong> matches in Group A. Top 3 from each group advance to the Super Sixes. The top 4 from there reach the semi-finals.</div>
 
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:10px">Pundit Reaction</div>
+        <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:10px">Pundit Reaction</div>
 
-        <div style="background:#0a0a14;border-left:3px solid ${p1.color};border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px">
-          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${p1.quote}</div>
-          <div style="font-size:10px;color:${p1.color};font-weight:800;margin-top:6px">— ${p1.name}</div>
+        <div class="ov-stagger">
+          ${[p1,p2,p3].map(p=>`<div class="ov-row-reveal" style="background:#0a0a14;border:1px solid #1e1e2e;border-radius:10px;padding:14px 16px;margin-bottom:10px">
+            <div style="font-size:22px;font-weight:900;color:${p.color};line-height:.6;margin-bottom:6px">"</div>
+            <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${p.quote}</div>
+            <div style="font-size:10px;color:${p.color};font-weight:800;margin-top:8px">— ${p.name}</div>
+          </div>`).join('')}
         </div>
 
-        <div style="background:#0a0a14;border-left:3px solid ${p2.color};border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px">
-          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${p2.quote}</div>
-          <div style="font-size:10px;color:${p2.color};font-weight:800;margin-top:6px">— ${p2.name}</div>
-        </div>
-
-        <div style="background:#0a0a14;border-left:3px solid ${p3.color};border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:18px">
-          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${p3.quote}</div>
-          <div style="font-size:10px;color:${p3.color};font-weight:800;margin-top:6px">— ${p3.name}</div>
-        </div>
-
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Betting · World Cup Odds</div>
-        <div style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:10px 14px;margin-bottom:4px">${oddsRows}</div>
+        <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;margin-top:8px">Betting · World Cup Odds</div>
+        <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:10px 14px;margin-bottom:4px">${oddsRows}</div>
         <div style="font-size:9px;color:#3a3a50;margin-bottom:20px;text-align:right">Odds indicative only. Please gamble responsibly.</div>
       `;
+      requestAnimationFrame(()=>wireReveals(el));
     }
 
     // ── WC HUB ───────────────────────────────────────────────────────────────
@@ -10851,35 +11384,59 @@
     function buildWCHub(){
       const el=document.getElementById('wc-hub-content');
       const phase=WCS.phase;
-      const sqAvg=WCS.squad.length?Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length):'—';
       const sortT=tbl=>Object.entries(tbl).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts||(b.w/Math.max(1,b.p))-(a.w/Math.max(1,a.p)));
+      const cap1=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
 
-      const tblHTML=(sorted,myId)=>`<table class="wtc-table" style="margin-bottom:16px"><thead><tr><th style="text-align:center;width:24px">#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>${sorted.map((t,i)=>`<tr class="${t.id===myId?'my-row':''}"><td style="text-align:center;color:#606070;font-size:11px">${i+1}</td><td>${t.flag} ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td class="wtc-pct" style="color:${t.pts>0?'#4ade80':'#c0c0d8'}">${t.pts}</td></tr>`).join('')}</tbody></table>`;
+      // Tournament progress pipeline — always visible, so the hub always answers
+      // "where am I in the tournament" at a glance.
+      const stageDefs=[{id:'group',label:'Group'},{id:'super6',label:'Super Six'},{id:'semi',label:'Semi'},{id:'final',label:'Final'}];
+      const curIdx=stageDefs.findIndex(s=>s.id===phase);
+      const pipelineHTML=`<div class="ov-reveal wch-pipeline">${stageDefs.map((s,i)=>{
+        const cls=i<curIdx?'done':i===curIdx?'active':'';
+        return`<div class="wch-stage ${cls}"><div class="wch-stage-line"></div><div class="wch-stage-dot">${i<curIdx?'✓':i+1}</div><div class="wch-stage-label">${s.label}</div></div>`;
+      }).join('')}</div>`;
 
-      const matchCard=(m,i,lbl)=>{
-        const isDone=m.completed,isCur=!isDone&&i===WCS.matches.findIndex(x=>!x.completed);
-        const res=m.result;
-        const pill=isDone
-          ?`<span class="sc-result-pill ${res==='W'?'pill-w':'pill-l'}">${res==='W'?'WON':'LOST'}</span>`
-          :isCur?`<span class="sc-result-pill pill-upcoming">NEXT</span>`:'';
-        return`<div class="series-card ${isDone?'completed':''} ${isCur?'upcoming':''}" ${isCur?`onclick="startWCMatch(${i})" style="cursor:pointer"`:''}>
-          <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
-            <div style="display:flex;align-items:center;flex:1;min-width:0">
-              <span class="sc-flag">${m.opp.flag}</span>
-              <div>
-                <div class="sc-country">${m.opp.name}</div>
-                <div class="sc-meta">${m.opp.home?'🏠 Home':'✈️ Away'} · ${lbl} · Match ${i+1}</div>
-              </div>
+      const tblHTML=(sorted,myId,qualifyCount)=>`<table class="wtc-table" style="margin-bottom:16px"><thead><tr><th style="text-align:center;width:24px">#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>${sorted.map((t,i)=>`<tr class="ov-row-reveal${t.id===myId?' my-row':''}${i===qualifyCount-1?' wch-qual-line':''}"><td style="text-align:center;color:#606070;font-size:11px">${i+1}</td><td>${t.flag} ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td class="wtc-pct" style="color:${t.pts>0?'#4ade80':'#c0c0d8'}">${t.pts}</td></tr>`).join('')}</tbody></table>`;
+
+      // Hero card for the next/current fixture — the one actionable thing on
+      // the page gets the gold "Floodlight" treatment instead of sitting flat
+      // in a list with everything else.
+      const heroCard=(flag,name,meta,lbl,onclick)=>`<div class="ov-reveal wch-hero" onclick="${onclick}">
+        <div class="wch-hero-tag">▶ Next Up · ${lbl}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="display:flex;align-items:center;min-width:0">
+            <span class="wch-hero-flag">${flag}</span>
+            <div style="min-width:0">
+              <div class="wch-hero-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
+              <div class="wch-hero-meta">${meta}</div>
             </div>
-            ${pill}
           </div>
+          <span class="wch-hero-cta">PLAY →</span>
+        </div>
+      </div>`;
+
+      const histRow=(m)=>{
+        const res=m.result;
+        const margin=m.matchData?.margin?cap1(m.matchData.margin):(res==='W'?'Won':'Lost');
+        return`<div class="ov-row-reveal wch-hist-row">
+          <span class="wch-hist-flag">${m.opp.flag}</span>
+          <div style="flex:1;min-width:0">
+            <div class="wch-hist-name">${res==='W'?'Beat':'Lost to'} ${m.opp.name}</div>
+            <div class="wch-hist-margin">${margin}</div>
+          </div>
+          <span class="sc-result-pill ${res==='W'?'pill-w':'pill-l'}">${res==='W'?'WON':'LOST'}</span>
         </div>`;
       };
 
-      const header=(label,title,sub)=>`
-        <div style="width:100%;margin-bottom:16px;text-align:left">
-          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">${label}</div>
-          <div style="font-size:22px;font-weight:900;color:#fff">${title}</div>
+      // Eyebrow ("World Cup · Group Stage") lives in the static bar above (with the
+      // Save button, so they sit on one row at the same height) — set it here per phase.
+      const eyebrowEl=document.getElementById('wc-hub-eyebrow');
+      const header=(title,wl,sub)=>`
+        <div class="ov-reveal" style="width:100%;margin-bottom:16px;text-align:left">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+            <div style="font-size:22px;font-weight:900;color:#fff">${title}</div>
+            ${wl?`<div style="font-size:13px;font-weight:700;flex-shrink:0">${wl}</div>`:''}
+          </div>
           ${sub?`<div style="font-size:12px;color:#6060a0;margin-top:2px">${sub}</div>`:''}
         </div>`;
 
@@ -10887,51 +11444,64 @@
         const sA=sortT(WCS.groupTable.A),sB=sortT(WCS.groupTable.B);
         const myPos=sA.findIndex(t=>t.id==='myxi')+1;
         const myRec=WCS.groupTable.A['myxi'];
-        const done=WCS.matches.filter(m=>m.completed).length;
+        const doneMatches=WCS.matches.filter(m=>m.completed);
+        const done=doneMatches.length;
         const allDone=WCS.matches.every(m=>m.completed);
-        // Show Group B as zeros until group stage complete
-        const sBDisplay = allDone ? sB : sB.map(t=>({...t,p:0,w:0,l:0,pts:0}));
+        const nextIdx=WCS.matches.findIndex(m=>!m.completed);
+        if(eyebrowEl)eyebrowEl.textContent='World Cup · Group Stage';
         el.innerHTML=`
-          ${header('World Cup · Group Stage',allDone?'Group Stage Complete':done===0?'Match 1 of 6':`Match ${done+1} of 6`,`Group A: ${ordinal(myPos)} of 7 · <span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span>`)}
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Group A <span style="color:#f9c846;font-size:9px">↑ top 3 qualify</span></div>
-          ${tblHTML(sA,'myxi')}
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Group B <span style="color:#f9c846;font-size:9px">↑ top 3 qualify</span></div>
-          ${tblHTML(sBDisplay,'myxi')}
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Your Fixtures</div>
-          ${WCS.matches.map((m,i)=>matchCard(m,i,'Group A')).join('')}
-          ${allDone?`<button class="btn-sim" style="margin-top:16px" onclick="checkGroupQualification()">Group Stage Complete →</button>`:''}
+          ${header(allDone?'Complete':done===0?'Match 1 of 6':`Match ${done+1} of 6`,`<span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span>`)}
+          ${pipelineHTML}
+          ${nextIdx>=0?heroCard(WCS.matches[nextIdx].opp.flag,WCS.matches[nextIdx].opp.name,`${WCS.matches[nextIdx].opp.home?'Home':'Away'} ODI`,'Group A',`startWCMatch(${nextIdx})`):''}
+
+          <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Group A <span style="color:#f9c846;font-size:9px">↑ top 3 qualify</span></div>
+          <div class="ov-stagger">${tblHTML(sA,'myxi',3)}</div>
+
+          <button class="settings-toggle" type="button" aria-expanded="false" onclick="toggleSettings(this)">
+            <span>Group B standings</span><span class="settings-toggle-chevron">›</span>
+          </button>
+          <div class="settings-collapse">
+           <div class="settings-collapse-inner">
+            <div class="ov-stagger">${tblHTML(sB,'myxi',3)}</div>
+           </div>
+          </div>
+
+          ${done>0?`<div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;margin-top:18px;text-align:left">Results So Far</div>
+          <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${doneMatches.map(m=>histRow(m)).join('')}</div>`:''}
+
+          ${allDone?`<button class="btn-sim" style="margin-top:8px" onclick="checkGroupQualification()">Group Stage Complete →</button>`:''}
         `;
       } else if(phase==='super6'){
         const sS=sortT(WCS.superSixTable);
         const myPos=sS.findIndex(t=>t.id==='myxi')+1;
         const myRec=WCS.superSixTable['myxi'];
-        const done=WCS.matches.filter(m=>m.completed).length;
+        const doneMatches=WCS.matches.filter(m=>m.completed);
+        const done=doneMatches.length;
         const allDone=WCS.matches.every(m=>m.completed);
+        const nextIdx=WCS.matches.findIndex(m=>!m.completed);
+        if(eyebrowEl)eyebrowEl.textContent='World Cup · Super Sixes';
         el.innerHTML=`
-          ${header('World Cup · Super Sixes',allDone?'Super Sixes Complete':done===0?'Super Sixes Begin':`Match ${done+1} of 3`,`Position: ${ordinal(myPos)} of 6 · <span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span>`)}
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Super Sixes <span style="color:#f9c846;font-size:9px">↑ top 4 to semis</span></div>
-          ${tblHTML(sS,'myxi')}
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Your Fixtures</div>
-          ${WCS.matches.map((m,i)=>matchCard(m,i,'Super Sixes')).join('')}
-          ${allDone?`<button class="btn-sim" style="margin-top:16px" onclick="checkSuperSixQualification()">Super Sixes Complete →</button>`:''}
+          ${header(allDone?'Complete':done===0?'Begins':`Match ${done+1} of 3`,`<span style="color:#4ade80">${myRec?.w||0}W</span> <span style="color:#f87171">${myRec?.l||0}L</span>`)}
+          ${pipelineHTML}
+          ${nextIdx>=0?heroCard(WCS.matches[nextIdx].opp.flag,WCS.matches[nextIdx].opp.name,`${WCS.matches[nextIdx].opp.home?'Home':'Away'} ODI`,'Super Sixes',`startWCMatch(${nextIdx})`):''}
+
+          <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Super Sixes <span style="color:#f9c846;font-size:9px">↑ top 4 to semis</span></div>
+          <div class="ov-stagger">${tblHTML(sS,'myxi',4)}</div>
+
+          ${done>0?`<div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;margin-top:18px;text-align:left">Results So Far</div>
+          <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${doneMatches.map(m=>histRow(m)).join('')}</div>`:''}
+
+          ${allDone?`<button class="btn-sim" style="margin-top:8px" onclick="checkSuperSixQualification()">Super Sixes Complete →</button>`:''}
         `;
       } else {
+        if(eyebrowEl)eyebrowEl.textContent=`World Cup · ${phase==='semi'?'Semi-Finals':'The Final'}`;
         el.innerHTML=`
-          ${header(`World Cup · ${phase==='semi'?'Semi-Finals':'The Final'}`,phase==='semi'?'Semi-Final':'World Cup Final',`${WCS.myNation?.flag||''} Your XI vs ${WCS.knockoutOpp?.flag||''} ${WCS.knockoutOpp?.name||'TBC'}`)}
-          <div class="series-card upcoming" onclick="startWCKnockout()" style="cursor:pointer">
-            <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
-              <div style="display:flex;align-items:center;flex:1;min-width:0">
-                <span class="sc-flag">${WCS.knockoutOpp?.flag||'🏏'}</span>
-                <div>
-                  <div class="sc-country">${WCS.knockoutOpp?.name||'TBC'}</div>
-                  <div class="sc-meta">${phase==='semi'?'Semi-Final':'World Cup Final'} · ODI</div>
-                </div>
-              </div>
-              <span class="sc-result-pill pill-upcoming">PLAY</span>
-            </div>
-          </div>
+          ${header(phase==='semi'?'Semi-Final':'World Cup Final',null,`${WCS.myNation?.flag||''} Your XI vs ${WCS.knockoutOpp?.flag||''} ${WCS.knockoutOpp?.name||'TBC'}`)}
+          ${pipelineHTML}
+          ${heroCard(WCS.knockoutOpp?.flag||'🏏',WCS.knockoutOpp?.name||'TBC',phase==='semi'?'Semi-Final · ODI':'World Cup Final · ODI',phase==='semi'?'Semi-Final':'The Final','startWCKnockout()')}
         `;
       }
+      requestAnimationFrame(()=>wireReveals(el));
     }
 
     function startWCMatch(matchIdx){
@@ -11290,37 +11860,54 @@
 
     function _afterWCMatchContinue(matchData,opp,result){
       if(WCS.phase==='group'){
+        // Count rounds remaining *including* the one just played, so the AI chunk
+        // simulated this round is sized to empty the pool exactly as your fixtures do.
+        const roundsLeft=WCS.matches.filter(m=>!m.completed).length;
         const match=WCS.matches[WCS.currentMatchIdx];match.completed=true;match.result=result;match.matchData=matchData;
         WCS.groupTable.A['myxi'].p++;WCS.groupTable.A[opp.id].p++;
         if(result==='W'){WCS.groupTable.A['myxi'].w++;WCS.groupTable.A['myxi'].pts+=2;WCS.groupTable.A[opp.id].l++;}
         else{WCS.groupTable.A[opp.id].w++;WCS.groupTable.A[opp.id].pts+=2;WCS.groupTable.A['myxi'].l++;}
+
+        const roundNum=WCS.matches.filter(m=>m.completed).length;
+        const aResults=simulateAIRoundChunk(WCS.pendingAI.A,WCS.groupTable.A,roundsLeft);
+        const bResults=simulateAIRoundChunk(WCS.pendingAI.B,WCS.groupTable.B,roundsLeft);
+        const allDone=WCS.matches.every(m=>m.completed);
+        showWCRoundResults({
+          eyebrow:'World Cup · Group Stage',
+          title:`Round ${roundNum} Results`,
+          myRow:{oppFlag:opp.flag,oppName:opp.name,result,margin:matchData?.margin},
+          sections:[{label:'Group A',results:aResults},{label:'Group B',results:bResults}],
+          onContinue:()=>{ if(allDone) checkGroupQualification(); else {go('s-wc-hub');buildWCHub();} }
+        });
+        return;
       } else if(WCS.phase==='super6'){
+        const roundsLeft=WCS.matches.filter(m=>!m.completed).length;
         const match=WCS.matches[WCS.currentMatchIdx];match.completed=true;match.result=result;match.matchData=matchData;
         WCS.superSixTable['myxi'].p++;WCS.superSixTable[opp.id].p++;
         if(result==='W'){WCS.superSixTable['myxi'].w++;WCS.superSixTable['myxi'].pts+=2;WCS.superSixTable[opp.id].l++;}
         else{WCS.superSixTable[opp.id].w++;WCS.superSixTable[opp.id].pts+=2;WCS.superSixTable['myxi'].l++;}
+
+        const roundNum=WCS.matches.filter(m=>m.completed).length;
+        const aiResults=simulateAIRoundChunk(WCS.pendingAI.super6,WCS.superSixTable,roundsLeft);
+        const allDone=WCS.matches.every(m=>m.completed);
+        showWCRoundResults({
+          eyebrow:'World Cup · Super Sixes',
+          title:`Round ${roundNum} Results`,
+          myRow:{oppFlag:opp.flag,oppName:opp.name,result,margin:matchData?.margin},
+          sections:[{label:'Super Sixes',results:aiResults}],
+          onContinue:()=>{ if(allDone) checkSuperSixQualification(); else {go('s-wc-hub');buildWCHub();} }
+        });
+        return;
       } else if(WCS.phase==='semi'){
         WCS.semiResult=result;
         if(result==='W'){
           WCS.phase='final';
-          const finCands=Object.entries(WCS.superSixTable).map(([id,t])=>({id,...t})).filter(t=>t.id!=='myxi'&&t.id!==opp.id).sort((a,b)=>WCS.cycleRatings[b.id]-WCS.cycleRatings[a.id]);
-          const finNation=WC_NATIONS.find(n=>n.id===finCands[0]?.id)||WC_NATIONS[0];
-          WCS.knockoutOpp={...finNation,rating:WCS.cycleRatings[finNation.id],home:false};
-          showWCStageAdvance({
-            stage:'The Final',eyebrow:'World Cup · Semi-Final Won',
-            headline:'You\'re Through To The Final!',
-            sub:`Beat ${opp.flag} ${opp.name} to book a place in the World Cup Final.`,
-            opponent:WCS.knockoutOpp,
-            btnLabel:'Play Final →',
-            onPlay:()=>startWCKnockout()
-          });
+          const finalTeam=WCS.otherSemi.winner;
+          WCS.knockoutOpp={...finalTeam,home:false};
+          showWCFinalMatchup(opp,WCS.otherSemi,WCS.knockoutOpp,()=>startWCKnockout());
         } else{WCS.finalResult='L';buildWCEndScreen();go('s-wc-end');}
         return;
       } else if(WCS.phase==='final'){WCS.finalResult=result;buildWCEndScreen();go('s-wc-end');return;}
-
-      const allDone=WCS.matches.every(m=>m.completed);
-      if(allDone){if(WCS.phase==='group')checkGroupQualification();else if(WCS.phase==='super6')checkSuperSixQualification();}
-      else{go('s-wc-hub');buildWCHub();}
     }
 
     // ── WC RANDOM EVENTS (off-the-pitch news, mirrors Test mode) ────────────
@@ -11458,33 +12045,153 @@
       if(cont)cont();
     }
 
-    function showWCStageAdvance(opts){
-      const el=document.getElementById('wc-stage-advance-content');
-      const opp=opts.opponent;
-      el.innerHTML=`
-        <div style="text-align:center;margin-bottom:24px;margin-top:20px">
-          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:8px">${opts.eyebrow}</div>
-          <div style="font-size:28px;font-weight:900;color:#f9c846;line-height:1.15">${opts.headline}</div>
-          <div style="font-size:13px;color:#9090a8;margin-top:8px">${opts.sub}</div>
+    // Shared interstitial screen for everything between matches: round-by-round
+    // results, group-stage qualifiers, the semi-final bracket, and the final matchup.
+    // Reuses one screen/container so the "feels alive" reveal system only needs wiring once.
+    function wcRoundResultRow(r){
+      const aWon=r.winner.id===r.a.id;
+      return`<div class="ov-row-reveal wch-hist-row">
+        <span class="wch-hist-flag">${r.a.flag}</span>
+        <div style="flex:1;min-width:0;text-align:center">
+          <div class="wch-hist-name" style="color:${aWon?'#fff':'#6a6a8a'};font-weight:${aWon?'800':'700'}">${r.a.name}</div>
         </div>
-        ${opp?`<div style="width:100%;box-sizing:border-box;background:#111118;border:1px solid #1a1a24;border-radius:14px;padding:20px;text-align:center;margin-bottom:20px">
-          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:10px">${opts.stage} · Your Opponent</div>
-          <div style="font-size:38px;margin-bottom:6px">${opp.flag}</div>
-          <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">${opp.name}</div>
-          <div class="rating-badge ${ratingBadgeClass(opp.rating)}" style="width:44px;height:44px;font-size:18px;margin:6px auto 0">${opp.rating}</div>
-          <div style="font-size:11px;color:#6060a0;margin-top:6px">Squad Rating · Neutral Venue</div>
-        </div>`:''}
-        <button class="btn-sim" id="wc-stage-advance-btn">${opts.btnLabel}</button>
+        <div style="font-size:9px;color:#4a4a60;font-weight:800;padding:0 6px;flex-shrink:0">vs</div>
+        <div style="flex:1;min-width:0;text-align:center">
+          <div class="wch-hist-name" style="color:${!aWon?'#fff':'#6a6a8a'};font-weight:${!aWon?'800':'700'}">${r.b.name}</div>
+        </div>
+        <span class="wch-hist-flag">${r.b.flag}</span>
+      </div>`;
+    }
+
+    function showWCRoundResults(cfg){
+      const el=document.getElementById('wc-stage-advance-content');
+      const myWon=cfg.myRow.result==='W';
+      el.innerHTML=`
+        <div class="ov-reveal" style="text-align:left;width:100%;margin-bottom:16px">
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">${cfg.eyebrow}</div>
+          <div style="font-size:24px;font-weight:900;color:#fff">${cfg.title}</div>
+        </div>
+        <div class="ov-reveal wch-hero ${myWon?'wch-hero-win':'wch-hero-loss'}" style="cursor:default">
+          <div class="wch-hero-tag">${myWon?'✓ Your Result':'✕ Your Result'}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="display:flex;align-items:center;min-width:0">
+              <span class="wch-hero-flag">${cfg.myRow.oppFlag}</span>
+              <div style="min-width:0">
+                <div class="wch-hero-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">vs ${cfg.myRow.oppName}</div>
+                <div class="wch-hero-meta">${cfg.myRow.margin?cap1(cfg.myRow.margin):''}</div>
+              </div>
+            </div>
+            <span class="sc-result-pill ${myWon?'pill-w':'pill-l'}">${myWon?'WON':'LOST'}</span>
+          </div>
+        </div>
+        ${cfg.sections.filter(s=>s.results.length).map(sec=>`
+          <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">${sec.label}</div>
+          <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${sec.results.map(wcRoundResultRow).join('')}</div>
+        `).join('')}
+        <button class="btn-sim" id="wc-stage-advance-btn">Continue →</button>
       `;
-      document.getElementById('wc-stage-advance-btn').onclick=opts.onPlay;
+      document.getElementById('wc-stage-advance-btn').onclick=cfg.onContinue;
       go('s-wc-stage-advance');
+      requestAnimationFrame(()=>wireReveals(el));
+    }
+
+    function showWCGroupsComplete(topA,topB,onContinue){
+      const el=document.getElementById('wc-stage-advance-content');
+      const qualRow=t=>`<div class="ov-row-reveal wch-hist-row">
+        <span class="wch-hist-flag">${t.flag}</span>
+        <div style="flex:1;min-width:0">
+          <div class="wch-hist-name" style="${t.id==='myxi'?'color:#f9c846':''}">${t.name}</div>
+          <div class="wch-hist-margin">${t.w}W ${t.l}L · ${t.pts} pts</div>
+        </div>
+      </div>`;
+      el.innerHTML=`
+        <div class="ov-reveal" style="text-align:left;width:100%;margin-bottom:16px">
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">World Cup · Group Stage Complete</div>
+          <div style="font-size:24px;font-weight:900;color:#fff">Through To The Super Sixes</div>
+        </div>
+        <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Group A Qualifiers</div>
+        <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${topA.map(qualRow).join('')}</div>
+        <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Group B Qualifiers</div>
+        <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${topB.map(qualRow).join('')}</div>
+        <button class="btn-sim" id="wc-stage-advance-btn">Continue to Super Sixes →</button>
+      `;
+      document.getElementById('wc-stage-advance-btn').onclick=onContinue;
+      go('s-wc-stage-advance');
+      requestAnimationFrame(()=>wireReveals(el));
+    }
+
+    function showWCSemiBracket(semiOpp,otherA,otherB,onPlay){
+      const el=document.getElementById('wc-stage-advance-content');
+      const pairCard=(x,y,mine)=>`<div class="ov-reveal wch-hero" style="cursor:default">
+        <div class="wch-hero-tag">${mine?'▶ Your Semi-Final':'Semi-Final'}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:14px">
+          <div style="flex:1;text-align:center;min-width:0"><div style="font-size:26px">${x.flag}</div><div class="wch-hero-name" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.name}</div></div>
+          <div style="font-size:11px;color:#6a6a8a;font-weight:800;flex-shrink:0">VS</div>
+          <div style="flex:1;text-align:center;min-width:0"><div style="font-size:26px">${y.flag}</div><div class="wch-hero-name" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${y.name}</div></div>
+        </div>
+      </div>`;
+      el.innerHTML=`
+        <div class="ov-reveal" style="text-align:left;width:100%;margin-bottom:16px">
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">World Cup · Super Sixes Complete</div>
+          <div style="font-size:24px;font-weight:900;color:#fff">The Semi-Finals</div>
+        </div>
+        ${pairCard({flag:WCS.myNation.flag,name:'Your XI'},semiOpp,true)}
+        ${pairCard(otherA,otherB,false)}
+        <button class="btn-sim" id="wc-stage-advance-btn">Play Semi-Final →</button>
+      `;
+      document.getElementById('wc-stage-advance-btn').onclick=onPlay;
+      go('s-wc-stage-advance');
+      requestAnimationFrame(()=>wireReveals(el));
+    }
+
+    function showWCFinalMatchup(mySemiOpp,otherSemi,finalOpp,onPlay){
+      const el=document.getElementById('wc-stage-advance-content');
+      const otherLoser=otherSemi.winner.id===otherSemi.a.id?otherSemi.b:otherSemi.a;
+      el.innerHTML=`
+        <div class="ov-reveal" style="text-align:left;width:100%;margin-bottom:16px">
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">World Cup · Semi-Finals Complete</div>
+          <div style="font-size:24px;font-weight:900;color:#fff">You're Through To The Final!</div>
+        </div>
+        <div class="ov-stagger">
+          <div class="ov-row-reveal wch-hist-row" style="background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:10px 14px;margin-bottom:10px">
+            <span class="wch-hist-flag">${mySemiOpp.flag}</span>
+            <div style="flex:1;min-width:0">
+              <div class="wch-hist-name">Beat ${mySemiOpp.name}</div>
+              <div class="wch-hist-margin">Semi-Final 1</div>
+            </div>
+            <span class="sc-result-pill pill-w">WON</span>
+          </div>
+          <div class="ov-row-reveal wch-hist-row" style="background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:10px 14px;margin-bottom:18px">
+            <span class="wch-hist-flag">${otherSemi.winner.flag}</span>
+            <div style="flex:1;min-width:0">
+              <div class="wch-hist-name">${otherSemi.winner.name} beat ${otherLoser.name}</div>
+              <div class="wch-hist-margin">Semi-Final 2</div>
+            </div>
+            <span class="sc-result-pill pill-w">FT</span>
+          </div>
+        </div>
+        <div class="ov-reveal wch-hero" style="cursor:default">
+          <div class="wch-hero-tag">🏆 The Final</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:14px">
+            <div style="flex:1;text-align:center;min-width:0"><div style="font-size:30px">${WCS.myNation.flag}</div><div class="wch-hero-name" style="font-size:13px">Your XI</div></div>
+            <div style="font-size:12px;color:#6a6a8a;font-weight:800;flex-shrink:0">VS</div>
+            <div style="flex:1;text-align:center;min-width:0"><div style="font-size:30px">${finalOpp.flag}</div><div class="wch-hero-name" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${finalOpp.name}</div></div>
+          </div>
+        </div>
+        <button class="btn-sim" id="wc-stage-advance-btn">Play Final →</button>
+      `;
+      document.getElementById('wc-stage-advance-btn').onclick=onPlay;
+      go('s-wc-stage-advance');
+      requestAnimationFrame(()=>wireReveals(el));
     }
 
     function checkGroupQualification(){
-      const table=Object.entries(WCS.groupTable.A).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts||(b.w/Math.max(1,b.p))-(a.w/Math.max(1,a.p)));
-      const myPos=table.findIndex(t=>t.id==='myxi')+1;
-      if(myPos<=3){enterSuperSixes();}
-      else{WCS.qualified=false;WCS.finalResult='eliminated';buildWCEndScreen();go('s-wc-end');}
+      const sortT=tbl=>Object.entries(tbl).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts||(b.w/Math.max(1,b.p))-(a.w/Math.max(1,a.p)));
+      const tableA=sortT(WCS.groupTable.A),tableB=sortT(WCS.groupTable.B);
+      const myPos=tableA.findIndex(t=>t.id==='myxi')+1;
+      if(myPos<=3){
+        showWCGroupsComplete(tableA.slice(0,3),tableB.slice(0,3),()=>enterSuperSixes());
+      } else{WCS.qualified=false;WCS.finalResult='eliminated';buildWCEndScreen();go('s-wc-end');}
     }
 
     function enterSuperSixes(){
@@ -11507,16 +12214,9 @@
       };
       topA.forEach(t=>{const c=carryFor(t.id,topA);WCS.superSixTable[t.id]={...WCS.groupTable.A[t.id],pts:c,p:2,w:c/2,l:2-c/2,carry:c};});
       topB.forEach(t=>{const c=carryFor(t.id,topB);WCS.superSixTable[t.id]={...WCS.groupTable.B[t.id],pts:c,p:2,w:c/2,l:2-c/2,carry:c};});
-      // Pre-simulate non-player cross-group Super Six matches (Group A qualifiers vs Group B qualifiers)
-      topA.filter(t=>t.id!=='myxi').forEach(a=>{
-        topB.forEach(b=>{
-          const rA=WCS.cycleRatings[a.id]||70,rB=WCS.cycleRatings[b.id]||70;
-          const aWins=Math.random()<Math.pow(rA,2)/(Math.pow(rA,2)+Math.pow(rB,2));
-          const[winner,loser]=aWins?[a,b]:[b,a];
-          WCS.superSixTable[winner.id].p++;WCS.superSixTable[winner.id].w++;WCS.superSixTable[winner.id].pts+=2;
-          WCS.superSixTable[loser.id].p++;WCS.superSixTable[loser.id].l++;
-        });
-      });
+      // Non-player cross-group Super Six matches (Group A qualifiers vs Group B qualifiers)
+      // are simulated round-by-round alongside your own 3 matches, not all at once.
+      WCS.pendingAI.super6=bipartiteRounds(topA.filter(t=>t.id!=='myxi'),topB);
       // Player plays 3 new matches vs the 3 Group B qualifiers
       WCS.matches=topB.map(t=>{const nation=WC_NATIONS.find(n=>n.id===t.id)||WC_NATIONS[0];return{opp:{...nation,rating:WCS.cycleRatings[nation.id],home:Math.random()<0.45},completed:false,result:null,matchData:null};});
       WCS.currentMatchIdx=-1;
@@ -11529,17 +12229,23 @@
       if(myPos<=4){
         WCS.qualified=true;WCS.phase='semi';
         // 1v4, 2v3 format — Your XI plays the opposite bracket team
-        const semiOpp=table[4-myPos];
-        const semiNation=WC_NATIONS.find(n=>n.id===semiOpp?.id)||WC_NATIONS[0];
+        const top4=table.slice(0,4);
+        const myIdx=top4.findIndex(t=>t.id==='myxi');
+        const semiOppRow=top4[3-myIdx];
+        const semiNation=WC_NATIONS.find(n=>n.id===semiOppRow?.id)||WC_NATIONS[0];
         WCS.knockoutOpp={...semiNation,rating:WCS.cycleRatings[semiNation.id],home:false};
-        showWCStageAdvance({
-          stage:'Semi-Final',eyebrow:'World Cup · Super Sixes Complete',
-          headline:'Semi-Final Made!',
-          sub:`Finished ${ordinal(myPos)} in the Super Sixes — you're through to the knockouts.`,
-          opponent:WCS.knockoutOpp,
-          btnLabel:'Play Semi-Final →',
-          onPlay:()=>startWCKnockout()
-        });
+
+        // The other semi-final plays out at the same time as yours — simulate it now
+        // so the result is ready to reveal once you've played your own.
+        const others=top4.filter((t,i)=>i!==myIdx&&t.id!==semiOppRow.id);
+        const oNatA=WC_NATIONS.find(n=>n.id===others[0]?.id)||WC_NATIONS[0];
+        const oNatB=WC_NATIONS.find(n=>n.id===others[1]?.id)||WC_NATIONS[1];
+        const rA=WCS.cycleRatings[oNatA.id]||70,rB=WCS.cycleRatings[oNatB.id]||70;
+        const aWins=Math.random()<Math.pow(rA,2)/(Math.pow(rA,2)+Math.pow(rB,2));
+        const teamA={...oNatA,rating:rA},teamB={...oNatB,rating:rB};
+        WCS.otherSemi={a:teamA,b:teamB,winner:aWins?teamA:teamB};
+
+        showWCSemiBracket(semiOppRow,teamA,teamB,()=>startWCKnockout());
       }else{WCS.qualified=false;WCS.finalResult='eliminated';buildWCEndScreen();go('s-wc-end');}
     }
 
@@ -11615,6 +12321,7 @@
 
     function buildWCEndScreen(){
       const el=document.getElementById('wc-end-content');if(!el)return;
+      saveWCRun().catch(e=>console.warn('saveWCRun failed:',e));
       const won=WCS.finalResult==='W';
       const isElim=WCS.finalResult==='eliminated';
       const isFinalFail=WCS.finalResult==='L'&&WCS.phase==='final';
@@ -11630,7 +12337,7 @@
 
       // Performance verdict vs prediction
       const myXIRating=Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length);
-      const allTeams=[{id:'myxi',rating:myXIRating},...WC_NATIONS.map(n=>({id:n.id,rating:WCS.cycleRatings[n.id]||n.rMin}))].sort((a,b)=>b.rating-a.rating);
+      const allTeams=[{id:'myxi',rating:myXIRating},...WC_NATIONS.filter(n=>n.id!==WCS.myNation?.id).map(n=>({id:n.id,rating:WCS.cycleRatings[n.id]||n.rMin}))].sort((a,b)=>b.rating-a.rating);
       const predPos=allTeams.findIndex(t=>t.id==='myxi')+1;
       // Predicted tier: 1=Favourites (expect to win), 2=Strong Contenders (expect Semi-Final),
       // 3=Outsiders (expect Super Sixes), 4=No Hope (expect group knockout)
@@ -12249,7 +12956,7 @@
     <div style="width:100%;margin-bottom:24px">
       <div class="wci-panel active" data-wci-panel="squad">
         <div class="wci-card">
-          <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Spin a <span style="color:#f9c846;font-weight:800">squad of 15</span> World Cup players from any nation. Each spin picks a nation, year, and player. The nation with <span style="color:#f9c846;font-weight:800">the most players</span> in your squad is the team you represent. Pick an <span style="color:#f9c846;font-weight:800">XI for every match</span>.</div>
+          <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Spin a <span style="color:#f9c846;font-weight:800">squad of 16</span> World Cup players from any nation. Each spin picks a nation, year, and player. The nation with <span style="color:#f9c846;font-weight:800">the most players</span> in your squad is the team you represent. Pick an <span style="color:#f9c846;font-weight:800">XI for every match</span>.</div>
         </div>
       </div>
       <div class="wci-panel" data-wci-panel="format">
@@ -12286,20 +12993,14 @@
   <!-- WC DRAFT SPIN -->
   <div id="s-wc-spin" class="screen">
     <div class="pick-header">
-      <span class="pick-num" id="wc-pick-num">Pick 1 of 15</span>
-      <div class="pick-slots" id="wc-pick-slots"></div>
+      <span class="pick-num" id="wc-pick-num">Pick 1 of 16</span>
     </div>
-    <div class="pbar"><div class="pfill" id="wc-pbar"></div></div>
-    <div style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:10px 14px;margin-bottom:12px;text-align:left">
-      <div class="test-slot-label" id="wc-slot-label">Slot 1 — Opener</div>
-      <div style="font-size:13px;color:#7070a0" id="wc-slot-desc">Spinning a nation and year for an opener…</div>
-    </div>
-    <div class="drum-card">
+    <div class="pbar" style="margin-bottom:14px"><div class="pfill" id="wc-pbar"></div></div>
+    <div class="drum-card" id="wc-drum-card">
       <div class="drum-glow"></div>
-      <div class="drum-inner">
-        <div class="drum-county" id="wcd-era" style="font-size:20px;color:#606070">—</div>
-        <div class="drum-divider"></div>
-        <div class="drum-year" id="wcd-year" style="color:#606070">—</div>
+      <div class="wc-drum-row">
+        <div class="wc-drum-box"><div class="wc-drum-text" id="wcd-era" style="color:#606070">—</div></div>
+        <div class="wc-drum-box"><div class="wc-drum-text" id="wcd-year" style="font-size:26px;color:#606070">—</div></div>
       </div>
       <div class="drum-group" id="wcd-label" style="color:#606070">Press Spin</div>
     </div>
@@ -12310,14 +13011,17 @@
 
   <!-- WC XI PICKER -->
   <div id="s-wc-squad" class="screen">
-    <div style="text-align:left;width:100%;margin-bottom:16px">
+    <div class="ov-reveal" style="text-align:left;width:100%;margin-bottom:14px">
       <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:4px">Match Squad</div>
       <div style="font-size:22px;font-weight:900;color:#fff" id="wc-sq-title">England XI</div>
       <div style="font-size:12px;color:#6060a0;margin-top:2px" id="wc-sq-subtitle">Select your XI</div>
     </div>
-    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:center">Your Playing XI</div>
+    <div class="ov-reveal" style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:8px">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800">Your Playing XI</div>
+      <button onclick="wcResetToBestXI()" style="font-size:10px;font-weight:800;color:#f9c846;background:none;border:none;cursor:pointer;padding:0">↻ Reset to Best XI</button>
+    </div>
     <div id="wc-xi-list" style="width:100%;margin-bottom:14px"></div>
-    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:center">Bench</div>
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left;width:100%">Bench</div>
     <div id="wc-bench-list" style="width:100%;margin-bottom:16px"></div>
     <div id="wc-xi-confirm-hint" style="display:none;text-align:center;color:#f87171;font-size:12px;font-weight:700;margin-bottom:8px">Select all 11 players first</div>
     <button class="btn-sim" onclick="confirmWCXI()">Confirm XI &amp; Play →</button>
@@ -12325,12 +13029,12 @@
 
   <!-- WC CAPTAIN PICKER -->
   <div id="s-wc-captain" class="screen">
-    <div style="text-align:left;width:100%;margin-bottom:20px">
+    <div class="ov-reveal" style="text-align:left;width:100%;margin-bottom:20px">
       <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Leadership</div>
-      <div style="font-size:26px;font-weight:900;color:#fff">Choose Your Captain</div>
+      <div style="font-size:26px;font-weight:900;color:#fff" id="wc-captain-heading">Choose Your Captain</div>
     </div>
     <div id="wc-captain-player-list" style="width:100%;margin-bottom:16px"></div>
-    <div id="wc-captain-hint" style="font-size:12px;color:#6060a0;text-align:center;margin-bottom:12px">Select your captain</div>
+    <div id="wc-captain-hint" class="ov-reveal" style="font-size:13px;font-weight:700;color:#8080a0;text-align:center;margin-bottom:12px;transition:color .2s">Select your captain</div>
     <button class="btn-sim" id="wc-captain-confirm-btn" style="display:none" onclick="confirmWCCaptains()">Confirm &amp; Continue →</button>
   </div>
 
@@ -12343,9 +13047,10 @@
   <!-- WC TOURNAMENT HUB -->
   <div id="s-wc-hub" class="screen">
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:4px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8">🏆 World Cup</div>
-      <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
+      <div id="wc-hub-eyebrow" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8">World Cup</div>
+      <button class="btn-auth-small" id="wc-save-btn" onclick="saveWCGame()">💾 Save</button>
     </div>
+    <div id="wc-save-nudge" style="display:none;text-align:center;color:#8080a0;font-size:11px;margin-bottom:8px">Sign in to save your game and continue later</div>
     <div id="wc-hub-content" style="width:100%;text-align:left"></div>
   </div>
 
@@ -12398,7 +13103,7 @@
 
   <!-- WC STAGE ADVANCE (Super Sixes / Semi / Final announcement) -->
   <div id="s-wc-stage-advance" class="screen">
-    <div id="wc-stage-advance-content" style="width:100%"></div>
+    <div id="wc-stage-advance-content" style="width:100%;text-align:left"></div>
   </div>
 
   <!-- WC RANDOM EVENT SCREEN -->
