@@ -3648,9 +3648,20 @@
     #s-home .setting-panel:nth-child(3) { animation-delay: 290ms; }
     #s-home .setting-panel:nth-child(4) { animation-delay: 330ms; }
 
+    /* Partners page — ad-format mockup cards feel tappable, like real in-game UI */
+    .partner-card {
+      transition: transform .18s var(--ease-out-strong, ease), border-color .18s;
+      cursor: pointer;
+    }
+    .partner-card:hover, .partner-card:active {
+      transform: translateY(-2px);
+      border-color: #33334a;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .ov-reveal, .ov-row-reveal, .ov-reveal .perf-verdict { transition: opacity .25s ease !important; transform: none !important; }
       .ov-header .ov-icon, .mvp-shine::after, .chip-boost, .rating-boost { animation: none !important; }
+      .partner-card { transition: none !important; }
       .bar-fill { transition: none !important; }
       #s-home .home-badge, #s-home .auth-bar, #s-home .home-sub, #s-home #team-name-input,
       #s-home .home-stats, #s-home .home-hero, #s-home .btn-start, #s-home .mode-btn, #s-home .setting-panel {
@@ -6201,7 +6212,7 @@
         <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Enjoying 19-0?</div>
         <div style="font-size:13px;color:#8080a0;line-height:1.7;max-width:300px;margin:0 auto">If you're having fun, consider supporting the game — keeps it free and evolving.</div>
       </div>
-      <a href="https://buymeacoffee.com/19_0" target="_blank" rel="noopener" onclick="closeCoffeeModal()" style="display:block;width:100%;box-sizing:border-box;background:#FFDD00;color:#000000;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;margin-bottom:10px;font-family:system-ui,-apple-system,sans-serif;text-align:center;text-decoration:none;letter-spacing:0.3px">☕ Buy me a coffee</a>
+      <a href="https://buymeacoffee.com/19_0" target="_blank" rel="noopener" onclick="pingEvent('Coffee_Click',{source:'popup'});closeCoffeeModal()" style="display:block;width:100%;box-sizing:border-box;background:#FFDD00;color:#000000;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;margin-bottom:10px;font-family:system-ui,-apple-system,sans-serif;text-align:center;text-decoration:none;letter-spacing:0.3px">☕ Buy me a coffee</a>
       <button onclick="closeCoffeeModal()" style="width:100%;background:transparent;color:#606080;border:1px solid #252535;padding:13px;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif">Maybe next time</button>
     </div>
   </div>
@@ -6263,16 +6274,25 @@
         if (wcDevBtn) wcDevBtn.style.display = '';
       }
 
+      // Deep link straight to the Partners page — e.g. https://19-0.app/?partners=1
+      // (or /#partners) — so a link handed to a sponsor skips the home screen entirely.
+      if (params.get('partners') === '1' || window.location.hash === '#partners') {
+        go('s-partners');
+        requestAnimationFrame(() => wireReveals(document.getElementById('s-partners')));
+        loadPartnerMetrics();
+      }
+
       var home = document.getElementById('s-home');
       if (home) {
         var footer = document.createElement('div');
         footer.className = 'site-footer';
         footer.innerHTML =
           '<a href="https://x.com/19_0app" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;background:#111118;border:1px solid #252535;border-radius:10px;padding:11px;text-decoration:none;color:#c0c0d8;font-size:13px;font-weight:700;width:100%;box-sizing:border-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.741l7.73-8.835L1.254 2.25H8.08l4.259 5.622 5.905-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> Follow @19_0app on X</a>' +
-          '<div style="display:flex;gap:8px;margin-bottom:16px">' +
-            '<a href="https://www.buymeacoffee.com/19_0" target="_blank" rel="noopener" style="flex:1;display:block;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:800;text-decoration:none;">☕ Enjoying 19-0?</a>' +
+          '<div style="display:flex;gap:8px;margin-bottom:8px">' +
+            '<a href="https://www.buymeacoffee.com/19_0" target="_blank" rel="noopener" onclick="pingEvent(\'Coffee_Click\',{source:\'footer\'})" style="flex:1;display:block;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:800;text-decoration:none;">☕ Enjoying 19-0?</a>' +
             '<a href="mailto:george.19-0@outlook.com" style="flex:1;display:block;background:#16161f;border:1px solid #252535;color:#c0c0d8;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Contact Us</a>' +
           '</div>' +
+          '<button onclick="pingEvent(\'Partner_Click\',{source:\'footer\'});go(\'s-partners\');requestAnimationFrame(()=>wireReveals(document.getElementById(\'s-partners\')));loadPartnerMetrics()" style="width:100%;display:block;background:#16161f;border:1px solid #2a2a3a;color:#f9c846;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:16px;cursor:pointer;font-family:inherit">🤝 Advertise on 19-0 — Partner With Us</button>' +
           '<p>19-0 is an unofficial fan project, not affiliated with or endorsed by the ECB, Vitality T20 Blast, any county cricket club, or any international cricket board. Player names, country names, team names, pundit quotes, and match simulations are used for entertainment purposes only and do not represent real individuals or organisations. T20 Blast is a registered trademark of the England and Wales Cricket Board. The Ashes is used as a descriptive term only.</p>' +
           '<p style="margin-top:8px">&copy; 2026 19-0 &nbsp;·&nbsp; <a onclick="openPrivacy()">Privacy policy</a> &nbsp;·&nbsp; <a onclick="showCookieBanner()">Cookie settings</a></p>';
         home.appendChild(footer);
@@ -6815,6 +6835,81 @@
       } catch(e) {
         console.warn('Could not save run:', e);
       }
+    }
+
+    // ── PARTNERS PAGE — MANUAL MONTHLY METRICS ──────────────────────────────────
+    // No server-side spin tracking exists (spins only ever fired one-off Google
+    // Analytics events, never written to Supabase), and every number here is only
+    // ever recorded for players who accept the cookie banner in the first place —
+    // so rather than half-real/half-placeholder figures, this whole snapshot is a
+    // manual "last 30 days" update. Edit these six numbers by hand once a month.
+    const PARTNER_STATS = {
+      activePlayers: 30000,
+      spins: 975000,
+      matches: 675000,
+      testDrafts: 29000,
+      blastDrafts: 26000,
+      users: 1200,
+    };
+
+    function fmtStatCount(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return String(n);
+    }
+
+    function loadPartnerMetrics() {
+      const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      setStat('pstat-active', fmtStatCount(PARTNER_STATS.activePlayers));
+      setStat('pstat-spins', fmtStatCount(PARTNER_STATS.spins));
+      setStat('pstat-matches', fmtStatCount(PARTNER_STATS.matches));
+      setStat('pstat-test-drafts', fmtStatCount(PARTNER_STATS.testDrafts));
+      setStat('pstat-blast-drafts', fmtStatCount(PARTNER_STATS.blastDrafts));
+      setStat('pstat-users', fmtStatCount(PARTNER_STATS.users));
+    }
+
+    // ── PARTNERS PAGE — INTERACTIVE MOCKUPS ─────────────────────────────────────
+    // Small self-contained demos so the ad-format examples behave like the real
+    // in-game placements (dismiss/replay a pop-up, spin for a sponsor reveal)
+    // instead of sitting there as static, greyed-out boxes.
+    function partnerDismissPopup() {
+      const card = document.getElementById('partner-popup-card');
+      const replay = document.getElementById('partner-popup-replay');
+      if (!card) return;
+      card.style.opacity = '0';
+      card.style.transform = 'scale(.96)';
+      setTimeout(() => { card.style.display = 'none'; if (replay) replay.style.display = 'block'; }, 220);
+    }
+
+    function partnerReplayPopup() {
+      const card = document.getElementById('partner-popup-card');
+      const replay = document.getElementById('partner-popup-replay');
+      if (!card) return;
+      if (replay) replay.style.display = 'none';
+      card.style.display = '';
+      requestAnimationFrame(() => { card.style.opacity = '1'; card.style.transform = 'scale(1)'; });
+    }
+
+    const PARTNER_SPIN_NAMES = ['Virat Kohli', 'Ben Stokes', 'Pat Cummins', 'Babar Azam'];
+    let _partnerSpinning = false;
+    function partnerSpinDemo() {
+      if (_partnerSpinning) return;
+      _partnerSpinning = true;
+      const el = document.getElementById('partner-spin-text');
+      const tag = document.getElementById('partner-spin-tag');
+      if (!el) { _partnerSpinning = false; return; }
+      if (tag) tag.style.opacity = '0';
+      let ticks = 0;
+      const spin = setInterval(() => {
+        el.textContent = PARTNER_SPIN_NAMES[Math.floor(Math.random() * PARTNER_SPIN_NAMES.length)];
+        ticks++;
+        if (ticks > 10) {
+          clearInterval(spin);
+          el.textContent = 'YOUR BRAND';
+          if (tag) tag.style.opacity = '1';
+          _partnerSpinning = false;
+        }
+      }, 90);
     }
 
     // ── STATS SCREEN ──────────────────────────────────────────────────────────
@@ -13494,6 +13589,123 @@
     </div>
     <div id="stats-loading" style="text-align:center;color:#8080a0;font-size:13px;padding:40px 0">Loading stats…</div>
     <div id="stats-content" style="width:100%;display:none"></div>
+  </div>
+
+  <!-- PARTNERS / ADVERTISING PITCH -->
+  <div id="s-partners" class="screen">
+    <div class="ov-reveal" style="width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="text-align:left;min-width:0;flex:1">
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">Advertise</div>
+        <div style="font-size:24px;font-weight:900;color:#fff">Partner With 19-0</div>
+      </div>
+      <button class="btn-auth-small" onclick="go('s-home')">← Home</button>
+    </div>
+
+    <div class="ov-reveal" style="width:100%;text-align:left;margin-bottom:24px">
+      <p style="font-size:14px;color:#c0c0d8;line-height:1.6;margin:0">19-0 is a mobile-first cricket draft and simulation game built by one fan, for cricket fans. Every single player on 19-0 is here because they love cricket, and they stick around for full T20 Blasts and Test cycles. We can put your brand in front of that audience.</p>
+    </div>
+
+    <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:10px;text-align:left">Last 30 Days</div>
+    <div class="ov-stagger" id="partner-stats-grid" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:26px">
+      <div class="ov-row-reveal" style="background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:12px 6px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#fff" id="pstat-active">—</div>
+        <div style="font-size:9px;color:#787890;letter-spacing:1px;text-transform:uppercase;margin-top:3px">Active Players</div>
+      </div>
+      <div class="ov-row-reveal" style="background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:12px 6px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#fff" id="pstat-spins">—</div>
+        <div style="font-size:9px;color:#787890;letter-spacing:1px;text-transform:uppercase;margin-top:3px">Total Spins</div>
+      </div>
+      <div class="ov-row-reveal" style="background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:12px 6px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#fff" id="pstat-matches">—</div>
+        <div style="font-size:9px;color:#787890;letter-spacing:1px;text-transform:uppercase;margin-top:3px">Matches Simulated</div>
+      </div>
+      <div class="ov-row-reveal" style="background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:12px 6px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#fff" id="pstat-test-drafts">—</div>
+        <div style="font-size:9px;color:#787890;letter-spacing:1px;text-transform:uppercase;margin-top:3px">Test Drafts</div>
+      </div>
+      <div class="ov-row-reveal" style="background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:12px 6px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#fff" id="pstat-blast-drafts">—</div>
+        <div style="font-size:9px;color:#787890;letter-spacing:1px;text-transform:uppercase;margin-top:3px">Blast Drafts</div>
+      </div>
+      <div class="ov-row-reveal" style="background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:12px 6px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#fff" id="pstat-users">—</div>
+        <div style="font-size:9px;color:#787890;letter-spacing:1px;text-transform:uppercase;margin-top:3px">Signed Up Users</div>
+      </div>
+    </div>
+    <div class="ov-reveal" style="font-size:11px;color:#565678;margin-top:-14px;margin-bottom:26px;text-align:center">We only record activity from players who accept the cookie banner, so actual usage is likely a fair bit higher than this.</div>
+
+    <div class="ov-reveal" style="font-size:18px;font-weight:900;color:#fff;margin-bottom:14px;text-align:left">Examples of What We Can Offer</div>
+
+    <div class="ov-reveal" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:12px;padding:16px;margin-bottom:14px;text-align:left">
+      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#f9c846;margin-bottom:10px">Banner Placements</div>
+      <div class="mvp-shine" style="width:100%;background:linear-gradient(160deg,#1a1400,#0d0d12 60%);border:1px solid #6a5218;border-radius:10px;padding:16px;text-align:center;margin-bottom:10px">
+        <div style="font-size:15px;font-weight:900;color:#f9c846;letter-spacing:.5px">YOUR BRAND HERE</div>
+        <div style="font-size:10px;color:#c9a860;margin-top:3px">728×90 · Home &amp; Match Hub screens</div>
+      </div>
+      <div style="font-size:12px;color:#9090a8;line-height:1.6">Players see the home screen and tournament hub between every match. Your banner sits right there.</div>
+    </div>
+
+    <div class="ov-reveal partner-card" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:12px;padding:16px;margin-bottom:14px;text-align:left">
+      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#f9c846;margin-bottom:10px">Interstitial Pop-ups</div>
+      <div id="partner-popup-card" style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:10px;padding:14px;margin-bottom:10px;transition:opacity .2s ease,transform .2s ease">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f9c846;font-weight:800">Sponsored Break</span>
+          <span onclick="event.stopPropagation();partnerDismissPopup()" style="font-size:13px;color:#8080a0;cursor:pointer;padding:0 4px">✕</span>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:#fff">"This innings break brought to you by Your Brand"</div>
+      </div>
+      <div id="partner-popup-replay" onclick="event.stopPropagation();partnerReplayPopup()" style="display:none;font-size:12px;color:#f9c846;font-weight:700;margin-bottom:10px">▶ Show it again</div>
+      <div style="font-size:12px;color:#9090a8;line-height:1.6">One branded card shows up between innings or between matches. Tap the ✕ — that's the whole interaction, then it's straight back to the game.</div>
+    </div>
+
+    <div class="ov-reveal partner-card" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:12px;padding:16px;margin-bottom:14px;text-align:left">
+      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#f9c846;margin-bottom:10px">In-Game Naming Rights</div>
+      <div class="stat-card mvp-card mvp-shine chip-boost" style="width:100%;box-sizing:border-box;margin-bottom:10px">
+        <div class="stat-card-label"><span aria-hidden="true">⭐</span> Your Brand MVP</div>
+        <div class="stat-card-name">Virat Kohli</div>
+        <div class="stat-card-val">142 runs · 3 wkts</div>
+        <div class="stat-card-sub">bat avg 47.3 · Tournament</div>
+      </div>
+      <div style="font-size:12px;color:#9090a8;line-height:1.6">This is exactly how the MVP card shows up in World Cup mode's season review — just with your brand on the label. Put your name on a tournament or a trophy the same way.</div>
+    </div>
+
+    <div class="ov-reveal partner-card" onclick="partnerSpinDemo()" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:12px;padding:16px;margin-bottom:14px;text-align:left">
+      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#f9c846;margin-bottom:10px">Draft &amp; Loading Screens</div>
+      <div style="display:flex;justify-content:center;margin-bottom:8px">
+        <div class="wc-drum-box" style="max-width:220px">
+          <div class="wc-drum-text" id="partner-spin-text" style="color:#f9c846">Tap to spin</div>
+        </div>
+      </div>
+      <div id="partner-spin-tag" style="text-align:center;font-size:10px;color:#c9a860;font-weight:700;margin-bottom:10px;transition:opacity .2s ease">Sponsored by Your Brand</div>
+      <div style="font-size:12px;color:#9090a8;line-height:1.6">Players spin for their squad dozens of times a run. Your brand sits on that screen the whole way through.</div>
+    </div>
+
+    <div class="ov-reveal" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:12px;padding:16px;margin-bottom:26px;text-align:left">
+      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#f9c846;margin-bottom:10px">More Ways to Show Up</div>
+      <ul style="margin:0;padding-left:18px;font-size:12px;color:#9090a8;line-height:1.9">
+        <li>Leaderboard &amp; season-review sponsorship</li>
+        <li>Shout-outs on our X account</li>
+        <li>Custom placements: tell us what you have in mind</li>
+      </ul>
+    </div>
+
+    <div class="ov-reveal" style="width:100%;background:linear-gradient(160deg,#1a1400,#0d0d12 60%);border:1px solid #6a5218;border-radius:14px;padding:18px 16px;margin-bottom:26px;text-align:left">
+      <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#f9c846;margin-bottom:8px">Full Sponsorship</div>
+      <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px">Become 19-0's Exclusive Partner</div>
+      <div style="font-size:12px;color:#c9a860;line-height:1.7;margin-bottom:12px">One brand, everywhere in the game, with nobody else in your category next to it. A full sponsorship covers:</div>
+      <ul style="margin:0 0 4px;padding-left:18px;font-size:12px;color:#e0d8b8;line-height:1.9">
+        <li>Every banner placement across the app</li>
+        <li>Every interstitial pop-up between innings and matches</li>
+        <li>Naming rights on tournaments, trophies, and the MVP award</li>
+        <li>Category exclusivity — no competing brand appears anywhere in 19-0</li>
+      </ul>
+    </div>
+
+    <div class="ov-reveal" style="width:100%;background:linear-gradient(160deg,#1a1400,#0d0d12 60%);border:1px solid #6a5218;border-radius:14px;padding:20px 16px;text-align:center">
+      <div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:6px">Let's talk</div>
+      <div style="font-size:12px;color:#c9a860;margin-bottom:14px;line-height:1.6">Tell us about your brand and what you want to do. We'll put together some options and rates.</div>
+      <a href="mailto:george.19-0@outlook.com?subject=Partnership%20Enquiry%20—%2019-0" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;text-decoration:none;font-size:14px;font-weight:800;padding:12px 24px;border-radius:10px">Contact Us About Partnering</a>
+    </div>
   </div>
 
 </body>
