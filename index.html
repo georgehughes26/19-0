@@ -6634,7 +6634,7 @@
     }
 
     async function copyShareText() {
-      const text = buildShareText();
+      const text = GAME_MODE === 'wc' ? buildWCShareText() : buildShareText();
       try {
         await navigator.clipboard.writeText(text);
         const btn = document.getElementById('btn-copy-text');
@@ -6662,8 +6662,8 @@
         const blob = await res.blob();
         const file = new File([blob], "19-0-season.png", { type: "image/png" });
         await navigator.share({
-          title: "19-0 · T20 Blast Draft",
-          text: buildShareText(),
+          title: GAME_MODE === 'wc' ? "19-0 · Cricket World Cup" : "19-0 · T20 Blast Draft",
+          text: GAME_MODE === 'wc' ? buildWCShareText() : buildShareText(),
           files: [file]
         });
       } catch(e) {
@@ -13422,6 +13422,26 @@
         </div>`;
     }
 
+    function buildWCShareText(){
+      const won=WCS.finalResult==='W';
+      const isFinalFail=WCS.finalResult==='L'&&WCS.phase==='final';
+      const isSemiFail=WCS.phase==='semi'&&!won&&WCS.semiResult!=='W';
+      const inSuperSix=WCS.superSixTable&&Object.keys(WCS.superSixTable).length>0;
+      const groupTable=Object.entries(WCS.groupTable.A||{}).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts);
+      const groupPos=groupTable.findIndex(t=>t.id==='myxi')+1;
+      const totalWins=(WCS.matchHistory||[]).filter(m=>m.result==='W').length;
+      const totalLosses=(WCS.matchHistory||[]).filter(m=>m.result==='L').length;
+      const isPerfectRun=won&&totalLosses===0;
+      const result=isPerfectRun?'👑 The Invincibles'
+        :won?'🏆 World Cup Champions'
+        :isFinalFail?'🥈 World Cup Runners-Up'
+        :isSemiFail?'Semi-Finalists'
+        :inSuperSix?'Super Sixes'
+        :`Finished ${ordinal(groupPos)} in the group`;
+      const avgRating=WCS.squad?.length?Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length):'—';
+      return `Just went ${totalWins}-${totalLosses} with an OVR ${avgRating} World Cup XI — ${result}! Can you do better? 🏏 www.19-0.co.uk`;
+    }
+
     async function openWCShareModal(){
       buildWCShareCard();
       if(!window.html2canvas){
@@ -13432,18 +13452,8 @@
           document.head.appendChild(s);
         });
       }
-      const won=WCS.finalResult==='W';
-      const isFinalFail=WCS.finalResult==='L'&&WCS.phase==='final';
-      const isSemiFail=WCS.phase==='semi'&&!won&&WCS.semiResult!=='W';
-      const inSuperSix=WCS.superSixTable&&Object.keys(WCS.superSixTable).length>0;
-      const groupTable=Object.entries(WCS.groupTable.A||{}).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts);
-      const groupPos=groupTable.findIndex(t=>t.id==='myxi')+1;
-      const totalWins=(WCS.matchHistory||[]).filter(m=>m.result==='W').length;
-      const totalLosses=(WCS.matchHistory||[]).filter(m=>m.result==='L').length;
-      const isPerfectRun=won&&totalLosses===0;
-      const headline=isPerfectRun?`👑 THE INVINCIBLES · ${totalWins}-0`:won?'🏆 World Cup Champions!':isFinalFail?'🥈 World Cup Runners-Up':isSemiFail?'Semi-Final Exit':inSuperSix?'Super Sixes Exit':`${ordinal(groupPos)} in Group A`;
       const textEl=document.getElementById('share-text-preview');
-      if(textEl)textEl.textContent=`19-0 · Cricket World Cup\n${headline}\nW${totalWins} L${totalLosses}\n19-0.co.uk`;
+      if(textEl)textEl.textContent=buildWCShareText();
       const card=document.getElementById('share-card');
       card.style.left='-9999px';
       const canvas=await html2canvas(card,{backgroundColor:'#0d0d14',scale:2,useCORS:true,logging:false});
