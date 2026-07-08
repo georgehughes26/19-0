@@ -3,9 +3,17 @@
   "configurations": [
     {
       "name": "t20-test",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "7788"],
-      "port": 7788
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "python3 -m http.server $PORT"],
+      "port": 7788,
+      "autoPort": true
+    },
+    {
+      "name": "wc-report",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "python3 -m http.server $PORT --directory /private/tmp/claude-501/-Users-georgehughes-t20/4a32c370-0e56-4502-9f67-1c51215ee2c6/scratchpad"],
+      "port": 8899,
+      "autoPort": true
     }
   ]
 }

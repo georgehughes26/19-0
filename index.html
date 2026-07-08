@@ -2886,7 +2886,7 @@
     .sopt-green.on  { background: #0a1e0e; border-color: #1a5a28; color: #4ade80 }
     .sopt-amber.on  { background: #1e1500; border-color: #5a3a00; color: #fbbf24 }
     .sopt-red.on    { background: #1e0808; border-color: #5a1818; color: #f87171 }
-    .sopt-neutral.on { background: #17172a; border-color: #33334a; color: #fff }
+    .sopt-neutral.on { background: #0a1830; border-color: #1e4a7a; color: #60a5fa }
 
     .setting-desc {
       font-size: 11px;
@@ -3297,6 +3297,7 @@
       flex: 1; padding: 14px 10px; border-radius: 10px; border: 1px solid #252535;
       background: #111118; color: #9090a8; font-size: 13px; font-weight: 800;
       cursor: pointer; transition: all .15s; letter-spacing: .5px; text-align: center;
+      position: relative;
     }
     .mode-btn.active {
       background: linear-gradient(135deg,#1a1a3a,#0f0f1f);
@@ -3304,6 +3305,11 @@
     }
     .mode-btn .mode-icon { font-size: 22px; display: block; margin-bottom: 4px }
     .mode-btn .mode-label { display: block; font-size: 11px; letter-spacing: 2px; text-transform: uppercase }
+    .mode-beta-badge {
+      position: absolute; top: -7px; right: -6px; background: #f9c846; color: #1a1400;
+      font-size: 8px; font-weight: 900; letter-spacing: .5px; padding: 2px 5px;
+      border-radius: 6px; line-height: 1.3; box-shadow: 0 0 0 2px #0b0b12;
+    }
 
     /* Test slot positions */
     .test-slot-label {
@@ -3692,6 +3698,7 @@
         <span class="mode-label">Test Cricket</span>
       </button>
       <button class="mode-btn" id="mode-btn-wc" onclick="selectMode('wc')" style="display:none">
+        <span class="mode-beta-badge">BETA</span>
         <span class="mode-icon">🏆</span>
         <span class="mode-label">World Cup</span>
       </button>
@@ -6177,7 +6184,7 @@
       <div style="text-align:center;margin-bottom:20px">
         <div style="font-size:32px;margin-bottom:10px">📊</div>
         <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Save your runs</div>
-        <div style="font-size:13px;color:#8080a0;line-height:1.7;max-width:300px;margin:0 auto">Create a free account to track your stats, best finishes, total wins and most-drafted players across every run.</div>
+        <div style="font-size:13px;color:#8080a0;line-height:1.7;max-width:300px;margin:0 auto">Create a free account to track your stats, best finishes, total wins and most-drafted players across every run — and unlock <span style="color:#f9c846;font-weight:800">World Cup mode</span>.</div>
       </div>
       <div style="background:#111118;border:1px solid #1a1a24;border-radius:12px;padding:14px 16px;margin-bottom:18px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -6264,15 +6271,7 @@
     // Append footer to home screen
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof animateHomeStats === 'function') animateHomeStats();
-      // World Cup mode is dev-only for now — unlock via ?wctest=1905 once, then it persists for this browser only.
       var params = new URLSearchParams(window.location.search);
-      if (params.get('wctest') === '1905') localStorage.setItem('wc_unlocked', '1');
-      if (localStorage.getItem('wc_unlocked') === '1') {
-        var wcBtn = document.getElementById('mode-btn-wc');
-        if (wcBtn) wcBtn.style.display = '';
-        var wcDevBtn = document.getElementById('wc-dev-autodraft-btn');
-        if (wcDevBtn) wcDevBtn.style.display = '';
-      }
 
       // Deep link straight to the Partners page — e.g. https://19-0.app/?partners=1
       // (or /#partners) — so a link handed to a sponsor skips the home screen entirely.
@@ -6293,7 +6292,7 @@
             '<a href="mailto:george.19-0@outlook.com" style="flex:1;display:block;background:#16161f;border:1px solid #252535;color:#c0c0d8;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Contact Us</a>' +
           '</div>' +
           '<button onclick="pingEvent(\'Partner_Click\',{source:\'footer\'});go(\'s-partners\');requestAnimationFrame(()=>wireReveals(document.getElementById(\'s-partners\')));loadPartnerMetrics()" style="width:100%;display:block;background:#16161f;border:1px solid #2a2a3a;color:#f9c846;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:16px;cursor:pointer;font-family:inherit">🤝 Advertise on 19-0 — Partner With Us</button>' +
-          '<p>19-0 is an unofficial fan project, not affiliated with or endorsed by the ECB, Vitality T20 Blast, any county cricket club, or any international cricket board. Player names, country names, team names, pundit quotes, and match simulations are used for entertainment purposes only and do not represent real individuals or organisations. T20 Blast is a registered trademark of the England and Wales Cricket Board. The Ashes is used as a descriptive term only.</p>' +
+          '<p>19-0 is an unofficial fan project, not affiliated with or endorsed by the ECB, Vitality T20 Blast, the ICC, any county cricket club, national cricket board, or any international cricket board. Player names, country names, team names, pundit quotes, and match simulations are used for entertainment purposes only and do not represent real individuals or organisations. T20 Blast is a registered trademark of the England and Wales Cricket Board. The Ashes and the Cricket World Cup are used as descriptive terms only.</p>' +
           '<p style="margin-top:8px">&copy; 2026 19-0 &nbsp;·&nbsp; <a onclick="openPrivacy()">Privacy policy</a> &nbsp;·&nbsp; <a onclick="showCookieBanner()">Cookie settings</a></p>';
         home.appendChild(footer);
       }
@@ -6689,6 +6688,7 @@
     function loadSession() {
       try { AUTH_USER = JSON.parse(localStorage.getItem('19_0_user') || 'null'); } catch(e) { AUTH_USER = null; }
       renderAuthBar();
+      if (!AUTH_USER) setTimeout(openSignupNudge, 1200);
     }
 
     function saveSession(user) {
@@ -6701,9 +6701,20 @@
       AUTH_USER = null;
       localStorage.removeItem('19_0_user');
       renderAuthBar();
+      if (typeof GAME_MODE !== 'undefined' && GAME_MODE === 'wc' && typeof selectMode === 'function') selectMode('t20');
+    }
+
+    // World Cup mode is gated to signed-in accounts only — re-checked on every
+    // sign-in/sign-out so a stale deep link or query param can never reveal it.
+    function updateWCModeVisibility() {
+      const wcBtn = document.getElementById('mode-btn-wc');
+      if (wcBtn) wcBtn.style.display = AUTH_USER ? '' : 'none';
+      const wcDevBtn = document.getElementById('wc-dev-autodraft-btn');
+      if (wcDevBtn) wcDevBtn.style.display = (AUTH_USER && AUTH_USER.username === 'ghughesy') ? '' : 'none';
     }
 
     function renderAuthBar() {
+      updateWCModeVisibility();
       const bar = document.getElementById('auth-bar');
       if (!bar) return;
       if (AUTH_USER) {
@@ -10802,7 +10813,7 @@
       { id:'zim', name:'Zimbabwe',     flag:'🇿🇼', rMin:59, rMax:66 },
     ];
 
-    const WC_SETTINGS = { diff:'easy', show:'visible', speed:'innings' };
+    const WC_SETTINGS = { diff:'easy', show:'visible', speed:'over' };
     const WC_RESPIN_LIMITS = { easy:Infinity, medium:3, hard:0 };
 
     function setWCSetting(key, val, btn) {
@@ -12059,11 +12070,19 @@
 
     function simODIInnings(batR,bowlR,oversMax,target,batNames,bowlPool,keeperName,batRatings){
       const q=Math.max(0,Math.min(1,(batR-bowlR+50)/100));
-      const wktProbBase=0.028-q*0.016;
+      const wktProbBase=0.032-q*0.017;
       const batters=batNames.slice(0,11).map(n=>({name:n,runs:0,balls:0,out:false,how:''}));
       const bwlrs=bowlPool.map(b=>{
         const bRat=Math.max(55,Math.min(97,b.rating||72));
-        return{name:b.n,type:b.t,isSpin:!!b.sp,maxOvers:b.maxOv||(b.t==='s'?10:b.t==='a'?8:5),overs:0,runs:0,wickets:0,maidens:0,ratingFactor:0.82+(bRat-55)/42*0.33,hotFactor:0.88+Math.random()*0.30};
+        // A part-timer or all-rounder given the same numeric rating as a specialist is
+        // still a lesser bowler — typeSkillMod dampens both wicket threat and economy so
+        // "type" reflects genuine ability, not just how often they get the ball.
+        const typeSkillMod=b.t==='s'?1.00:b.t==='a'?0.94:0.82;
+        const baseRatingFactor=0.82+(bRat-55)/42*0.33;
+        return{name:b.n,type:b.t,isSpin:!!b.sp,maxOvers:b.maxOv||(b.t==='s'?10:b.t==='a'?8:5),overs:0,runs:0,wickets:0,maidens:0,
+          ratingFactor:baseRatingFactor*typeSkillMod,
+          economyFactor:(2-baseRatingFactor)/typeSkillMod,
+          hotFactor:0.88+Math.random()*0.30};
       });
       const fieldNames=bowlPool.map(b=>b.n);
       const makeHow=bn=>{
@@ -12075,31 +12094,90 @@
       function nextBowler(ov){
         if(activeBowlerIdx>=0&&activeBowlerIdx!==lastBowlerIdx){const ab=bwlrs[activeBowlerIdx];if(ab.overs<ab.maxOvers&&activeBowlerOvs<4&&!(ov<10&&ab.isSpin))return activeBowlerIdx;}
         let best=-1,bestScore=-Infinity;
-        bwlrs.forEach((b,i)=>{if(i===lastBowlerIdx||b.overs>=b.maxOvers||(ov<10&&b.isSpin))return;let sc=b.type==='s'?3:b.type==='a'?1.5:0.5;sc-=(b.overs/b.maxOvers)*3;if(b.overs===0)sc+=0.8;if(sc>bestScore){bestScore=sc;best=i;}});
+        bwlrs.forEach((b,i)=>{
+          if(i===lastBowlerIdx||b.overs>=b.maxOvers||(ov<10&&b.isSpin))return;
+          let sc=b.type==='s'?3:b.type==='a'?1.5:0.5;
+          sc-=(b.overs/b.maxOvers)*3;
+          if(b.overs===0)sc+=0.8;
+          // Adaptive captaincy: once a bowler has a couple of overs on the board, read
+          // their form THIS match — an expensive spell gets pulled, a tight/wicket-taking
+          // one gets extended, regardless of the fixed type/overs schedule above.
+          if(b.overs>=2){
+            const econ=b.runs/b.overs;
+            sc-=Math.max(0,econ-6)*0.5;
+            sc+=Math.max(0,5-econ)*0.4;
+            sc+=b.wickets*0.7;
+          }
+          if(sc>bestScore){bestScore=sc;best=i;}
+        });
         if(best<0)best=bwlrs.findIndex((b,i)=>i!==lastBowlerIdx&&b.overs<b.maxOvers&&!(ov<10&&b.isSpin));
         if(best<0)best=bwlrs.findIndex((b,i)=>i!==lastBowlerIdx&&b.overs<b.maxOvers);
-        if(best>=0)activeBowlerOvs=0;return best>=0?best:0;
+        if(best<0)best=bwlrs.findIndex(b=>b.overs<b.maxOvers); // last resort: relax no-consecutive-over rule, never the cap itself
+        if(best>=0)activeBowlerOvs=0;return best;
       }
-      let striker=0,nonStriker=1,nextIn=2,wkts=0,totalRuns=0,ovCount=0;const oversLog=[];
+      let striker=0,nonStriker=1,nextIn=2,wkts=0,totalRuns=0,ovCount=0,sinceWkt=0;const oversLog=[];
       for(let ov=0;ov<oversMax&&wkts<10;ov++){
         if(target!==undefined&&totalRuns>=target)break;
         const isPP=ov<10,isDeath=ov>=40;
-        lastBowlerIdx=activeBowlerIdx;const nb=nextBowler(ov);if(nb!==activeBowlerIdx){activeBowlerIdx=nb;activeBowlerOvs=0;}
-        const bowler=bwlrs[activeBowlerIdx];let overRuns=0,dotBalls=0;
+        lastBowlerIdx=activeBowlerIdx;const nb=nextBowler(ov);if(nb<0)break;if(nb!==activeBowlerIdx){activeBowlerIdx=nb;activeBowlerOvs=0;}
+        const bowler=bwlrs[activeBowlerIdx];let overRuns=0,dotBalls=0,wktsThisOver=0;
+
+        // Momentum/pressure: a mini-collapse (2+ wkts in the last 3 overs) tightens the
+        // batting side up — runs get harder to find, and the shaken tail-end of that
+        // pressure carries a slightly higher risk of a further wicket. The opposite is
+        // also true: a long wicketless spell (8+ overs) means the bowling side has lost
+        // its threat, so the batting side cashes in with freer scoring and lower risk.
+        // Wickets clustering in the death overs is expected slog-risk, not a collapse —
+        // only apply the shell-shock penalty outside the death phase so it doesn't fight
+        // the death-overs acceleration below.
+        const recentWkts=oversLog.slice(-3).reduce((a,o)=>a+o.wkts,0);
+        let pressureScMult=1.0,pressureWktMult=1.0;
+        if(recentWkts>=2&&!isDeath){pressureScMult=0.85;pressureWktMult=1.15;}
+        else if(sinceWkt>=8){pressureScMult=1.15;pressureWktMult=0.85;}
+
+        // Chase awareness: accelerate (and take on more risk) when behind the required
+        // rate; ease off (and play safer) once well ahead of it. Only applies with a target.
+        let chaseScMult=1.0,chaseWktMult=1.0;
+        if(target!==undefined){
+          const oversLeft=oversMax-ov;
+          const runsNeeded=target-totalRuns;
+          const reqRate=oversLeft>0?runsNeeded/oversLeft:99;
+          const curRate=ov>0?totalRuns/ov:reqRate;
+          const rateDeficit=reqRate-curRate;
+          chaseScMult=Math.max(0.95,Math.min(1.08,1+rateDeficit*0.03));
+          chaseWktMult=Math.max(0.93,Math.min(1.10,1+rateDeficit*0.025));
+        }
+
         for(let b=0;b<6&&wkts<10;b++){
           if(target!==undefined&&totalRuns>=target)break;if(striker>=batters.length)break;
-          const posM=striker<=1?0.72:striker<=4?1.0:striker<=7?1.6:2.5;
+          // Openers and top order are now much closer in dismissal risk — in reality a
+          // side's best batters are just as often at 3/4 as opening, so the position
+          // itself shouldn't be a big built-in safety net over top order.
+          const posM=striker<=1?0.80:striker<=4?0.85:striker<=7?1.5:2.4;
           const settleM=batters[striker].balls<8?1.12:1.0;
           const bRat=batRatings?Math.max(52,Math.min(99,batRatings[striker]||70)):70;
           const batWktMod=1.18-(bRat-52)/47*0.42;
-          const wktP=wktProbBase*posM*settleM*bowler.ratingFactor*bowler.hotFactor*batWktMod;
+          const wktP=wktProbBase*posM*settleM*bowler.ratingFactor*bowler.hotFactor*batWktMod*pressureWktMult*chaseWktMult;
           batters[striker].balls++;
-          if(Math.random()<wktP){batters[striker].out=true;batters[striker].how=makeHow(bowler.name);bowler.wickets++;wkts++;striker=nextIn++;}
+          if(Math.random()<wktP){batters[striker].out=true;batters[striker].how=makeHow(bowler.name);bowler.wickets++;wkts++;wktsThisOver++;striker=nextIn++;}
           else{
-            const batScMod=0.68+(bRat-52)/47*0.55;const phaseMult=isPP?1.18:isDeath?1.55:1.0;
-            const sc=(0.88+q*0.22)*batScMod*phaseMult;
-            const p1=0.22*sc,p2=0.07*sc,p3=0.005*sc,p4=0.09*sc,p6=0.025*sc;
-            const p0=Math.max(0.38,1-(p1+p2+p3+p4+p6));const r=Math.random();
+            const batScMod=0.68+(bRat-52)/47*0.55;const phaseMult=isPP?1.18:isDeath?1.75:1.0;
+            const sc=(0.88+q*0.22)*batScMod*phaseMult*bowler.economyFactor*pressureScMult*chaseScMult;
+            // Shot selection itself gets riskier — more fours/sixes, fewer nudged singles —
+            // when the situation actually demands it (death overs, a chase under pressure),
+            // rather than a flat aggression scale-up that would otherwise inflate every phase.
+            const aggressive=isDeath||chaseScMult>1.1;
+            const w1=aggressive?0.20:0.22,w4=aggressive?0.12:0.09,w6=aggressive?0.035:0.025;
+            const rawP1=w1*sc,rawP2=0.07*sc,rawP3=0.005*sc,rawP4=w4*sc,rawP6=w6*sc;
+            const rawSum=rawP1+rawP2+rawP3+rawP4+rawP6;
+            const p0=Math.max(0.38,1-rawSum);
+            // Once p0 hits its floor, sc has pushed total scoring probability past 1 — rescale
+            // the scoring buckets to fit the remaining mass so high-sc situations (death overs,
+            // a chase under pressure) still keep 6s reachable instead of collapsing everything
+            // into "1 run" once the raw cumulative thresholds exceed 1.
+            const scale=p0>0.38?1:(1-p0)/rawSum;
+            const p1=rawP1*scale,p2=rawP2*scale,p3=rawP3*scale,p4=rawP4*scale;
+            const r=Math.random();
             let runs=r<p0?0:r<p0+p1?1:r<p0+p1+p2?2:r<p0+p1+p2+p3?3:r<p0+p1+p2+p3+p4?4:6;
             batters[striker].runs+=runs;overRuns+=runs;totalRuns+=runs;
             if(runs===0)dotBalls++;if(runs%2===1){const t=striker;striker=nonStriker;nonStriker=t;}
@@ -12107,6 +12185,7 @@
         }
         const tmp=striker;striker=nonStriker;nonStriker=tmp;
         bowler.overs++;activeBowlerOvs++;bowler.runs+=overRuns;if(dotBalls===6)bowler.maidens++;
+        sinceWkt=wktsThisOver>0?0:sinceWkt+1;
         const prevWkts=oversLog.length?oversLog[oversLog.length-1].totalWkts:0;
         // Snapshots of batter/bowler state as it stood right after this over — lets the
         // live scorecard reveal progressively over-by-over instead of only the final tally.
