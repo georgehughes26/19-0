@@ -3859,9 +3859,9 @@
           <div class="setting-panel">
             <div class="setting-label">Match speed</div>
             <div class="setting-btns" id="opt-wc-speed">
-              <button class="sopt sopt-amber" onclick="setWCSetting('speed','over',this)">Over Intervals</button>
-              <button class="sopt sopt-amber" onclick="setWCSetting('speed','five',this)">5 Over Intervals</button>
-              <button class="sopt sopt-green on" onclick="setWCSetting('speed','innings',this)">Innings</button>
+              <button class="sopt sopt-blue on" onclick="setWCSetting('speed','over',this)">Over Intervals</button>
+              <button class="sopt sopt-blue" onclick="setWCSetting('speed','five',this)">5 Over Intervals</button>
+              <button class="sopt sopt-blue" onclick="setWCSetting('speed','innings',this)">Innings</button>
             </div>
             <div class="setting-desc" id="desc-wc-speed">Innings appear complete, instantly</div>
           </div>
@@ -6924,9 +6924,10 @@
       go('s-stats');
 
       try {
-        const [{ data: runs, error: e1 }, { data: testRuns, error: e2 }] = await Promise.all([
+        const [{ data: runs, error: e1 }, { data: testRuns }, { data: wcRuns }] = await Promise.all([
           sb.from('runs').select('*').eq('user_id', AUTH_USER.id).order('created_at', { ascending: false }),
           sb.from('test_runs').select('*').eq('user_id', AUTH_USER.id).order('created_at', { ascending: false }),
+          sb.from('wc_runs').select('*').eq('user_id', AUTH_USER.id).order('created_at', { ascending: false }),
         ]);
 
         if (e1) { document.getElementById('stats-loading').textContent = 'Could not load stats.'; return; }
@@ -6938,11 +6939,13 @@
           _statsMode = mode;
           document.getElementById('stats-tab-t20').classList.toggle('stats-tab-active', mode === 't20');
           document.getElementById('stats-tab-test').classList.toggle('stats-tab-active', mode === 'test');
+          document.getElementById('stats-tab-wc').classList.toggle('stats-tab-active', mode === 'wc');
           document.getElementById('stats-tab-t20').classList.toggle('stats-tab-inactive', mode !== 't20');
           document.getElementById('stats-tab-test').classList.toggle('stats-tab-inactive', mode !== 'test');
+          document.getElementById('stats-tab-wc').classList.toggle('stats-tab-inactive', mode !== 'wc');
 
           const panel = document.getElementById('stats-panel');
-          panel.innerHTML = mode === 't20' ? buildT20Stats(runs || []) : buildTestStats(testRuns || []);
+          panel.innerHTML = mode === 't20' ? buildT20Stats(runs || []) : mode === 'test' ? buildTestStats(testRuns || []) : buildWCStats(wcRuns || []);
           requestAnimationFrame(() => wireReveals(panel));
         }
 
@@ -6950,6 +6953,7 @@
           <div class="ov-reveal" style="display:flex;gap:6px;margin-bottom:18px">
             <button id="stats-tab-t20"  class="stats-tab stats-tab-active"  onclick="renderStatsTab('t20')">T20 Blast</button>
             <button id="stats-tab-test" class="stats-tab stats-tab-inactive" onclick="renderStatsTab('test')">Test Cricket</button>
+            <button id="stats-tab-wc"   class="stats-tab stats-tab-inactive" onclick="renderStatsTab('wc')">World Cup</button>
           </div>
           <div id="stats-panel"></div>`;
 
@@ -6980,16 +6984,18 @@
         const myWinQueries = AUTH_USER ? [
           sb.from('runs').select('user_id,group_wins,team_rating,squad,created_at').eq('user_id', AUTH_USER.id).eq('final_won', true).order('group_wins', { ascending: false }).order('team_rating', { ascending: false }).order('created_at', { ascending: false }).limit(1),
           sb.from('test_runs').select('user_id,wins,draws,losses,team_rating,squad,created_at').eq('user_id', AUTH_USER.id).eq('final_won', true).order('wins', { ascending: false }).order('team_rating', { ascending: false }).order('created_at', { ascending: false }).limit(1),
-        ] : [Promise.resolve({data:[]}), Promise.resolve({data:[]})];
+          sb.from('wc_runs').select('user_id,wins,losses,team_rating,squad,created_at').eq('user_id', AUTH_USER.id).eq('final_won', true).order('wins', { ascending: false }).order('team_rating', { ascending: false }).order('created_at', { ascending: false }).limit(1),
+        ] : [Promise.resolve({data:[]}), Promise.resolve({data:[]}), Promise.resolve({data:[]})];
 
-        const [{ data: allRuns }, { data: allTestRuns }, { data: myWinRun }, { data: myTestWinRun }] = await Promise.all([
+        const [{ data: allRuns }, { data: allTestRuns }, { data: allWCRuns }, { data: myWinRun }, { data: myTestWinRun }, { data: myWCWinRun }] = await Promise.all([
           sb.from('runs').select('user_id,group_wins,team_rating,squad,created_at').eq('final_won', true).order('group_wins', { ascending: false }).order('team_rating', { ascending: false }).order('created_at', { ascending: false }).limit(100),
           sb.from('test_runs').select('user_id,wins,draws,losses,team_rating,squad,created_at').eq('final_won', true).order('wins', { ascending: false }).order('team_rating', { ascending: false }).order('created_at', { ascending: false }).limit(100),
+          sb.from('wc_runs').select('user_id,wins,losses,team_rating,squad,created_at').eq('final_won', true).order('wins', { ascending: false }).order('team_rating', { ascending: false }).order('created_at', { ascending: false }).limit(100),
           ...myWinQueries,
         ]);
 
         // Resolve usernames for top 100
-        const neededIds = [...new Set([...(allRuns||[]), ...(allTestRuns||[])].map(r => r.user_id))];
+        const neededIds = [...new Set([...(allRuns||[]), ...(allTestRuns||[]), ...(allWCRuns||[])].map(r => r.user_id))];
         const { data: allUsers } = neededIds.length ? await sb.from('users').select('id,username').in('id', neededIds) : { data: [] };
         const userMap = {};
         (allUsers || []).forEach(u => { userMap[u.id] = u.username; });
@@ -7021,8 +7027,22 @@
           };
         });
 
+        // WC's stored wins/losses already cover every match actually played across
+        // the whole tournament (group + Super Sixes + semi + final) — no reconstruction
+        // needed, unlike T20's group_wins-only column or Test's possibly-incomplete count.
+        const wcBoard = (allWCRuns || []).map(r => ({
+          username: userMap[r.user_id] || '—',
+          uid: r.user_id,
+          wins: r.wins || 0,
+          losses: r.losses || 0,
+          rating: r.team_rating || 0,
+          topPlayer: topRating(r.squad),
+          isMe: AUTH_USER && r.user_id === AUTH_USER.id,
+          date: fmtDate(r.created_at),
+        }));
+
         // Calculate true rank for signed-in user if they're not in the top 100
-        let myT20RankEntry = null, myTestRankEntry = null;
+        let myT20RankEntry = null, myTestRankEntry = null, myWCRankEntry = null;
         if (AUTH_USER) {
           const inT20Top = t20Board.some(e => e.isMe);
           if (!inT20Top && myWinRun && myWinRun[0]) {
@@ -7049,6 +7069,18 @@
             ]);
             myTestRankEntry = { username: AUTH_USER.username, uid: AUTH_USER.id, wins, losses: b.losses || 0, rating: tr, topPlayer: topRating(b.squad), isMe: true, date: fmtDate(b.created_at), rank: (c1||0) + (c2||0) + (c3||0) + 1 };
           }
+
+          const inWCTop = wcBoard.some(e => e.isMe);
+          if (!inWCTop && myWCWinRun && myWCWinRun[0]) {
+            const b = myWCWinRun[0];
+            const tr = b.team_rating || 0;
+            const [{ count: c1 }, { count: c2 }, { count: c3 }] = await Promise.all([
+              sb.from('wc_runs').select('*', { count: 'exact', head: true }).eq('final_won', true).gt('wins', b.wins || 0),
+              sb.from('wc_runs').select('*', { count: 'exact', head: true }).eq('final_won', true).eq('wins', b.wins || 0).gt('team_rating', tr),
+              sb.from('wc_runs').select('*', { count: 'exact', head: true }).eq('final_won', true).eq('wins', b.wins || 0).eq('team_rating', tr).gt('created_at', b.created_at),
+            ]);
+            myWCRankEntry = { username: AUTH_USER.username, uid: AUTH_USER.id, wins: b.wins || 0, losses: b.losses || 0, rating: tr, topPlayer: topRating(b.squad), isMe: true, date: fmtDate(b.created_at), rank: (c1||0) + (c2||0) + (c3||0) + 1 };
+          }
         }
 
         document.getElementById('lb-loading').style.display = 'none';
@@ -7058,10 +7090,12 @@
           _lbMode = mode;
           document.getElementById('lb-tab-t20').classList.toggle('stats-tab-active', mode === 't20');
           document.getElementById('lb-tab-test').classList.toggle('stats-tab-active', mode === 'test');
+          document.getElementById('lb-tab-wc').classList.toggle('stats-tab-active', mode === 'wc');
           document.getElementById('lb-tab-t20').classList.toggle('stats-tab-inactive', mode !== 't20');
           document.getElementById('lb-tab-test').classList.toggle('stats-tab-inactive', mode !== 'test');
+          document.getElementById('lb-tab-wc').classList.toggle('stats-tab-inactive', mode !== 'wc');
 
-          const board = mode === 't20' ? t20Board : testBoard;
+          const board = mode === 't20' ? t20Board : mode === 'test' ? testBoard : wcBoard;
           if (!board.length) {
             document.getElementById('lb-panel').innerHTML = `<div style="text-align:center;color:#606080;font-size:13px;padding:40px 0">No winning runs yet.</div>`;
             return;
@@ -7134,7 +7168,7 @@
           // User's best run — show below top 100 if they're not already in it
           let myRankRow = '';
           if (AUTH_USER && !board.some(e => e.isMe)) {
-            const myEntry = mode === 't20' ? myT20RankEntry : myTestRankEntry;
+            const myEntry = mode === 't20' ? myT20RankEntry : mode === 'test' ? myTestRankEntry : myWCRankEntry;
             if (myEntry) {
               myRankRow = `<div class="ov-stagger" style="margin-top:10px;background:#0a0a14;border:1px solid #2a2a50;border-radius:10px;padding:6px">
                 <div style="font-size:10px;color:#8080a0;text-align:center;margin-bottom:4px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Your best winning run · #${myEntry.rank.toLocaleString()} on leaderboard</div>
@@ -7156,6 +7190,7 @@
           <div class="ov-reveal" style="display:flex;gap:6px;margin-bottom:18px">
             <button id="lb-tab-t20"  class="stats-tab stats-tab-active"  onclick="renderLbTab('t20')">T20 Blast</button>
             <button id="lb-tab-test" class="stats-tab stats-tab-inactive" onclick="renderLbTab('test')">Test Cricket</button>
+            <button id="lb-tab-wc"   class="stats-tab stats-tab-inactive" onclick="renderLbTab('wc')">World Cup</button>
           </div>
           <div id="lb-panel"></div>`;
 
@@ -7378,6 +7413,105 @@
           <div class="ov-stagger" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${mostUsedHTML}</div>` : ''}
 
           <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Recent cycles</div>
+          <div class="ov-stagger" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${recentHTML}</div>`;
+    }
+
+    function buildWCStats(runs) {
+        if (!runs || !runs.length) {
+          return `<div style="text-align:center;color:#8080a0;font-size:13px;padding:40px 0">
+            No World Cup runs yet — complete a tournament to see your stats here.
+          </div>`;
+        }
+
+        const total       = runs.length;
+        const qualified   = runs.filter(r => r.qualified).length;
+        const semiReached = runs.filter(r => r.semi_reached).length;
+        const finalWon    = runs.filter(r => r.final_won).length;
+        const avgWins     = (runs.reduce((s,r) => s + (r.wins||0), 0) / total).toFixed(1);
+        const avgRating   = Math.round(runs.reduce((s,r) => s + (r.team_rating||0), 0) / total);
+
+        const playerCount = {};
+        runs.forEach(r => {
+          if (!r.squad) return;
+          r.squad.forEach(p => { if (!p.n) return; playerCount[p.n] = (playerCount[p.n] || 0) + 1; });
+        });
+        const topPlayers = Object.entries(playerCount).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
+        const resultRank = r => r.final_won ? 1000 : r.semi_reached ? 500 : r.qualified ? 100 : (14 - (r.group_pos||14));
+        const bestRun = [...runs].sort((a,b) => {
+          const rd = resultRank(b) - resultRank(a);
+          return rd !== 0 ? rd : (b.wins||0) - (a.wins||0);
+        })[0];
+
+        function pct(n) { return total ? Math.round((n / total) * 100) : 0; }
+        function stageBarRow(label, n, color) {
+          const p = pct(n);
+          return `<div class="stage-bar-row ov-row-reveal">
+            <div class="stage-bar-label">${label}</div>
+            <div class="stage-bar-track"><div class="stage-bar-fill bar-fill" data-pct="${p}" style="width:0%;background:${color}"></div></div>
+            <div class="stage-bar-pct" style="color:${color}">${p}%</div>
+          </div>`;
+        }
+
+        const resultLabel = r => r.final_won ? '🏆 World Cup Champions' : r.semi_reached ? '🏏 Semi-Final Exit' : r.qualified ? '📊 Super Sixes Exit' : `${ordinal(r.group_pos||14)} in Group`;
+        const resultColor = r => r.final_won ? '#f9c846' : r.semi_reached ? '#c084fc' : r.qualified ? '#60a5fa' : '#f87171';
+
+        const recentHTML = runs.slice(0, 10).map(r => {
+          const result = resultLabel(r), col = resultColor(r);
+          const dateStr = new Date(r.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+          return `<div class="recent-run-row ov-row-reveal">
+            <div style="text-align:left">
+              <div style="font-size:13px;font-weight:700;color:${col}">${result}</div>
+              <div style="font-size:11px;color:#8080a0;margin-top:1px">${r.wins||0}W · ${r.losses||0}L · OVR ${r.team_rating||'—'} · ${dateStr}</div>
+            </div>
+          </div>`;
+        }).join('');
+
+        const brResult = resultLabel(bestRun), brCol = resultColor(bestRun);
+        const brDate   = new Date(bestRun.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+        const mostUsedHTML = topPlayers.map(([name, count], i) => `
+          <div class="recent-run-row ov-row-reveal">
+            <div style="display:flex;align-items:center;gap:10px;text-align:left">
+              <div style="font-size:13px;font-weight:800;color:${i===0?'#f9c846':'#606070'};width:16px">${i===0?'⭐':''+(i+1)}</div>
+              <div style="font-size:13px;font-weight:${i===0?'800':'700'};color:${i===0?'#f9c846':'#d0d0e8'}">${name}</div>
+            </div>
+            <div style="font-size:12px;font-weight:800;color:${i===0?'#f9c846':'#8080a0'}">${count}× drafted</div>
+          </div>`).join('');
+
+        return `
+          <div class="stats-grid ov-reveal">
+            <div class="stats-box"><div class="stats-n ov-count" data-count="${total}" style="color:#60a5fa">0</div><div class="stats-l">Total runs</div></div>
+            <div class="stats-box"><div class="stats-n ov-count" data-count="${finalWon}" style="color:#f9c846">0</div><div class="stats-l">World Cup Wins</div></div>
+            <div class="stats-box"><div class="stats-n" style="color:#60a5fa">${avgWins}</div><div class="stats-l">Avg wins</div></div>
+            <div class="stats-box"><div class="stats-n" style="color:${ratingColor(avgRating)}">${avgRating||'—'}</div><div class="stats-l">Avg team OVR</div></div>
+          </div>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Best run</div>
+          <div class="ov-reveal" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-bottom:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="text-align:left">
+                <div style="font-size:15px;font-weight:800;color:${brCol}">${brResult}</div>
+                <div style="font-size:11px;color:#8080a0;margin-top:3px">OVR ${bestRun.team_rating||'—'} · ${brDate}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:22px;font-weight:900;letter-spacing:-1px"><span style="color:#4ade80">${bestRun.wins||0}W</span><span style="color:#606070">-</span><span style="color:#f87171">${bestRun.losses||0}L</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Tournament reach</div>
+          <div class="stage-bar ov-stagger">
+            ${stageBarRow('Super Sixes', qualified,   '#60a5fa')}
+            ${stageBarRow('Semi-Final',  semiReached, '#c084fc')}
+            ${stageBarRow('Champions',   finalWon,    '#f9c846')}
+          </div>
+
+          ${topPlayers.length ? `
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Most drafted players</div>
+          <div class="ov-stagger" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${mostUsedHTML}</div>` : ''}
+
+          <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:14px 0 8px;text-align:left">Recent runs</div>
           <div class="ov-stagger" style="width:100%;background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:4px 16px">${recentHTML}</div>`;
     }
 
@@ -10711,7 +10845,7 @@
         xiState:null, captain:null, viceCaptain:null, playerStats:{},
         respinsUsed:0, spunYear:null, spunNation:null, spinCandidates:[], usedYears:new Set(),
         matches:[], currentMatchIdx:-1, playerForm:{}, oneMatchBonus:{}, matchHistory:[],
-        playerInjured:{}, usedEvents:new Set(), pendingEvent:null, pendingWCContinuation:null,
+        playerInjured:{}, usedEvents:new Set(), pendingEvent:null, pendingWCContinuation:null, pendingWCReplacement:null,
         groupTeams:{A:[],B:[]}, groupTable:{A:{},B:{}}, preResults:{}, pendingAI:{A:[],B:[],super6:[]},
         superSixTeams:[], superSixTable:{}, otherSemi:null,
         cycleRatings:{}, qualified:false, finalResult:null,
@@ -11168,23 +11302,19 @@
 
     function autoFillWCXI(){
       const getEff=p=>Math.min(99,p.rating+(WCS.playerForm[p.id]||0));
-      const isSpin=p=>p.canBowl&&p.bowlingStyle&&/break|orthodox|spin/i.test(p.bowlingStyle);
-      const isSeam=p=>p.canBowl&&p.bowlingStyle&&/fast|swing|medium/i.test(p.bowlingStyle);
       const sorted=role=>WCS.squad.filter(p=>p.role===role&&isWCPlayerAvailable(p)).sort((a,b)=>getEff(b)-getEff(a));
       const openers=sorted('batsman').filter(p=>p.opener);
       const batters=sorted('batsman').filter(p=>!p.opener);
       const allrounders=sorted('allrounder');
       const keepers=sorted('wicketkeeper');
+      // Bowlers picked purely by current effective rating — previously this bucketed by
+      // bowling style (always forcing the top spinner in, then every seamer ahead of
+      // every "other" bowler regardless of rating), which could seat a 61-rated bowler
+      // over a 75-rated one. `bowlers` is already sorted best-to-worst, so just take it.
       const bowlers=sorted('bowler');
-      const spinners=bowlers.filter(isSpin);
-      const seamers=bowlers.filter(isSeam);
-      const otherBowl=bowlers.filter(p=>!isSpin(p)&&!isSeam(p));
-      const prefBowl=spinners.length
-        ?[spinners[0],...seamers,...otherBowl,...spinners.slice(1)]
-        :[...seamers,...otherBowl];
-      const bowl9=prefBowl[0];
-      const bowl10=prefBowl.find(b=>b.id!==bowl9?.id);
-      const bowl11=prefBowl.find(b=>b.id!==bowl9?.id&&b.id!==bowl10?.id);
+      const bowl9=bowlers[0];
+      const bowl10=bowlers[1];
+      const bowl11=bowlers[2];
 
       const op1=openers.shift(),op2=openers.shift()||batters.shift()||allrounders.shift();
       const bat3=batters.shift()||allrounders.shift();
@@ -11284,7 +11414,7 @@
           const hasAnySlot=XI_POS_DEFS.some(def=>def.test(p));
           const ctag=wcCaptainTag(p);const ctagHtml=ctag?`<span class="wc-xi-tag" style="color:${ctag==='C'?'#f9c846':'#9090b8'}">${ctag}</span>`:'';
           const inj=WCS.playerInjured[p.id];const unavail=!!inj;
-          const injLabel=inj?.reason==='birth'?'Paternity Leave':inj?.type==='tournament'?'Out for the Tournament':'Misses Next Match';
+          const injLabel=inj?.reason==='birth'?'Paternity Leave':inj?.reason==='injury'?'Injured':inj?.type==='tournament'?'Out for the Tournament':'Misses Next Match';
           const form=WCS.playerForm[p.id]||0;const eff=p.rating+form;
           const formStr=form>0?`<span class="wc-xi-form form-up">▲${form}</span>`:form<0?`<span class="wc-xi-form form-down">▼${Math.abs(form)}</span>`:'<span class="wc-xi-form" style="color:#4a4a60">—</span>';
           const ratingBadge=`<div class="wc-xi-rating-mini ${ratingBadgeClass(eff)}" style="opacity:.85">${eff}</div>`;
@@ -11832,30 +11962,65 @@
       playWCMatchLive(matchData,opp);
     }
 
-    function getWCOppBatNames(oppId){
-      const pool=WC_PDB[oppId]||[];
-      return pool.map(p=>({...p,best:Math.max(...Object.values(p.yearRatings))})).sort((a,b)=>b.best-a.best).slice(0,11).map(p=>p.name);
+    // Builds a position-correct XI for an AI opponent nation, mirroring exactly how
+    // the user's own autoFillWCXI() fills slots (openers/batters/allrounders/keeper/
+    // bowlers by role, never mixing a specialist bowler into a batting slot). Each
+    // player's own peak-year rating is attached, so a 95-rated Steve Smith and a
+    // 74-rated batter are NOT interchangeable — their individual ratings drive the
+    // ball-by-ball probability in simODIInnings, not one flat team-wide number.
+    function buildWCOpponentXI(oppId){
+      const pool=(WC_PDB[oppId]||[]).map(p=>{
+        const years=Object.keys(p.yearRatings);
+        let bestYear=years[0];
+        years.forEach(y=>{if(p.yearRatings[y]>p.yearRatings[bestYear])bestYear=y;});
+        return{...p,rating:p.yearRatings[bestYear],year:parseInt(bestYear)};
+      });
+      const sorted=role=>pool.filter(p=>p.role===role).sort((a,b)=>b.rating-a.rating);
+      const openers=sorted('batsman').filter(p=>p.opener);
+      const batters=sorted('batsman').filter(p=>!p.opener);
+      const allrounders=sorted('allrounder');
+      const keepers=sorted('wicketkeeper');
+      const bowlers=sorted('bowler');
+
+      const op1=openers.shift(),op2=openers.shift()||batters.shift()||allrounders.shift();
+      const bat3=batters.shift()||allrounders.shift();
+      const bat4=batters.shift()||allrounders.shift();
+      const bat5=batters.shift()||allrounders.shift();
+      const ar6=allrounders.shift()||batters.shift();
+      const ar8=allrounders.shift()||batters.shift();
+      const bowl9=bowlers.shift(),bowl10=bowlers.shift(),bowl11=bowlers.shift();
+      const picks=[op1,op2,bat3,bat4,bat5,ar6,keepers[0],ar8,bowl9,bowl10,bowl11];
+      const used=new Set();
+      return picks.filter(p=>{
+        if(!p||used.has(p.id))return false;
+        used.add(p.id);return true;
+      });
     }
 
-    function getWCOppBowlPool(oppId,oppBowl){
-      const pool=WC_PDB[oppId]||[];
-      const bowlers=pool.filter(p=>p.canBowl).map(p=>({...p,best:Math.max(...Object.values(p.yearRatings))})).sort((a,b)=>b.best-a.best).slice(0,6);
-      if(!bowlers.length)return[{n:'B. Seamer',t:'s',sp:false,maxOv:10,rating:oppBowl},{n:'B. Spinner',t:'a',sp:true,maxOv:10,rating:oppBowl-5},{n:'C. Medium',t:'s',sp:false,maxOv:10,rating:oppBowl-3},{n:'D. Part',t:'p',sp:false,maxOv:5,rating:oppBowl-12},{n:'E. All',t:'a',sp:false,maxOv:8,rating:oppBowl-8}];
-      return bowlers.map(p=>{
-        const isSpin=p.bowlingStyle&&/break|orthodox|spin/i.test(p.bowlingStyle);
-        const t=p.role==='bowler'?'s':p.role==='allrounder'?'a':'p';
-        const maxOv=t==='s'?10:t==='a'?8:5;
-        const rating=t==='s'?Math.min(97,oppBowl+3):t==='a'?Math.max(58,oppBowl-5):Math.max(52,oppBowl-14);
-        return{n:shortName(p.name),t,sp:isSpin,maxOv,rating};
-      });
+    function getWCOppBatRatings(oppXI){
+      return oppXI.map((p,idx)=>Math.max(50,Math.min(99,p.rating-posBatPenalty(p,idx))));
+    }
+
+    function getWCOppBowlPool(oppXI,oppBowl){
+      const isSpin=p=>p.canBowl&&p.bowlingStyle&&/break|orthodox|spin/i.test(p.bowlingStyle);
+      const specs=oppXI.filter(p=>p.role==='bowler'&&p.canBowl);
+      const ars=oppXI.filter(p=>p.role==='allrounder'&&p.canBowl);
+      const parts=oppXI.filter(p=>!['bowler','allrounder'].includes(p.role)&&p.canBowl);
+      const built=[...specs.map(p=>({n:shortName(p.name),t:'s',sp:isSpin(p),maxOv:10,rating:p.rating})),
+                   ...ars.map(p=>({n:shortName(p.name),t:'a',sp:isSpin(p),maxOv:8,rating:p.rating})),
+                   ...parts.map(p=>({n:shortName(p.name),t:'p',sp:isSpin(p),maxOv:5,rating:p.rating}))].slice(0,7);
+      if(built.length)return built;
+      // Fallback only if a nation's XI somehow has nobody who can bowl at all.
+      return[{n:'B. Seamer',t:'s',sp:false,maxOv:10,rating:oppBowl},{n:'B. Spinner',t:'a',sp:true,maxOv:10,rating:oppBowl-5},{n:'C. Medium',t:'s',sp:false,maxOv:10,rating:oppBowl-3},{n:'D. Part',t:'p',sp:false,maxOv:5,rating:oppBowl-12},{n:'E. All',t:'a',sp:false,maxOv:8,rating:oppBowl-8}];
     }
 
     function simWCMatch(engBat,oppBat,engBowl,oppBowl,isHome,opp){
       const oppId=opp.id;
+      const oppXI=buildWCOpponentXI(oppId);
       const engBatNames=(WCS.currentXI&&WCS.currentXI.filter(Boolean).length===11)?WCS.currentXI.map(p=>p.name):['J. Root','J. Buttler','E. Morgan','B. Stokes','J. Bairstow','M. Ali','J. Ali','A. Flintoff','D. Gough','A. Caddick','D. Cork'];
-      const oppBatNames=getWCOppBatNames(oppId);
+      const oppBatNames=oppXI.length?oppXI.map(p=>p.name):['A. Player','B. Player','C. Player','D. Player','E. Player','F. Player','G. Player','H. Player','I. Player','J. Player','K. Player'];
       const engBatRatings=(WCS.currentXI&&WCS.currentXI.filter(Boolean).length===11)?WCS.currentXI.map((p,idx)=>Math.max(52,p.rating+(WCS.playerForm[p.id]||0)-posBatPenalty(p,idx))):[80,82,84,82,78,75,72,65,62,58,55];
-      const oppBatRatings=[oppBat+4,oppBat+3,oppBat+5,oppBat+7,oppBat+2,oppBat-1,oppBat-4,oppBat-12,oppBat-20,oppBat-24,oppBat-28].map(r=>Math.max(50,Math.min(99,r)));
+      const oppBatRatings=oppXI.length?getWCOppBatRatings(oppXI):[oppBat+4,oppBat+3,oppBat+5,oppBat+7,oppBat+2,oppBat-1,oppBat-4,oppBat-12,oppBat-20,oppBat-24,oppBat-28].map(r=>Math.max(50,Math.min(99,r)));
 
       const isSpin=p=>p.bowlingStyle&&/break|orthodox|spin/i.test(p.bowlingStyle);
       let engBowlPool=[];
@@ -11867,9 +12032,9 @@
       }
       if(!engBowlPool.length)engBowlPool=[{n:'J. Anderson',t:'s',maxOv:10,rating:84},{n:'D. Gough',t:'s',maxOv:10,rating:80},{n:'A. Flintoff',t:'a',maxOv:8,rating:82},{n:'M. Ali',t:'a',sp:true,maxOv:10,rating:76},{n:'D. Cork',t:'s',maxOv:10,rating:78}];
 
-      const oppBowlPool=getWCOppBowlPool(oppId,oppBowl);
+      const oppBowlPool=getWCOppBowlPool(oppXI,oppBowl);
       const engKeeper=engBatNames[6]||engBatNames[5];
-      const oppKeeper=oppBatNames[6]||oppBatNames[5]||oppBatNames[0];
+      const oppKeeper=oppXI.find(p=>p.role==='wicketkeeper')?.name||oppBatNames[6]||oppBatNames[0];
 
       const coinToss=Math.random()<0.5;
       const inn1Team=coinToss?'eng':'opp',inn2Team=inn1Team==='eng'?'opp':'eng';
@@ -12245,18 +12410,26 @@
       }
 
       const el=document.getElementById('wc-summary-content');
-      const resCol=result==='W'?'#4ade80':'#f87171';
       const resLabel=result==='W'?'Your XI Won':'Your XI Lost';
-      const headline=matchData.margin?(result==='W'?`Won by ${matchData.margin.replace('won by ','')}`:`Lost by ${matchData.margin.replace('won by ','')}`):resLabel;
+      const headline=matchData.margin?cap1(matchData.margin):resLabel;
 
       el.innerHTML=`
-        <div style="text-align:center;margin-bottom:20px">
-          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#606070;margin-bottom:4px">vs ${opp.flag} ${opp.name}</div>
-          <div style="font-size:24px;font-weight:900;color:${resCol}">${resLabel}</div>
-          <div style="font-size:13px;color:#9090a8;margin-top:4px">${headline}</div>
+        <div class="ov-reveal wch-hero ${result==='W'?'wch-hero-win':'wch-hero-loss'}" style="cursor:default">
+          <div class="wch-hero-tag">${result==='W'?'✓ Your Result':'✕ Your Result'}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="display:flex;align-items:center;min-width:0">
+              <span class="wch-hero-flag">${opp.flag}</span>
+              <div style="min-width:0">
+                <div class="wch-hero-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">vs ${opp.name}</div>
+                <div class="wch-hero-meta">${headline}</div>
+              </div>
+            </div>
+            <span class="sc-result-pill ${result==='W'?'pill-w':'pill-l'}">${result==='W'?'WON':'LOST'}</span>
+          </div>
         </div>
-        ${capStreakBoost?`<div style="text-align:center;margin-bottom:16px;font-size:12px;font-weight:700;color:#f9c846;background:#1a1400;border:1px solid #6a5218;border-radius:8px;padding:8px 12px">🔥 ${WCS.winStreak} wins in a row — ${WCS.squad.find(p=>p.id===WCS.captain)?.name||'the captain'} gets a form boost</div>`:''}
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Player Ratings After This Match</div>
+        ${capStreakBoost?`<div class="ov-reveal" style="text-align:center;margin-bottom:16px;font-size:12px;font-weight:700;color:#f9c846;background:#1a1400;border:1px solid #6a5218;border-radius:8px;padding:8px 12px"><span class="chip-boost">🔥 ${WCS.winStreak} wins in a row — ${WCS.squad.find(p=>p.id===WCS.captain)?.name||'the captain'} gets a form boost</span></div>`:''}
+        <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Player Ratings After This Match</div>
+        <div class="ov-stagger">
         ${changes.map(({player,delta,runs,balls,wkts,overs})=>{
           const newEff=player.rating+(WCS.playerForm[player.id]||0);
           const col=delta>0?'#4ade80':delta<0?'#f87171':'#6060a0';
@@ -12268,7 +12441,7 @@
           if(isBatter||isAR)parts.push(balls>0?`${runs} (${balls})`:'DNB');
           if((isBowler||isAR)&&overs>0)parts.push(`${wkts}/${overs}`);
           const statStr=parts.join(' · ');
-          return`<div style="display:flex;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:4px;background:#0d0d12;border:1px solid #1a1a24">
+          return`<div class="ov-row-reveal" style="display:flex;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:4px;background:#0d0d12;border:1px solid #1a1a24">
             <div style="flex:1;min-width:0">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                 <span style="font-size:13px;font-weight:700;color:#e0e0f0">${player.name}</span>
@@ -12280,9 +12453,11 @@
             <div style="font-size:13px;font-weight:900;color:${col};min-width:22px;text-align:right">${arrow}</div>
           </div>`;
         }).join('')}
+        </div>
       `;
       document.getElementById('wc-summary-btn').onclick=()=>afterWCMatch(matchData,opp,result);
       go('s-wc-summary');
+      requestAnimationFrame(()=>wireReveals(el));
     }
 
     function afterWCMatch(matchData,opp,result){
@@ -12365,7 +12540,7 @@
       };
       const spareableNonKeepers=nonKeepers.filter(p=>canSpare(p.role));
 
-      const allTypes=['birth','tabloid','drinks','confidence','nets'];
+      const allTypes=['birth','tabloid','drinks','confidence','nets','injury'];
       const types=allTypes.filter(t=>!WCS.usedEvents.has(t));
       if(!types.length)return null;
       const type=types[Math.floor(Math.random()*types.length)];
@@ -12397,25 +12572,29 @@
       const p2name=p2?p2.name:'';
       const configs={
         birth:{
-          emoji:'🍼',headline:`${p1.name}'s Partner Has Given Birth`,
-          detail:`Congratulations are in order — but ${p1.name} has flown home to be with his family and will miss the rest of the tournament.`,
+          emoji:'🍼',tag:'Tournament Over',variant:'',
+          headline:`${p1.name}'s Partner Has Given Birth`,
+          detail:`Congratulations are in order, but ${p1.name} has flown home to be with his family and will miss the rest of the tournament. Time to find a replacement.`,
           buttons:null,
         },
         tabloid:{
-          emoji:'📰',headline:`${p1.name} Caught in Tabloid Storm`,
-          detail:`A damaging front-page story has hit the camp. ${p1.name} is distracted and carrying the weight of the press — expect -3 to their effectiveness for the rest of the tournament.`,
+          emoji:'📰',tag:'Form Hit',variant:'wch-hero-loss',
+          headline:`${p1.name} Caught in Tabloid Scandal`,
+          detail:`A damaging front-page story has hit the camp. ${p1.name} is distracted and carrying the weight of the press. Expect -3 to their effectiveness for the rest of the tournament.`,
           buttons:null,
         },
         drinks:{
-          emoji:'🍺',headline:'Night Before the Match',
-          detail:`${p1.name} and ${p2name} were caught out drinking the night before the match. How do you handle it?`,
+          emoji:'🍺',tag:'⚠ Decision Required',variant:'',
+          headline:'Curfew Break',
+          detail:`${p1.name} and ${p2name} were caught out drinking the night before the match, and broke the curfew set for them. How do you handle it?`,
           buttons:[
             {label:'Play Both (-5 each)',action:'drinks_play',color:'#4ade80'},
             {label:'Drop Both (one match)',action:'drinks_drop',color:'#f87171'},
           ],
         },
         confidence:{
-          emoji:'😴',headline:`${p1.name} Struggling for Confidence`,
+          emoji:'😴',tag:'⚠ Decision Required',variant:'',
+          headline:`${p1.name} Struggling for Confidence`,
           detail:`${p1.name} has looked off colour in training and the press are calling for his head. Do you back him or make a change?`,
           buttons:[
             {label:`Back ${p1.name.split(' ').slice(-1)[0]} (-3 next match)`,action:'conf_back',color:'#4ade80'},
@@ -12423,23 +12602,32 @@
           ],
         },
         nets:{
-          emoji:'🔥',headline:`${p1.name} Unplayable in the Nets`,
+          emoji:'🔥',tag:'Form Boost',variant:'wch-hero-win',
+          headline:`${p1.name} Net Heroics`,
           detail:`${p1.name} has been outstanding in training and is forcing his way into the conversation. He gets +5 to his effectiveness for the next match if selected.`,
+          buttons:null,
+        },
+        injury:{
+          emoji:'🤕',tag:'Tournament Over',variant:'wch-hero-loss',
+          headline:`${p1.name} Picks Up an Injury`,
+          detail:`${p1.name} has gone down in training and scans confirm the worst. He's out for the rest of the tournament. Time to find a replacement.`,
           buttons:null,
         },
       };
       const cfg=configs[ev.type];
       const el=document.getElementById('wc-event-content');
-      el.innerHTML=`<div style="text-align:center;padding:20px 14px;border-radius:10px;background:#0d0d12;border:1px solid #2a2a3a">
-        <div style="font-size:36px;margin-bottom:12px">${cfg.emoji}</div>
+      el.innerHTML=`<div class="ov-reveal ov-pop wch-hero ${cfg.variant}" style="cursor:default">
+        <div class="wch-hero-tag">${cfg.tag}</div>
+        <div class="ov-header" style="width:auto;padding:0;margin-bottom:10px;text-align:left;border-radius:0;background:none"><span class="ov-icon" style="font-size:36px" aria-hidden="true">${cfg.emoji}</span></div>
         <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:10px;line-height:1.3">${cfg.headline}</div>
-        <div style="font-size:12px;color:#8080a8;line-height:1.7">${cfg.detail}</div>
+        <div style="font-size:12px;color:#c0c0d8;line-height:1.7">${cfg.detail}</div>
       </div>`;
       const btnArea=document.getElementById('wc-event-buttons');
       btnArea.innerHTML=cfg.buttons
-        ?cfg.buttons.map(b=>`<button class="btn-sim" style="margin-top:8px;background:${b.color==='#4ade80'?'#061a06':'#1a0606'};border-color:${b.color};color:${b.color}" onclick="handleWCEventChoice('${b.action}')">${b.label}</button>`).join('')
-        :`<button class="btn-sim" style="margin-top:8px" onclick="handleWCEventChoice('auto')">Continue →</button>`;
+        ?cfg.buttons.map(b=>`<button class="ov-reveal btn-sim" style="background:${b.color==='#4ade80'?'#061a06':'#1a0606'};border-color:${b.color};color:${b.color}" onclick="handleWCEventChoice('${b.action}')">${b.label}</button>`).join('')
+        :`<button class="ov-reveal btn-sim" onclick="handleWCEventChoice('auto')">Continue →</button>`;
       go('s-wc-event');
+      requestAnimationFrame(()=>wireReveals(document.getElementById('s-wc-event')));
     }
 
     function handleWCEventChoice(action){
@@ -12447,9 +12635,15 @@
       const p1=ev.players[0];
       const p2=ev.players[1];
 
+      let needsReplacement=null;
       if(ev.type==='birth'){
         WCS.playerInjured[p1.id]={type:'tournament',reason:'birth'};
         WCS.usedEvents.add('birth');
+        needsReplacement=p1;
+      }
+      if(ev.type==='injury'){
+        WCS.playerInjured[p1.id]={type:'tournament',reason:'injury'};
+        needsReplacement=p1;
       }
       if(ev.type==='tabloid'){
         WCS.playerForm[p1.id]=Math.max(-8,(WCS.playerForm[p1.id]||0)-3);
@@ -12477,6 +12671,122 @@
       }
 
       WCS.pendingEvent=null;
+      // A player ruled out for the rest of the tournament leaves a squad slot empty —
+      // send them to spin a replacement before resuming, instead of quietly playing
+      // one XI slot down for the rest of the run.
+      if(needsReplacement){showWCReplacementSpin(needsReplacement);return;}
+      const cont=WCS.pendingWCContinuation;
+      WCS.pendingWCContinuation=null;
+      if(cont)cont();
+    }
+
+    // ── WC SQUAD REPLACEMENT SPIN (birth / injury) ──────────────────────────────
+    // Mirrors Test mode's injury-replacement spin (one spin, no respins) but reuses
+    // the WC event screen's hero-card system for visual consistency, and draws from
+    // the same "any nation, any year" eligible pool as the original squad draft.
+    function findWCReplacementCandidates(slotDef,excludeIds){
+      const candidates=[];
+      WC_NATIONS.forEach(nat=>{
+        const pool=WC_PDB[nat.id]||[];
+        pool.forEach(p=>{
+          if(excludeIds.has(p.id))return;
+          if(slotDef.needOpener&&!p.opener)return;
+          if(slotDef.noOpener&&p.opener)return;
+          if(!slotDef.roles.includes(p.role))return;
+          const years=Object.keys(p.yearRatings);
+          const year=parseInt(years[Math.floor(Math.random()*years.length)]);
+          candidates.push({...p,natId:nat.id,nat,year,rating:p.yearRatings[year]});
+        });
+      });
+      return candidates;
+    }
+
+    function showWCReplacementSpin(outgoingPlayer){
+      const squadIdx=WCS.squad.findIndex(p=>p.id===outgoingPlayer.id);
+      if(squadIdx<0){
+        // Defensive fallback — shouldn't happen in normal play, but don't let a
+        // missing squad entry crash the flow, just resume as if nothing occurred.
+        console.warn('showWCReplacementSpin: outgoing player not found in squad',outgoingPlayer);
+        const cont=WCS.pendingWCContinuation;WCS.pendingWCContinuation=null;
+        if(cont)cont();
+        return;
+      }
+      const slotDef=WC_SLOT_DEFS[WCS.squad[squadIdx].slotPos-1];
+      const excludeIds=new Set(WCS.squad.map(p=>p.id));
+      const candidates=findWCReplacementCandidates(slotDef,excludeIds);
+      const repl=candidates.length?candidates[Math.floor(Math.random()*candidates.length)]:null;
+
+      const el=document.getElementById('wc-event-content');
+      const btnArea=document.getElementById('wc-event-buttons');
+      el.innerHTML=`
+        <div class="ov-reveal ov-pop wch-hero" style="cursor:default">
+          <div class="wch-hero-tag">Squad Update</div>
+          <div class="ov-header" style="width:auto;padding:0;margin-bottom:10px;text-align:left;border-radius:0;background:none"><span class="ov-icon" style="font-size:36px" aria-hidden="true">🔄</span></div>
+          <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:10px;line-height:1.3">Time to Find a Replacement</div>
+          <div style="font-size:12px;color:#c0c0d8;line-height:1.7">${outgoingPlayer.name} is out for the rest of the tournament. Spinning for a replacement ${slotDef.label.toLowerCase()}.</div>
+        </div>
+        <div class="ov-reveal" style="display:flex;justify-content:center;margin:16px 0">
+          <div class="wc-drum-box" style="max-width:260px">
+            <div class="wc-drum-text" id="wc-repl-drum-text" style="color:#f9c846">Spinning…</div>
+          </div>
+        </div>
+        <div id="wc-repl-reveal"></div>
+      `;
+      btnArea.innerHTML='';
+      go('s-wc-event');
+      requestAnimationFrame(()=>wireReveals(document.getElementById('s-wc-event')));
+
+      if(!repl){
+        document.getElementById('wc-repl-drum-text').textContent='No eligible replacement found';
+        WCS.pendingWCReplacement={repl:null,squadIdx};
+        btnArea.innerHTML=`<button class="ov-reveal btn-sim" onclick="confirmWCReplacement()">Continue →</button>`;
+        requestAnimationFrame(()=>wireReveals(document.getElementById('s-wc-event')));
+        return;
+      }
+
+      const drumText=document.getElementById('wc-repl-drum-text');
+      const cyclePool=candidates.length?candidates:[repl];
+      let ticks=0;
+      const spin=setInterval(()=>{
+        drumText.textContent=cyclePool[Math.floor(Math.random()*cyclePool.length)].name;
+        ticks++;
+        if(ticks>10){
+          clearInterval(spin);
+          drumText.textContent=repl.name;
+          revealWCReplacement(repl,squadIdx);
+        }
+      },90);
+    }
+
+    function revealWCReplacement(repl,squadIdx){
+      WCS.pendingWCReplacement={repl,squadIdx};
+      const revealEl=document.getElementById('wc-repl-reveal');
+      revealEl.innerHTML=`
+        <div class="ov-reveal ov-pop wch-hero wch-hero-win" style="cursor:default;margin-top:14px">
+          <div class="wch-hero-tag">✓ Replacement Signed</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="wch-hero-flag">${repl.nat?.flag||''}</span>
+            <div style="min-width:0">
+              <div class="wch-hero-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${repl.name}</div>
+              <div class="wch-hero-meta">${roleLabel(repl.role)} · ${repl.year} · ${repl.rating} OVR</div>
+            </div>
+          </div>
+        </div>
+      `;
+      const btnArea=document.getElementById('wc-event-buttons');
+      btnArea.innerHTML=`<button class="ov-reveal btn-sim" onclick="confirmWCReplacement()">Confirm &amp; Continue →</button>`;
+      requestAnimationFrame(()=>wireReveals(document.getElementById('s-wc-event')));
+    }
+
+    function confirmWCReplacement(){
+      const pending=WCS.pendingWCReplacement;
+      WCS.pendingWCReplacement=null;
+      if(pending&&pending.repl){
+        const{repl,squadIdx}=pending;
+        const outgoing=WCS.squad[squadIdx];
+        WCS.squad.splice(squadIdx,1,{...repl,formModifier:0,slotPos:outgoing.slotPos,slotLabel:outgoing.slotLabel});
+        WCS.playerForm[repl.id]=0;
+      }
       const cont=WCS.pendingWCContinuation;
       WCS.pendingWCContinuation=null;
       if(cont)cont();
@@ -13538,7 +13848,7 @@
   <!-- WC MATCH SUMMARY (post-match ratings) -->
   <div id="s-wc-summary" class="screen">
     <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:16px;text-align:left">World Cup · Match Summary</div>
-    <div id="wc-summary-content" style="width:100%;margin-bottom:16px"></div>
+    <div id="wc-summary-content" style="width:100%;margin-bottom:16px;text-align:left"></div>
     <button class="btn-sim" id="wc-summary-btn">Continue →</button>
   </div>
 
@@ -13549,10 +13859,12 @@
 
   <!-- WC RANDOM EVENT SCREEN -->
   <div id="s-wc-event" class="screen">
-    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;margin-bottom:4px;text-align:center">Breaking News</div>
-    <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:16px;text-align:center">Off the Pitch</div>
-    <div id="wc-event-content" style="width:100%;margin-bottom:4px"></div>
-    <div id="wc-event-buttons" style="width:100%;display:flex;flex-direction:column;gap:4px"></div>
+    <div class="ov-reveal" style="width:100%;text-align:left;margin-bottom:16px">
+      <span style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#0f0f13;background:#f9c846;font-weight:800;padding:2px 7px;border-radius:3px">Breaking News</span>
+      <div style="font-size:22px;font-weight:900;color:#fff;margin-top:8px">Off the Pitch</div>
+    </div>
+    <div id="wc-event-content" style="width:100%;margin-bottom:4px;text-align:left"></div>
+    <div id="wc-event-buttons" style="width:100%;display:flex;flex-direction:column;gap:8px"></div>
   </div>
 
   <!-- WC END SCREEN -->
