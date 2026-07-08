@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.env
+
+# Contains real user PII (emails) — never commit exports of these
+*emails*.csv
+*emails*.txt

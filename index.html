@@ -6228,7 +6228,7 @@
   <div id="cookie-banner" style="display:none">
     <p>We use cookies to measure how the game is being played — nothing else.
       No advertising, no selling your data.
-      <a onclick="openPrivacy()">Privacy policy</a>
+      <a href="privacy.html">Privacy policy</a>
     </p>
     <div class="cookie-btns">
       <button class="btn-cookie-decline" onclick="declineCookies()">Decline</button>
@@ -6293,7 +6293,7 @@
           '</div>' +
           '<button onclick="pingEvent(\'Partner_Click\',{source:\'footer\'});go(\'s-partners\');requestAnimationFrame(()=>wireReveals(document.getElementById(\'s-partners\')));loadPartnerMetrics()" style="width:100%;display:block;background:#16161f;border:1px solid #2a2a3a;color:#f9c846;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:16px;cursor:pointer;font-family:inherit">🤝 Advertise on 19-0 — Partner With Us</button>' +
           '<p>19-0 is an unofficial fan project, not affiliated with or endorsed by the ECB, Vitality T20 Blast, the ICC, any county cricket club, national cricket board, or any international cricket board. Player names, country names, team names, pundit quotes, and match simulations are used for entertainment purposes only and do not represent real individuals or organisations. T20 Blast is a registered trademark of the England and Wales Cricket Board. The Ashes and the Cricket World Cup are used as descriptive terms only.</p>' +
-          '<p style="margin-top:8px">&copy; 2026 19-0 &nbsp;·&nbsp; <a onclick="openPrivacy()">Privacy policy</a> &nbsp;·&nbsp; <a onclick="showCookieBanner()">Cookie settings</a></p>';
+          '<p style="margin-top:8px">&copy; 2026 19-0 &nbsp;·&nbsp; <a href="about.html">About</a> &nbsp;·&nbsp; <a href="how-to-play.html">How to Play</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy policy</a> &nbsp;·&nbsp; <a onclick="showCookieBanner()">Cookie settings</a></p>';
         home.appendChild(footer);
       }
 
@@ -11027,6 +11027,7 @@
       resetWCSpinDrum();
       updateWCDraftProgress();
       doWCSpin();
+      pingEvent('WC_Sim_Started', { league: 'World Cup' });
     }
 
     function resetWCSpinDrum() {
@@ -11202,11 +11203,13 @@
       WCS.squad.push({...player,rating:player.yearRatings[year],baseRating:player.yearRatings[year],year,natId,formModifier:0,slotPos:slotDef.pos,slotLabel:slotDef.label});
       WCS.playerForm[id]=0;WCS.usedYears.add(year);WCS.slot++;
       if(WCS.squad.length>=WC_SLOT_DEFS.length){
+        pingEvent('WC_Draft_Completed', { league: 'World Cup', ovr: Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length) });
         WCS.myNation=determineWCNation();
         buildWCFixtures();
         showWCCaptainPickerFromDraft();
         return;
       }
+      pingEvent('WC_Spin_Completed', { league: 'World Cup', slot: WCS.slot, role: player.role, year: player.year || year, rating: player.yearRatings[year] });
       WCS.spunYear=null;WCS.spunNation=null;updateWCDraftProgress();resetWCSpinDrum();
       document.getElementById('s-wc-spin').scrollIntoView({behavior:'smooth', block:'start'});
       doWCSpin();
@@ -12012,17 +12015,41 @@
       return oppXI.map((p,idx)=>Math.max(50,Math.min(99,p.rating-posBatPenalty(p,idx))));
     }
 
+    // A bowling pool built purely from "recognised" bowlers (specialists/all-rounders/part-timers
+    // who can bowl) can easily fall short of a full 50-over innings — e.g. 3 specialists + 2
+    // all-rounders is only 46 overs of capacity. Real ODI sides always find the overs somewhere
+    // (an occasional part-timer chips in), so top the pool up with spare XI names rather than
+    // let the innings run out of legal overs early.
+    function ensureBowlingCapacity(pool,xi,oversNeeded){
+      let cap=pool.reduce((s,b)=>s+(b.maxOv||0),0);
+      if(cap>=oversNeeded)return pool;
+      const used=new Set(pool.map(b=>b.n));
+      const spare=(xi||[]).map(p=>({n:shortName(p.name),rating:p.rating})).filter(p=>!used.has(p.n));
+      let i=0;
+      while(cap<oversNeeded){
+        const extra=Math.min(5,oversNeeded-cap);
+        if(i<spare.length){
+          pool.push({n:spare[i].n,t:'p',sp:false,maxOv:extra,rating:Math.max(50,(spare[i].rating||60)-15)});
+          used.add(spare[i].n);i++;
+        }else{
+          pool[0].maxOv=(pool[0].maxOv||0)+extra; // last resort: no spare names left, extend an existing bowler's cap
+        }
+        cap+=extra;
+      }
+      return pool;
+    }
+
     function getWCOppBowlPool(oppXI,oppBowl){
       const isSpin=p=>p.canBowl&&p.bowlingStyle&&/break|orthodox|spin/i.test(p.bowlingStyle);
       const specs=oppXI.filter(p=>p.role==='bowler'&&p.canBowl);
       const ars=oppXI.filter(p=>p.role==='allrounder'&&p.canBowl);
       const parts=oppXI.filter(p=>!['bowler','allrounder'].includes(p.role)&&p.canBowl);
       const built=[...specs.map(p=>({n:shortName(p.name),t:'s',sp:isSpin(p),maxOv:10,rating:p.rating})),
-                   ...ars.map(p=>({n:shortName(p.name),t:'a',sp:isSpin(p),maxOv:8,rating:p.rating})),
+                   ...ars.map(p=>({n:shortName(p.name),t:'a',sp:isSpin(p),maxOv:10,rating:p.rating})),
                    ...parts.map(p=>({n:shortName(p.name),t:'p',sp:isSpin(p),maxOv:5,rating:p.rating}))].slice(0,7);
       if(built.length)return built;
       // Fallback only if a nation's XI somehow has nobody who can bowl at all.
-      return[{n:'B. Seamer',t:'s',sp:false,maxOv:10,rating:oppBowl},{n:'B. Spinner',t:'a',sp:true,maxOv:10,rating:oppBowl-5},{n:'C. Medium',t:'s',sp:false,maxOv:10,rating:oppBowl-3},{n:'D. Part',t:'p',sp:false,maxOv:5,rating:oppBowl-12},{n:'E. All',t:'a',sp:false,maxOv:8,rating:oppBowl-8}];
+      return[{n:'B. Seamer',t:'s',sp:false,maxOv:10,rating:oppBowl},{n:'B. Spinner',t:'a',sp:true,maxOv:10,rating:oppBowl-5},{n:'C. Medium',t:'s',sp:false,maxOv:10,rating:oppBowl-3},{n:'D. Part',t:'p',sp:false,maxOv:5,rating:oppBowl-12},{n:'E. All',t:'a',sp:false,maxOv:10,rating:oppBowl-8}];
     }
 
     function simWCMatch(engBat,oppBat,engBowl,oppBowl,isHome,opp){
@@ -12039,11 +12066,13 @@
         const specs=WCS.currentXI.filter(p=>p.role==='bowler'&&p.canBowl);
         const ars=WCS.currentXI.filter(p=>p.role==='allrounder'&&p.canBowl);
         const parts=WCS.currentXI.filter(p=>!['bowler','allrounder'].includes(p.role)&&p.canBowl);
-        engBowlPool=[...specs.map(p=>({n:shortName(p.name),t:'s',sp:isSpin(p),maxOv:10,rating:p.rating+(WCS.playerForm[p.id]||0)})),...ars.map(p=>({n:shortName(p.name),t:'a',sp:false,maxOv:8,rating:p.rating+(WCS.playerForm[p.id]||0)})),...parts.map(p=>({n:shortName(p.name),t:'p',sp:false,maxOv:5,rating:p.rating+(WCS.playerForm[p.id]||0)}))].slice(0,7);
+        engBowlPool=[...specs.map(p=>({n:shortName(p.name),t:'s',sp:isSpin(p),maxOv:10,rating:p.rating+(WCS.playerForm[p.id]||0)})),...ars.map(p=>({n:shortName(p.name),t:'a',sp:false,maxOv:10,rating:p.rating+(WCS.playerForm[p.id]||0)})),...parts.map(p=>({n:shortName(p.name),t:'p',sp:false,maxOv:5,rating:p.rating+(WCS.playerForm[p.id]||0)}))].slice(0,7);
       }
-      if(!engBowlPool.length)engBowlPool=[{n:'J. Anderson',t:'s',maxOv:10,rating:84},{n:'D. Gough',t:'s',maxOv:10,rating:80},{n:'A. Flintoff',t:'a',maxOv:8,rating:82},{n:'M. Ali',t:'a',sp:true,maxOv:10,rating:76},{n:'D. Cork',t:'s',maxOv:10,rating:78}];
+      if(!engBowlPool.length)engBowlPool=[{n:'J. Anderson',t:'s',maxOv:10,rating:84},{n:'D. Gough',t:'s',maxOv:10,rating:80},{n:'A. Flintoff',t:'a',maxOv:10,rating:82},{n:'M. Ali',t:'a',sp:true,maxOv:10,rating:76},{n:'D. Cork',t:'s',maxOv:10,rating:78}];
 
       const oppBowlPool=getWCOppBowlPool(oppXI,oppBowl);
+      ensureBowlingCapacity(engBowlPool,WCS.currentXI,50);
+      ensureBowlingCapacity(oppBowlPool,oppXI,50);
       const engKeeper=engBatNames[6]||engBatNames[5];
       const oppKeeper=oppXI.find(p=>p.role==='wicketkeeper')?.name||oppBatNames[6]||oppBatNames[0];
 
@@ -12079,7 +12108,7 @@
         // "type" reflects genuine ability, not just how often they get the ball.
         const typeSkillMod=b.t==='s'?1.00:b.t==='a'?0.94:0.82;
         const baseRatingFactor=0.82+(bRat-55)/42*0.33;
-        return{name:b.n,type:b.t,isSpin:!!b.sp,maxOvers:b.maxOv||(b.t==='s'?10:b.t==='a'?8:5),overs:0,runs:0,wickets:0,maidens:0,
+        return{name:b.n,type:b.t,isSpin:!!b.sp,maxOvers:b.maxOv||(b.t==='p'?5:10),overs:0,runs:0,wickets:0,maidens:0,
           ratingFactor:baseRatingFactor*typeSkillMod,
           economyFactor:(2-baseRatingFactor)/typeSkillMod,
           hotFactor:0.88+Math.random()*0.30};
@@ -12590,6 +12619,7 @@
         WCS.semiResult=result;
         if(result==='W'){
           WCS.phase='final';
+          pingEvent('WC_Final_Reached', { league: 'World Cup', opponent: WCS.otherSemi.winner?.id });
           const finalTeam=WCS.otherSemi.winner;
           WCS.knockoutOpp={...finalTeam,home:WCS.hostNationId===WCS.myNation.id};
           showWCFinalMatchup(opp,WCS.otherSemi,WCS.knockoutOpp,()=>startWCKnockout());
@@ -13022,6 +13052,7 @@
 
     function enterSuperSixes(){
       WCS.phase='super6';
+      pingEvent('WC_Super_Sixes_Reached', { league: 'World Cup' });
       const sortT=tbl=>Object.entries(tbl).map(([id,t])=>({id,...t})).sort((a,b)=>b.pts-a.pts||(b.w/Math.max(1,b.p))-(a.w/Math.max(1,a.p)));
       const topA=sortT(WCS.groupTable.A).slice(0,3);
       const topB=sortT(WCS.groupTable.B).slice(0,3);
@@ -13055,6 +13086,7 @@
       const myPos=table.findIndex(t=>t.id==='myxi')+1;
       if(myPos<=4){
         WCS.qualified=true;WCS.phase='semi';
+        pingEvent('WC_Semi_Final_Reached', { league: 'World Cup', super_six_pos: myPos });
         // 1v4, 2v3 format — Your XI plays the opposite bracket team
         const top4=table.slice(0,4);
         const myIdx=top4.findIndex(t=>t.id==='myxi');
@@ -13163,6 +13195,9 @@
       // All wins/losses across every phase played (group, Super Sixes, semi, final)
       const totalWins=(WCS.matchHistory||[]).filter(m=>m.result==='W').length;
       const totalLosses=(WCS.matchHistory||[]).filter(m=>m.result==='L').length;
+
+      pingEvent('WC_Run_Completed', { league: 'World Cup', result: WCS.finalResult, group_pos: groupPos, super_pos: superPos, wins: totalWins, losses: totalLosses });
+      if (won) pingEvent('WC_Champions_Won', { league: 'World Cup' });
 
       // Performance verdict vs prediction
       const myXIRating=Math.round(WCS.squad.reduce((s,p)=>s+p.rating,0)/WCS.squad.length);

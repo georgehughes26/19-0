@@ -1,0 +1,135 @@
+/* Shared shell styling for standalone content pages (about, how-to-play, privacy).
+   Matches the in-game "Night Broadcast" theme — near-black surfaces, gold/orange accent. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #0a0a0f;
+  color: #e4e4ec;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.65;
+}
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+.page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.page-nav .wordmark {
+  font-size: 22px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f9c846, #f97316);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-decoration: none;
+}
+
+.page-nav a.btn-play {
+  background: linear-gradient(135deg, #f9c846, #f97316);
+  color: #0f0f13;
+  font-weight: 800;
+  font-size: 13px;
+  text-decoration: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+}
+
+.page h1 {
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 6px;
+  letter-spacing: -0.3px;
+}
+
+.page .subtitle {
+  color: #9090a8;
+  font-size: 14px;
+  margin: 0 0 28px;
+}
+
+.page h2 {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #f9c846;
+  margin: 34px 0 12px;
+}
+
+.page h2:first-of-type { margin-top: 0; }
+
+.page h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  margin: 20px 0 8px;
+}
+
+.page p {
+  font-size: 14px;
+  color: #c0c0d8;
+  margin: 0 0 14px;
+}
+
+.page ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+
+.page li {
+  font-size: 14px;
+  color: #c0c0d8;
+  margin-bottom: 6px;
+}
+
+.page a {
+  color: #f9c846;
+  text-decoration: underline;
+}
+
+.page strong { color: #fff; }
+
+.card {
+  background: #0d0d12;
+  border: 1px solid #1a1a24;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.card .card-label {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #6060a0;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.page-footer {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid #1a1a24;
+  font-size: 12px;
+  color: #565678;
+}
+
+.page-footer a { color: #8a8aa8; }
+
+.page-footer nav {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
