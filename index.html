@@ -6517,6 +6517,17 @@
         </div>`;
     }
 
+    function buildTestShareText() {
+      const eng = TS.wtcTable['eng'];
+      const standings = Object.entries(TS.wtcTable).map(([id,t])=>({id,...t})).sort((a,b)=>b.pct-a.pct);
+      const engPos = standings.findIndex(t=>t.id==='eng') + 1;
+      const won = TS.finalResult === 'W';
+      const result = won ? '🏆 World Test Champions' : TS.qualified ? '🥈 WTC Finalists' : `Finished ${ordinal(engPos)} in the WTC`;
+      const sorted = [...TS.squad];
+      const avgRating = sorted.length ? Math.round(sorted.reduce((s,p)=>s+p.rating,0)/sorted.length) : '—';
+      return `Just went ${eng.w}-${eng.d}-${eng.l} with an OVR ${avgRating} Test XI — ${result}! Can you do better? 🏏 www.19-0.co.uk`;
+    }
+
     async function openTestShareModal() {
       buildTestShareCard();
       if (!window.html2canvas) {
@@ -6528,12 +6539,7 @@
         });
       }
       const textEl = document.getElementById('share-text-preview');
-      const eng = TS.wtcTable['eng'];
-      const standings = Object.entries(TS.wtcTable).map(([id,t])=>({id,...t})).sort((a,b)=>b.pct-a.pct);
-      const engPos = standings.findIndex(t=>t.id==='eng') + 1;
-      const won = TS.finalResult === 'W';
-      const headline = won ? '🏆 World Test Champions!' : TS.qualified ? '🥈 WTC Finalists' : `${ordinal(engPos)} in WTC`;
-      if (textEl) textEl.textContent = `19-0 · World Test Championship\n${headline}\nW${eng.w} D${eng.d} L${eng.l} · ${eng.pct.toFixed(1)}% PCT\n19-0.co.uk`;
+      if (textEl) textEl.textContent = buildTestShareText();
       const card = document.getElementById('share-card');
       card.style.left = '-9999px';
       const canvas = await html2canvas(card, { backgroundColor:'#0d0d14', scale:2, useCORS:true, logging:false });
@@ -6634,7 +6640,7 @@
     }
 
     async function copyShareText() {
-      const text = GAME_MODE === 'wc' ? buildWCShareText() : buildShareText();
+      const text = GAME_MODE === 'wc' ? buildWCShareText() : GAME_MODE === 'test' ? buildTestShareText() : buildShareText();
       try {
         await navigator.clipboard.writeText(text);
         const btn = document.getElementById('btn-copy-text');
@@ -6662,8 +6668,8 @@
         const blob = await res.blob();
         const file = new File([blob], "19-0-season.png", { type: "image/png" });
         await navigator.share({
-          title: GAME_MODE === 'wc' ? "19-0 · Cricket World Cup" : "19-0 · T20 Blast Draft",
-          text: GAME_MODE === 'wc' ? buildWCShareText() : buildShareText(),
+          title: GAME_MODE === 'wc' ? "19-0 · Cricket World Cup" : GAME_MODE === 'test' ? "19-0 · World Test Championship" : "19-0 · T20 Blast Draft",
+          text: GAME_MODE === 'wc' ? buildWCShareText() : GAME_MODE === 'test' ? buildTestShareText() : buildShareText(),
           files: [file]
         });
       } catch(e) {
