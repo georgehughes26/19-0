@@ -119,6 +119,8 @@ const HTML = `<!DOCTYPE html>
     <tr><td bgcolor="#080810" style="padding:20px 32px;text-align:center;background-color:#080810;border-top:1px solid #1a1a30">
       <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;color:#404070;line-height:1.8;margin:0">You're receiving this because you tested 19-0 early.<br>
       <a href="https://19-0.co.uk" style="color:#5050a0;text-decoration:none">19-0.co.uk</a> &nbsp;·&nbsp; <a href="{{UnsubscribeURL}}" style="color:#5050a0;text-decoration:none">Unsubscribe</a></p>
+      <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:11px;color:#303060;line-height:1.6;margin:10px 0 0">{{SenderInfoLine}}</p>
+      <p style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10px;color:#303060;line-height:1.6;margin:8px 0 0">Sent with <a href="{{RewardsURL}}" style="color:#404070;text-decoration:underline">EmailOctopus</a></p>
     </td></tr>
 
   </table>

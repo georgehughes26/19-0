@@ -3699,7 +3699,7 @@
         <span class="mode-label">Test Cricket</span>
       </button>
       <button class="mode-btn" id="mode-btn-wc" onclick="selectMode('wc')" style="display:none">
-        <span class="mode-beta-badge">BETA</span>
+        <span class="mode-beta-badge">NEW</span>
         <span class="mode-icon">🏆</span>
         <span class="mode-label">World Cup</span>
       </button>
@@ -6185,7 +6185,7 @@
       <div style="text-align:center;margin-bottom:20px">
         <div style="font-size:32px;margin-bottom:10px">📊</div>
         <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Save your runs</div>
-        <div style="font-size:13px;color:#8080a0;line-height:1.7;max-width:300px;margin:0 auto">Create a free account to track your stats, best finishes, total wins and most-drafted players across every run — and unlock <span style="color:#f9c846;font-weight:800">World Cup mode</span>.</div>
+        <div style="font-size:13px;color:#8080a0;line-height:1.7;max-width:300px;margin:0 auto">Create a free account to track your stats, best finishes, total wins and most-drafted players across every run.</div>
       </div>
       <div style="background:#111118;border:1px solid #1a1a24;border-radius:12px;padding:14px 16px;margin-bottom:18px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -6711,11 +6711,11 @@
       if (typeof GAME_MODE !== 'undefined' && GAME_MODE === 'wc' && typeof selectMode === 'function') selectMode('t20');
     }
 
-    // World Cup mode is gated to signed-in accounts only — re-checked on every
-    // sign-in/sign-out so a stale deep link or query param can never reveal it.
+    // World Cup mode is open to everyone now — this just keeps the dev-only
+    // auto-draft button restricted, re-checked on every sign-in/sign-out.
     function updateWCModeVisibility() {
       const wcBtn = document.getElementById('mode-btn-wc');
-      if (wcBtn) wcBtn.style.display = AUTH_USER ? '' : 'none';
+      if (wcBtn) wcBtn.style.display = '';
       const wcDevBtn = document.getElementById('wc-dev-autodraft-btn');
       if (wcDevBtn) wcDevBtn.style.display = (AUTH_USER && AUTH_USER.username === 'ghughesy') ? '' : 'none';
     }
