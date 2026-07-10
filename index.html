@@ -3838,7 +3838,7 @@
     </div><!-- /home-test-content -->
 
     <div id="home-wc-content" style="display:none;width:100%">
-      <div class="home-sub">Draft an all-time World Cup XI from any nation and era. Play 6 group stage matches, reach the Super Sixes, then semi-final and final. One innings a side — every run counts.</div>
+      <div class="home-sub">Draft an all-time World Cup XI from any nation and era. Play 6 group stage matches, reach the Super Sixes, then semi-final and final. Can you take on the World's Best?</div>
 
       <button class="settings-toggle" type="button" aria-expanded="false" onclick="toggleSettings(this)">
         <span>Customize settings</span><span class="settings-toggle-chevron">›</span>
@@ -8105,24 +8105,20 @@
       const pos = posIdx + 1;
       if (p.role === 'batsman') {
         if (p.opener) {
-          if (pos <= 2) return 0;
-          if (pos === 3) return 3;
+          if (pos <= 3) return 0;   // openers can bat as high as 3 with no penalty
           if (pos <= 5) return 5;
-          return 8;           // pos 6-8: opener batting low
+          return 7;                 // pos 6-8+: opener batting low
         } else {
-          if (pos <= 2) return 7;  // middle-order batter opening
-          if (pos <= 5) return 0;  // natural zone
-          return 3;                // pos 6-8: slightly lower
+          if (pos <= 2) return 3;   // middle-order batter opening
+          if (pos <= 5) return 0;   // natural zone
+          return 5;                 // pos 6-8+: batting too low
         }
       } else if (p.role === 'allrounder') {
-        if (pos <= 2) return 12;
-        if (pos === 3) return 8;
-        if (pos <= 5) return 5;
-        return 0;             // pos 6-8: natural zone
-      } else if (p.role === 'wicketkeeper') {
         if (pos <= 2) return 5;
         if (pos === 3) return 3;
-        return 0;             // pos 4-8: fine
+        return 0;             // pos 4-8+: natural zone
+      } else if (p.role === 'wicketkeeper') {
+        return 0;             // keepers can bat anywhere with no penalty
       }
       return 0;
     }
@@ -12093,6 +12089,16 @@
       const target=inn1.runs+1;
       const inn2=simODIInnings(ib(inn2Team),iw(inn2Team),50,target,ibn(inn2Team),ibp(inn2Team),ikp(inn2Team),ibr(inn2Team));
       inn2.team=inn2Team;inn2.target=target;
+
+      // An exact tie should go to a Super Over in real cricket — that's not modelled yet, so for
+      // now just make sure the scoreline can never actually finish level. Break it with a coin
+      // flip and nudge the losing side down by the single run that separates them, rather than
+      // silently crediting whoever batted first (the old behaviour, which ignored the chase result
+      // entirely and produced a nonsensical "won by 0 runs" margin).
+      if(inn2.runs===inn1.runs){
+        if(Math.random()<0.5){inn2.runs+=1;inn2.chaseWon=true;}
+        else{inn1.runs+=1;}
+      }
 
       const winner=inn2.chaseWon?inn2Team:inn1Team;
       const result=winner==='eng'?'W':'L';
