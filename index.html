@@ -3800,7 +3800,7 @@
       >
       <div style="font-size:10px;color:#404055;text-align:center;margin-top:5px;letter-spacing:.5px">Your team name · optional · 20 chars max <span id="name-counter"></span></div>
     </div>
-    <button class="btn-start" onclick="startDraft()">Start New Run →</button>
+    <button class="btn-start" onclick="startDraft()">Start New Run</button>
 
 
     <div class="home-stats">
@@ -3854,7 +3854,7 @@
         <div style="font-size:14px;font-weight:800;color:#60a5fa;letter-spacing:0.5px">▶ Continue Saved Game</div>
         <div id="continue-test-date" style="font-size:11px;color:#6090b8;letter-spacing:0.5px"></div>
       </button>
-      <button class="btn-start" onclick="startTestDraft()">Start New Run →</button>
+      <button class="btn-start" onclick="startTestDraft()">Start New Run</button>
 
 
       <div class="home-stats">
@@ -3907,7 +3907,7 @@
         <div style="font-size:14px;font-weight:800;color:#60a5fa;letter-spacing:0.5px">▶ Continue Saved Game</div>
         <div id="continue-wc-date" style="font-size:11px;color:#6090b8;letter-spacing:0.5px"></div>
       </button>
-      <button class="btn-start" onclick="startWCDraft()">Start New Run →</button>
+      <button class="btn-start" onclick="startWCDraft()">Start New Run</button>
 
       <div class="home-stats">
         <div><div class="hs-n">14</div><div class="hs-l">Teams</div></div>
@@ -3973,14 +3973,14 @@
       <div id="sq-budget-text" style="font-size:13px;color:#c0c0d8;line-height:1.7"></div>
     </div>
     <div id="squad-review-ad" style="margin:12px 0"></div>
-    <button class="btn-sim" onclick="showPreview()">Season Preview →</button>
+    <button class="btn-sim" onclick="showPreview()">Season Preview</button>
   </div>
 
   <!-- SEASON PREVIEW -->
   <div id="s-preview" class="screen">
     <div id="preview-content" style="width:100%"></div>
     <div id="preview-ad" style="margin:12px 0"></div>
-    <button class="btn-sim" style="margin-top:8px" onclick="startSim()">Begin the season →</button>
+    <button class="btn-sim" style="margin-top:8px" onclick="startSim()">Begin the season</button>
   </div>
 
   <!-- GROUP STAGE SIM -->
@@ -4054,7 +4054,7 @@
         <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:3px">Save your drafts</div>
         <div style="font-size:11px;color:#606080;line-height:1.5">Create a free account to track your stats, best runs and most drafted players.</div>
       </div>
-      <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up →</button>
+      <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up</button>
     </div>
     <div class="ov-lower">
       <div class="ov-reached" id="ov-reached"></div>
@@ -4071,7 +4071,7 @@
     </div>
     <div class="section-lbl">Your XI</div>
     <div class="squad-list" id="ov-squad" style="margin-bottom:24px"></div>
-    <button class="btn-new" onclick="fullReset()">New Run →</button>
+    <button class="btn-new" onclick="fullReset()">New Run</button>
   </div>
 
   <script src="t20-players.js"></script>
@@ -5093,9 +5093,9 @@
       document.getElementById("sim-prog").textContent = `${myWins}W ${myLosses}L · Complete`;
       const el = document.getElementById("sim-next"); el.style.display = "block";
       if (S.qualified) {
-        el.innerHTML = `<div class="result-pill rp-win">✓ Qualified — ${ordinal(S.myPos)} in the group · ${myWins} wins from 16 games</div><button class="btn-next" style="margin-top:10px" onclick="doKO('qf')">Quarter-finals →</button>`;
+        el.innerHTML = `<div class="result-pill rp-win">✓ Qualified — ${ordinal(S.myPos)} in the group · ${myWins} wins from 16 games</div><button class="btn-next" style="margin-top:10px" onclick="doKO('qf')">Quarter-finals</button>`;
       } else {
-        el.innerHTML = `<div class="result-pill rp-loss">✗ Eliminated — ${ordinal(S.myPos)}, only top 4 advance · ${myWins} wins from 16 games</div><button class="btn-next" style="margin-top:10px" onclick="showOverview()">Season overview →</button>`;
+        el.innerHTML = `<div class="result-pill rp-loss">✗ Eliminated — ${ordinal(S.myPos)}, only top 4 advance · ${myWins} wins from 16 games</div><button class="btn-next" style="margin-top:10px" onclick="showOverview()">Season overview</button>`;
       }
     }
 
@@ -5747,7 +5747,7 @@
     ${matchData.target ? `<div class="sc-result-margin">Target was ${matchData.target}</div>` : ""}
   </div>`;
       setTimeout(() => {
-        document.getElementById("sc-next").innerHTML = `<button class="btn-next" onclick="scNextCallback()">${scMatchData._label || "Continue →"}</button>`;
+        document.getElementById("sc-next").innerHTML = `<button class="btn-next" onclick="scNextCallback()">${scMatchData._label || "Continue"}</button>`;
       }, simDelay(500));
     }
 
@@ -5843,7 +5843,7 @@
         S.qfRes = [...otherRes];
         S._myQFPair = myPair; S._allQFR = allR;
         bod.innerHTML = `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:10px;text-align:left">Other quarter-finals</div><div class="ko-matches">` + otherRes.map(r => koCard(r, MY)).join("") + `</div><div style="height:1px;background:#1a1a24;margin:18px 0 14px"></div><div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin-bottom:12px;text-align:left">⭐ Your quarter-final</div>` + buildMyQFCard(myPair, allR, MY) + `</div>`;
-        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('qf')">Simulate Quarter-Final →</button>`;
+        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('qf')">Simulate Quarter-Final</button>`;
         go("s-ko");
 
       } else if (phase === "fd") {
@@ -5872,7 +5872,7 @@
           bod.innerHTML += `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:8px;text-align:left">Other semi-final</div><div class="ko-matches">` + koCard(otherRes, MY) + `</div>`;
         }
         bod.innerHTML += `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin:14px 0 10px;text-align:left">Your semi-final</div>` + buildMyQFCard(myPair, r2, MY);
-        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('sf')">Simulate Semi-Final →</button>`;
+        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('sf')">Simulate Semi-Final</button>`;
         go("s-ko");
 
       } else {
@@ -5884,7 +5884,7 @@
         const r2 = { ...S.ratings }; f.forEach(t => { if (!r2[t]) r2[t] = Math.round(60 + Math.random() * 12); });
         S._finalPair = f; S._allFR = r2;
         bod.innerHTML = `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin-bottom:10px;text-align:left">T20 Blast Final · Edgbaston</div>` + buildMyQFCard(f, r2, MY);
-        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('f')">Watch the final →</button>`;
+        nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('f')">Watch the final</button>`;
         go("s-ko");
       }
     }
@@ -5911,19 +5911,19 @@
         S.qfMatch = matchData;
         S.qfRes.push({ a: pair[0], b: pair[1], w: matchData.winner, l: matchData.loser, ws: matchData.inns1.runs, ls: matchData.inns2.runs, wk: matchData.inns2.wickets, batFirst: matchData.winnerBatsFirst });
         matchData._next = S.qfWon ? () => doKO('fd') : () => showOverview();
-        matchData._label = S.qfWon ? "Finals Day →" : "Season overview →";
+        matchData._label = S.qfWon ? "Finals Day" : "Season overview";
       } else if (phase === "sf") {
         S.sfWon = matchData.winner === MY;
         S.sfMatch = matchData;
         const otherW = S._otherSFRes ? S._otherSFRes.w : (pair[0] === MY ? pair[1] : pair[0]);
         S.sfRes = [{ a: pair[0], b: pair[1], w: matchData.winner, l: matchData.loser }, { a: "a", b: "b", w: otherW, l: "c" }];
         matchData._next = S.sfWon ? () => doKO('f') : () => showOverview();
-        matchData._label = S.sfWon ? "Simulate the Final →" : "Season overview →";
+        matchData._label = S.sfWon ? "Simulate the Final" : "Season overview";
       } else {
         S.finalWon = matchData.winner === MY;
         S.finalRes = matchData;
         matchData._next = () => showOverview();
-        matchData._label = "Season overview →";
+        matchData._label = "Season overview";
       }
       showScorecard(matchData, stagePills[phase], matchData._next);
     }
@@ -6212,7 +6212,13 @@
 
   <!-- ── SIGN-UP NUDGE MODAL ─────────────────────────────────── -->
   <div id="signup-nudge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:25000;align-items:flex-end;justify-content:center;padding:0">
-    <div style="background:#16161f;border:1px solid #252535;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:28px 22px 40px">
+    <div style="background:#16161f;border:1px solid #252535;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 20px 32px">
+      <!-- TEMPORARY: swapped for the OddBalls giveaway promo image. Restore the block
+           commented out below (and delete this one) to bring back the real signup nudge. -->
+      <img src="oddballs-giveaway.png" alt="19-0 x OddBalls — win a bundle worth £100+, go 11-0 in World Cup mode" style="width:100%;max-height:65vh;object-fit:contain;border-radius:14px;display:block;margin:0 auto 16px">
+      <div style="text-align:center;font-size:13px;color:#8080a0;line-height:1.7;margin-bottom:16px">Take on the challenge and go 11-0 in World Cup mode to be in with a shout. Signed-in users only.</div>
+      <button onclick="closeSignupNudge()" style="width:100%;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif">Play Now</button>
+      <!--
       <div style="text-align:center;margin-bottom:20px">
         <div style="font-size:32px;margin-bottom:10px">📊</div>
         <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Save your runs</div>
@@ -6238,8 +6244,9 @@
           </div>
         </div>
       </div>
-      <button onclick="openAuthModal();closeSignupNudge()" style="width:100%;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;margin-bottom:10px;font-family:system-ui,-apple-system,sans-serif">Create free account →</button>
+      <button onclick="openAuthModal();closeSignupNudge()" style="width:100%;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;margin-bottom:10px;font-family:system-ui,-apple-system,sans-serif">Create free account</button>
       <button onclick="closeSignupNudge()" style="width:100%;background:transparent;color:#606080;border:1px solid #252535;padding:13px;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif">Maybe later</button>
+      -->
     </div>
   </div>
 
@@ -6306,7 +6313,7 @@
             '<a href="mailto:george.19-0@outlook.com" style="flex:1;display:block;background:#16161f;border:1px solid #252535;color:#c0c0d8;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Contact Us</a>' +
           '</div>' +
           '<div style="margin-bottom:8px">' + renderOddBallsBanner('footer') + '</div>' +
-          '<button onclick="pingEvent(\'Partner_Click\',{source:\'footer\'});go(\'s-partners\');requestAnimationFrame(()=>wireReveals(document.getElementById(\'s-partners\')));loadPartnerMetrics()" style="width:100%;display:block;background:#16161f;border:1px solid #2a2a3a;color:#f9c846;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:16px;cursor:pointer;font-family:inherit">🤝 Advertise on 19-0 — Partner With Us</button>' +
+          '<a href="partners.html" onclick="pingEvent(\'Partner_Click\',{source:\'footer\'})" style="width:100%;display:block;background:#16161f;border:1px solid #2a2a3a;color:#f9c846;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:16px;cursor:pointer;font-family:inherit;text-decoration:none;box-sizing:border-box">🤝 Advertise on 19-0 — Partner With Us</a>' +
           '<p>19-0 is an unofficial fan project, not affiliated with or endorsed by the ECB, Vitality T20 Blast, the ICC, any county cricket club, national cricket board, or any international cricket board. Player names, country names, team names, pundit quotes, and match simulations are used for entertainment purposes only and do not represent real individuals or organisations. T20 Blast is a registered trademark of the England and Wales Cricket Board. The Ashes and the Cricket World Cup are used as descriptive terms only.</p>' +
           '<p style="margin-top:8px">&copy; 2026 19-0 &nbsp;·&nbsp; <a href="about.html">About</a> &nbsp;·&nbsp; <a href="how-to-play.html">How to Play</a> &nbsp;·&nbsp; <a href="faq.html">FAQ</a> &nbsp;·&nbsp; <a href="strategy-guide.html">Strategy Guide</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy policy</a> &nbsp;·&nbsp; <a onclick="showCookieBanner()">Cookie settings</a></p>';
         home.appendChild(footer);
@@ -6697,7 +6704,7 @@
     function loadSession() {
       try { AUTH_USER = JSON.parse(localStorage.getItem('19_0_user') || 'null'); } catch(e) { AUTH_USER = null; }
       renderAuthBar();
-      if (!AUTH_USER) setTimeout(openSignupNudge, 1200);
+      setTimeout(openSignupNudge, 1200);
     }
 
     function saveSession(user) {
@@ -6764,7 +6771,7 @@
     // Super Sixes, semi and final) can enter — one entry per signed-in account,
     // enforced both here and by a unique constraint on oddballs_entries.user_id.
     // Flip to true to switch the giveaway back on — everything else stays wired up.
-    const ODDBALLS_GIVEAWAY_LIVE = false;
+    const ODDBALLS_GIVEAWAY_LIVE = true;
     async function maybeShowOddBallsGiveaway() {
       if (!ODDBALLS_GIVEAWAY_LIVE) return; // giveaway is paused for now
       if (!AUTH_USER) return; // must be signed in to enter — no prompt for guests, just skip
@@ -6826,6 +6833,66 @@
       }
     }
 
+    async function obShareAndDouble(platform) {
+      // Reuses the exact same "invincibles" share card + caption as the normal
+      // Share your season flow (buildWCShareCard/buildWCShareText), just triggered
+      // from the giveaway thanks screen instead of the WC summary screen.
+      try {
+        if (!_shareImgDataUrl) {
+          buildWCShareCard();
+          if (!window.html2canvas) {
+            await new Promise((res, rej) => {
+              const s = document.createElement('script');
+              s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+              s.onload = res; s.onerror = rej;
+              document.head.appendChild(s);
+            });
+          }
+          const card = document.getElementById('share-card');
+          card.style.left = '-9999px';
+          const canvas = await html2canvas(card, { backgroundColor: '#0d0d14', scale: 2, useCORS: true, logging: false });
+          _shareImgDataUrl = canvas.toDataURL('image/png');
+          card.style.left = '';
+        }
+      } catch (e) { console.warn('Could not build share image:', e); }
+
+      const shareText = buildWCShareText();
+      if (navigator.share && _shareImgDataUrl) {
+        try {
+          const res = await fetch(_shareImgDataUrl);
+          const blob = await res.blob();
+          const file = new File([blob], '19-0-season.png', { type: 'image/png' });
+          await navigator.share({ title: '19-0 · Cricket World Cup', text: shareText, files: [file] });
+        } catch (e) {
+          if (e.name === 'AbortError') return; // cancelled the share sheet — no bonus entry
+        }
+      } else if (_shareImgDataUrl) {
+        try {
+          const res = await fetch(_shareImgDataUrl);
+          const blob = await res.blob();
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        } catch (e) {}
+        window.open(platform === 'x'
+          ? 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText)
+          : 'https://www.instagram.com/myoddballs/', '_blank', 'noopener');
+      }
+      await confirmDoubleEntry(platform);
+    }
+
+    async function confirmDoubleEntry(platform) {
+      if (!AUTH_USER) return;
+      // oddballs_entries has no client-facing UPDATE policy (by design — see
+      // sql/oddballs_double_entry.sql), so this goes through a security-definer RPC
+      // rather than a direct .update(), which would silently no-op under RLS.
+      try {
+        const { data: didUpdate, error } = await sb.rpc('mark_oddballs_shared', { p_user_id: AUTH_USER.id, p_platform: platform });
+        if (error || !didUpdate) { console.warn('Could not record bonus entry:', error); return; }
+      } catch (e) { console.warn('Could not record bonus entry:', e); return; }
+      document.querySelectorAll('#ob-double-entry-block .ob-share-btn').forEach(b => b.disabled = true);
+      document.getElementById('ob-double-confirmed').style.display = '';
+      pingEvent('OddBalls_Giveaway_Shared', { platform });
+    }
+
     function authTab(mode, btn) {
       _authMode = mode;
       document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('on'));
@@ -6878,10 +6945,11 @@
           if (existing) { errEl.textContent = 'Username already taken.'; return; }
 
           const hash = await hashPin(pin);
-          const { data, error } = await sb.from('users')
-            .insert({ username, email, pin_hash: hash })
-            .select('id,username,email')
-            .single();
+          // Goes through a security-definer RPC rather than a direct insert so the
+          // client never needs a SELECT policy on the base users table to read the
+          // new row back (RETURNING) — see sql/fix_users_insert_policy.sql.
+          const { data: rows, error } = await sb.rpc('register_user', { p_username: username, p_email: email, p_pin_hash: hash });
+          const data = rows && rows[0];
           if (error || !data) { errEl.textContent = 'Could not create account. Try a different username.'; return; }
           saveSession({ id: data.id, username: data.username, email: data.email });
           pingEvent('Account_Created', { league: 'T20 Blast' });
@@ -7607,7 +7675,6 @@
     }
 
     function openSignupNudge() {
-      if (AUTH_USER) return; // already signed in
       const m = document.getElementById('signup-nudge-modal');
       if (!m) return;
       m.style.display = 'flex';
@@ -8492,6 +8559,26 @@
       runTestMatch();
     }
 
+    // Expected ("par") match output for a given rating, derived from the same rating-scaling
+    // curves the sim engine itself uses (batScMod/batWktMod/ratingFactor in simTestInnings),
+    // so form judges a player against what's normal FOR THEM, not one flat bar for everyone.
+    // base75 is that role's typical match output at rating 75 (measured empirically).
+    function parBatRuns(rating, base75) {
+      const r = Math.max(52, Math.min(99, rating));
+      const scR   = 0.80 + (r  - 52) / 47 * 0.40;
+      const wktR  = 1.20 - (r  - 52) / 47 * 0.45;
+      const sc75  = 0.80 + (75 - 52) / 47 * 0.40;
+      const wkt75 = 1.20 - (75 - 52) / 47 * 0.45;
+      return base75 * (scR / sc75) * (wkt75 / wktR);
+    }
+    function parWkts(rating, base75) {
+      // Deliberately NOT scaled the way parBatRuns is: measured directly, a stronger bowling
+      // attack takes wickets faster per over but also bowls the opposition out in fewer overs,
+      // and those two effects roughly cancel out — wickets-per-match stays close to flat across
+      // rating levels in practice, unlike batting output which scales up clearly with rating.
+      return base75;
+    }
+
     // ── POST-TEST SUMMARY ──────────────────────────────────────────────────
     function showTestSummary(matchResult) {
       const series = TS.series[TS.currentSeriesIdx];
@@ -8545,46 +8632,60 @@
         let delta = 0;
 
         if (p.role === 'batsman' && p.opener) {
+          const par = parBatRuns(p.rating, 38); // ~38 is a rating-75 opener's typical match output
           if (!hadBatOpportunity) { delta = 0; }
-          else if (runs >= 160) delta =  2;
-          else if (runs >= 100) delta =  1;
-          else if (runs >=  45) delta =  0;  // 54 → 0, not negative
-          else if (runs >=  22) delta = -1;
-          else                  delta = -2;
+          else if (runs >= par*3.4)  delta =  2;
+          else if (runs >= par*2.1)  delta =  1;
+          else if (runs >= par*1.15) delta =  0;
+          else if (runs >= par*0.58) delta = -1;
+          else                       delta = -2;
 
         } else if (p.role === 'batsman') {
+          const par = parBatRuns(p.rating, 28); // ~28 is a rating-75 middle-order batter's typical output
           if (!hadBatOpportunity) { delta = 0; }
-          else if (runs >= 120) delta =  2;
-          else if (runs >=  60) delta =  1;  // 61 → +1
-          else if (runs >=  30) delta =  0;
-          else if (runs >=  12) delta = -1;
-          else                  delta = -2;
+          else if (runs >= par*3.4)  delta =  2;
+          else if (runs >= par*2.1)  delta =  1;
+          else if (runs >= par*1.15) delta =  0;
+          else if (runs >= par*0.58) delta = -1;
+          else                       delta = -2;
 
         } else if (p.role === 'wicketkeeper') {
+          const par = parBatRuns(p.rating, 19); // ~19 is a rating-75 keeper's typical match output
           if (!hadBatOpportunity) { delta = 0; }
-          else if (runs >= 100) delta =  2;
-          else if (runs >=  55) delta =  1;
-          else if (runs >=  22) delta =  0;
-          else                  delta = -1;
+          else if (runs >= par*3.4)  delta =  2;
+          else if (runs >= par*2.05) delta =  1;
+          else if (runs >= par*1.15) delta =  0;
+          else if (runs >= par*0.58) delta = -1;
+          else                       delta = -2; // keepers can now drop as far as everyone else, not just -1
 
         } else if (p.role === 'allrounder') {
+          const parBat = parBatRuns(p.rating, 17); // ~17 is a rating-75 all-rounder's typical bat output
           let batDelta = !hadBatOpportunity ? 0
-            : runs >= 120 ?  2
-            : runs >=  70 ?  1
-            : runs >=  28 ?  0
-            : runs >=  10 ? -1 : -2;
+            : runs >= parBat*3.4  ?  2
+            : runs >= parBat*2.1  ?  1
+            : runs >= parBat*1.15 ?  0
+            : runs >= parBat*0.58 ? -1 : -2;
 
-          let bowlDelta = wkts >= 8 ?  2
-            : wkts >= 6 ?  1
-            : wkts >= 2 ?  0
-            : overs >= 20 ? -1 : 0;
+          // All-rounders naturally bowl fewer overs than a specialist (capped lower, picked
+          // less often), so their expected wicket haul is scaled down from a specialist's par.
+          // (Wickets-per-match doesn't scale with rating the way batting output does — see
+          // parWkts — so these stay close to the original flat 8/6/2 thresholds.)
+          const parWk = parWkts(p.rating, 4.6) * 0.55;
+          let bowlDelta = wkts >= parWk*3.75  ?  2
+            : wkts >= parWk*2.9   ?  1
+            : wkts >= parWk*1.2   ?  0
+            : overs >= 20         ? -1 : 0;
 
-          delta = Math.max(batDelta, bowlDelta);
+          // Blend rather than take the best of the two — a poor batting return should still
+          // count even if the bowling carried the match, and vice versa, instead of an
+          // all-rounder being structurally unable to ever drop as far as a specialist can.
+          delta = Math.round((batDelta + bowlDelta) / 2);
 
         } else if (p.role === 'bowler') {
-          if      (wkts >= 9)                          delta =  2;
-          else if (wkts >= 7)                          delta =  1;
-          else if (wkts >= 2)                          delta =  0;
+          const par = parWkts(p.rating, 4.6); // ~4.6 wkts/match — stays flat across ratings, see parWkts
+          if      (wkts >= par*2.35)                   delta =  2; // ≈10-11 wkts
+          else if (wkts >= par*1.85)                   delta =  1; // ≈8-9 wkts
+          else if (wkts >= par*0.68)                   delta =  0; // ≈3 wkts
           else if (wkts <= 1 && overs >= 30)           delta = -2;
           else if (wkts <= 1 && overs >= 15)           delta = -1;
           else                                         delta =  0;
@@ -8595,20 +8696,15 @@
         const oppAdj = opp.rating >= 83 ? 1 : opp.rating <= 65 ? -1 : 0;
         if (delta > 0) delta = Math.max(0, delta + oppAdj);
 
-        // Result modifier — harsh in defeat, honest in victory
-        if (result === 'L') {
-          delta = Math.max(-2, delta - 1); // everyone takes a hit; Root's +2 ton becomes +1
-        } else if (result === 'D') {
-          delta = delta > 0 ? Math.floor(delta * 0.5) : delta; // mute positives; negatives stick
-        }
-        // Win: delta unchanged — don't contribute and you stay flat or drop; do and you rise
+        // Form is judged purely on this player's own performance — no blanket
+        // adjustment for whether the team won, lost, or drew the match.
 
         // Hard cap: ±2 per test, and effective rating must not exceed 99
         delta = Math.max(-2, Math.min(2, delta));
         const currentForm = TS.playerForm[p.id] || 0;
         const headroom = 99 - p.rating; // can't boost past 99
         const floorRoom = -(p.rating - 50); // don't let form drag below ~50 effective
-        TS.playerForm[p.id] = Math.max(-10, Math.min(Math.min(10, headroom), currentForm + delta));
+        TS.playerForm[p.id] = Math.max(Math.max(-10, floorRoom), Math.min(Math.min(10, headroom), currentForm + delta));
         return { player: p, delta, runs, balls, wkts, overs };
       });
       // Store so XI picker can show same values
@@ -8626,7 +8722,7 @@
         ? (result==='W'?`Won by ${matchResult.margin}`:result==='L'?`Lost by ${matchResult.margin}`:matchResult.margin)
         : resLabel;
       const seriesOver = testNum >= series.tests;
-      const nextLabel = series.isWTCFinal ? 'Final Standings →' : seriesOver ? 'Series Result →' : `Pick XI · Test ${testNum + 1} of ${series.tests} →`;
+      const nextLabel = series.isWTCFinal ? 'Final Standings' : seriesOver ? 'Series Result' : `Pick XI · Test ${testNum + 1} of ${series.tests}`;
 
       el.innerHTML = `
         <div style="text-align:center;margin-bottom:20px">
@@ -8844,7 +8940,7 @@
           `<button class="btn-sim" style="margin-top:8px;background:${b.color==='#4ade80'?'#061a06':'#1a0606'};border-color:${b.color};color:${b.color}" onclick="handleEventChoice('${b.action}')">${b.label}</button>`
         ).join('');
       } else {
-        btnArea.innerHTML = `<button class="btn-sim" style="margin-top:8px" onclick="handleEventChoice('auto')">Continue →</button>`;
+        btnArea.innerHTML = `<button class="btn-sim" style="margin-top:8px" onclick="handleEventChoice('auto')">Continue</button>`;
       }
 
       go('s-test-event');
@@ -8976,9 +9072,9 @@
           <div style="font-size:13px;color:#f9c846;font-weight:700">${pickedYear} · ${pickedRating}</div>
         </div>
         <div style="font-size:11px;color:#6060a0;text-align:center;margin-bottom:12px">One spin — no respins</div>
-        <button onclick="acceptReplacement()" class="btn-sim" style="width:100%">Accept →</button>
+        <button onclick="acceptReplacement()" class="btn-sim" style="width:100%">Accept</button>
         ` : `<div style="color:#6060a0;text-align:center;padding:20px">No eligible replacements available</div>
-        <button onclick="acceptReplacement()" class="btn-sim" style="width:100%">Continue →</button>`;
+        <button onclick="acceptReplacement()" class="btn-sim" style="width:100%">Continue</button>`;
 
       // Stash pick on TS so accept can use it
       TS._replPick = pick ? { ...pick, rating: pickedRating, baseRating: pickedRating, year: pickedYear, formModifier: 0,
@@ -9020,7 +9116,7 @@
         </div>`;
       }).join('');
       const hasReplacements = TS.pendingReplacements.length > 0;
-      document.getElementById('inj-news-btn').textContent = hasReplacements ? 'Spin Replacement →' : 'Continue →';
+      document.getElementById('inj-news-btn').textContent = hasReplacements ? 'Spin Replacement' : 'Continue';
       go('s-test-inj-news');
     }
 
@@ -9310,15 +9406,15 @@
       document.getElementById('hub-wtc-pct').textContent = eng && eng.pct ? eng.pct.toFixed(1) + '%' : '—';
 
       if (!TS.squad || TS.squad.length < 15) {
-        btn.textContent = 'Draft your squad of 15 →';
+        btn.textContent = 'Draft your squad of 15';
         btn.onclick = startSquadDraft;
       } else if (allDone) {
-        btn.textContent = 'View WTC Final →';
+        btn.textContent = 'View WTC Final';
         btn.onclick = checkWTCFinal;
       } else {
         const next = TS.series.find(s => !s.completed);
         const nIdx = TS.series.indexOf(next);
-        btn.textContent = `Start ${next.isAsches ? 'The Ashes' : next.nation.name + ' Series'} →`;
+        btn.textContent = `Start ${next.isAsches ? 'The Ashes' : next.nation.name + ' Series'}`;
         btn.onclick = () => startSeriesDraft(nIdx);
       }
     }
@@ -9465,7 +9561,11 @@
     };
 
     function simTestMatch(engBat, oppBat, engBowl, oppBowl, isHome, oppName, venueMods) {
-      const MAX_OVERS = 450;
+      // Real Tests don't always get their full 5 days' worth of overs — rain, bad light and
+      // slow over rates regularly eat into a match. Without modelling that at all, this sim
+      // almost never produced a draw. ~55% of matches lose somewhere between 30 and 170 overs.
+      const lostOvers = Math.random() < 0.55 ? 30 + Math.floor(Math.random() * 141) : 0;
+      const MAX_OVERS = 450 - lostOvers;
       // Home advantage: +4 bat, +3 bowl for the home team; away team takes a corresponding dip
       const homeAdv = 4, homeAdvBowl = 3;
       if (isHome) {
@@ -9490,11 +9590,16 @@
         : ["Z. Crawley","B. Duckett","O. Pope","J. Root","H. Brook","B. Stokes","J. Bairstow","J. Anderson","S. Broad","O. Robinson","J. Leach"];
       const oppBatNames = OPP_BAT_POOLS[oppId] || OPP_BAT_POOLS['aus'];
 
-      // Individual batter ratings — England from XI with position penalty, opp derived from team rating
+      // Individual batter ratings — England from XI with position penalty, opp derived from team rating.
+      // Form is added here so a player who's actually in (or out of) form plays like it, not just
+      // shows a cosmetic number — this used to be missing entirely, unlike World Cup mode.
       const engBatRatings = (TS.currentXI && TS.currentXI.length === 11)
-        ? TS.currentXI.map((p, idx) => Math.max(52, p.rating - posBatPenalty(p, idx)))
+        ? TS.currentXI.map((p, idx) => Math.max(52, p.rating + (TS.playerForm[p.id]||0) - posBatPenalty(p, idx)))
         : [78,78,82,93,88,82,75,62,62,58,55];
-      const oppBatRatings = [oppBat+5, oppBat+3, oppBat+6, oppBat+8, oppBat+3, oppBat, oppBat-3, oppBat-10, oppBat-18, oppBat-22, oppBat-25]
+      // Top order centred on the team's own nominal rating (not boosted above it) — a real
+      // England XI gets no equivalent guaranteed boost, so giving the sim opposition one made
+      // even a rating-for-rating "even" match systematically favour the opposition.
+      const oppBatRatings = [oppBat+2, oppBat, oppBat+1, oppBat+2, oppBat, oppBat-2, oppBat-4, oppBat-8, oppBat-14, oppBat-18, oppBat-20]
         .map(r => Math.max(52, Math.min(99, r)));
 
       // England bowling pool from XI (with individual ratings)
@@ -9504,20 +9609,21 @@
         const ars   = TS.currentXI.filter(p => p.role==='allrounder' && p.canBowl);
         const parts = TS.currentXI.filter(p => !['bowler','allrounder'].includes(p.role) && p.canBowl);
         const isSpin = p => p.bowlingStyle && /break|orthodox|spin/i.test(p.bowlingStyle);
-        const specsMapped = specs.map(p => ({ n:shortName(p.name), t:'s', sp: isSpin(p), maxOv:28, rating: p.rating }));
+        const specsMapped = specs.map(p => ({ n:shortName(p.name), t:'s', sp: isSpin(p), maxOv:28, rating: p.rating+(TS.playerForm[p.id]||0) }));
         engBowlPool = [
           // Seamers before spinners so new-ball selection always finds a seamer first
           ...specsMapped.filter(b => !b.sp),
           ...specsMapped.filter(b => b.sp),
-          ...ars.map(p   => ({ n:shortName(p.name), t:'a', sp: false, maxOv:22, rating: p.rating })),
-          ...parts.map(p => ({ n:shortName(p.name), t:'p', sp: false, maxOv:12, rating: p.rating })),
+          ...ars.map(p   => ({ n:shortName(p.name), t:'a', sp: false, maxOv:22, rating: p.rating+(TS.playerForm[p.id]||0) })),
+          ...parts.map(p => ({ n:shortName(p.name), t:'p', sp: false, maxOv:12, rating: p.rating+(TS.playerForm[p.id]||0) })),
         ].slice(0, 7);
       }
       if (!engBowlPool.length) engBowlPool = [{n:"J. Anderson",t:'s',maxOv:28,rating:88},{n:"S. Broad",t:'s',maxOv:28,rating:86},{n:"O. Robinson",t:'s',maxOv:25,rating:80},{n:"J. Leach",t:'s',sp:true,maxOv:35,rating:76},{n:"B. Stokes",t:'a',maxOv:22,rating:88},{n:"M. Wood",t:'s',maxOv:20,rating:78}];
-      // Opp bowler ratings: specialists near team bowl rating, allrounders slightly lower, part-timers much lower
+      // Opp bowler ratings: specialists AT team bowl rating (no free boost — England's real
+      // bowlers get none either), allrounders slightly lower, part-timers much lower
       const oppBowlPool = (OPP_BOWL_POOLS[oppId] || OPP_BOWL_POOLS['aus']).map(b => ({
         ...b, maxOv: b.t==='s'?28:b.t==='a'?22:12,
-        rating: b.t==='s' ? Math.min(97, oppBowl+4) : b.t==='a' ? Math.max(60, oppBowl-6) : Math.max(55, oppBowl-18)
+        rating: b.t==='s' ? Math.min(97, oppBowl) : b.t==='a' ? Math.max(60, oppBowl-6) : Math.max(55, oppBowl-18)
       }));
 
       // Match conditions driven by venue mods (seam/spin/bat values from VENUE_MODS).
@@ -9548,15 +9654,22 @@
         // Bowler state for this innings
         const bwlrs = bowlPool.map((b, i) => {
           const bRat = Math.max(55, Math.min(97, b.rating || 75));
-          // ratingFactor: 55→0.82, 75→0.97, 97→1.15 — better bowlers take more wickets on average
-          const ratingFactor = 0.82 + (bRat - 55) / 42 * 0.33;
+          // baseRatingFactor: 55→0.82, 75→0.97, 97→1.15 — better bowlers take more wickets on average
+          const baseRatingFactor = 0.82 + (bRat - 55) / 42 * 0.33;
+          // A part-timer or all-rounder given the same numeric rating as a specialist is still
+          // a lesser bowler — dampens wicket threat so "type" reflects genuine ability, not just
+          // how often they get the ball (matches World Cup mode's equivalent skill mod).
+          const typeSkillMod = b.t==='s' ? 1.00 : b.t==='a' ? 0.94 : 0.82;
           return {
             name: b.n, type: b.t, isSpin: !!b.sp,
             maxOvers: b.maxOv || (b.t==='s'?28:b.t==='a'?22:12),
             overs:0, runs:0, wickets:0, maidens:0,
             spellOvers:0, spellMax: 5+Math.floor(Math.random()*4),
             restSince:-99, bad:false,
-            ratingFactor,
+            ratingFactor: baseRatingFactor * typeSkillMod,
+            // Better bowlers concede fewer runs per ball, not just take more wickets — this was
+            // missing entirely before, so economy barely moved with rating. Mirrors World Cup mode.
+            economyFactor: (2 - baseRatingFactor) / typeSkillMod,
             hotFactor: 0.88 + Math.random() * 0.30, // match-level variance on top of rating
           };
         });
@@ -9677,7 +9790,7 @@
               // sc drives non-dot probabilities — higher = more scoring
               const batScMod = 0.80 + (bRat - 52) / 47 * 0.40; // 52→0.80, 99→1.20
               const condRunMod = conditions === 'batting' ? 1.12 : conditions === 'seam' || conditions === 'spin' ? 0.92 : 1.0;
-              const sc = (0.85 + q * 0.20) * batScMod * condRunMod; // team quality still matters but individual rating dominates
+              const sc = (0.85 + q * 0.20) * batScMod * condRunMod * bowler.economyFactor; // team quality, batter rating, AND bowler economy all matter
               const p1 = 0.20 * sc, p2 = 0.06 * sc, p3 = 0.005 * sc, p4 = 0.05 * sc, p6 = 0.005 * sc;
               const p0 = Math.max(0.50, 1 - p1 - p2 - p3 - p4 - p6);
               const r = Math.random();
@@ -9997,7 +10110,7 @@
           nextBtn.style.display = '';
           const nextInn = innings[currentInn + 1];
           if (nextInn) {
-            nextBtn.textContent = `${ordinals[currentInn + 1]} Innings →`;
+            nextBtn.textContent = `${ordinals[currentInn + 1]} Innings`;
             nextBtn.onclick = () => {
               currentInn++;
               showCurrentInnings();
@@ -10261,7 +10374,7 @@
       </div>`;
       resBlock.style.display = '';
       const nextBtn = document.getElementById('tm-next-btn');
-      nextBtn.textContent = 'Continue →';
+      nextBtn.textContent = 'Continue';
       nextBtn.onclick = afterTestMatch;
       nextBtn.style.display = '';
       document.getElementById('tm-session-label').textContent = 'Full Time';
@@ -10805,7 +10918,7 @@
             <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:3px">Save your drafts</div>
             <div style="font-size:11px;color:#606080;line-height:1.5">Create a free account to track your stats, best runs and most drafted players.</div>
           </div>
-          <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up →</button>
+          <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up</button>
         </div>` : ''}
 
         <div class="ov-lower">
@@ -11898,7 +12011,7 @@
               <div class="wch-hero-meta">${meta}</div>
             </div>
           </div>
-          <span class="wch-hero-cta">PLAY →</span>
+          <span class="wch-hero-cta">PLAY</span>
         </div>
       </div>`;
 
@@ -11962,7 +12075,7 @@
           ${done>0?`<div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;margin-top:18px;text-align:left">Results So Far</div>
           <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${doneMatches.map(m=>histRow(m)).join('')}</div>`:''}
 
-          ${allDone?`<button class="btn-sim" style="margin-top:8px" onclick="checkGroupQualification()">Group Stage Complete →</button>`:''}
+          ${allDone?`<button class="btn-sim" style="margin-top:8px" onclick="checkGroupQualification()">Group Stage Complete</button>`:''}
         `;
       } else if(phase==='super6'){
         const sS=sortT(WCS.superSixTable);
@@ -11983,7 +12096,7 @@
           ${done>0?`<div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;margin-top:18px;text-align:left">Results So Far</div>
           <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${doneMatches.map(m=>histRow(m)).join('')}</div>`:''}
 
-          ${allDone?`<button class="btn-sim" style="margin-top:8px" onclick="checkSuperSixQualification()">Super Sixes Complete →</button>`:''}
+          ${allDone?`<button class="btn-sim" style="margin-top:8px" onclick="checkSuperSixQualification()">Super Sixes Complete</button>`:''}
         `;
       } else {
         if(eyebrowEl)eyebrowEl.textContent=`World Cup · ${phase==='semi'?'Semi-Finals':'The Final'}`;
@@ -12382,7 +12495,7 @@
       function advanceOrFinish(){
         const nextBtn=document.getElementById('wm-next-btn');
         if(nextBtn){nextBtn.style.display='';
-          if(innings[currentInn+1]){nextBtn.textContent='2nd Innings →';nextBtn.onclick=()=>{currentInn++;showCurrentInnings();};}
+          if(innings[currentInn+1]){nextBtn.textContent='2nd Innings';nextBtn.onclick=()=>{currentInn++;showCurrentInnings();};}
           else showWCResult(matchData,opp);
         }
         // The innings that just finished can be well above the fold by now — bring the
@@ -12418,7 +12531,7 @@
         if(oversEl)oversEl.textContent='0.0 overs';
         setLiveTitle(innNum,teamName,true);
 
-        // The "next" button would otherwise sit idle and stale (still reading "2nd Innings →")
+        // The "next" button would otherwise sit idle and stale (still reading "2nd Innings")
         // for the whole of the innings it just kicked off — repurpose it as a skip control
         // instead, so it's always doing something useful while overs are being revealed live.
         const nextBtn=document.getElementById('wm-next-btn');
@@ -12572,7 +12685,7 @@
         <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">${winnerName} ${margin}</div>
         <div style="font-size:12px;color:#6060a0;margin-top:4px">${inn1.team==='eng'?'Your XI':opp.name}: ${inn1.runs}/${inn1.wkts} (${inn1.oversPlayed} ov)&nbsp;&nbsp;·&nbsp;&nbsp;${inn2.team==='eng'?'Your XI':opp.name}: ${inn2.runs}/${inn2.wkts} (${inn2.oversPlayed} ov)</div>
       </div>`;
-      const nextBtn=document.getElementById('wm-next-btn');nextBtn.style.display='';nextBtn.textContent='Continue →';nextBtn.onclick=()=>showWCMatchSummary(matchData,opp,result);
+      const nextBtn=document.getElementById('wm-next-btn');nextBtn.style.display='';nextBtn.textContent='Continue';nextBtn.onclick=()=>showWCMatchSummary(matchData,opp,result);
     }
 
     function showWCMatchSummary(matchData,opp,result){
@@ -12852,7 +12965,7 @@
       const btnArea=document.getElementById('wc-event-buttons');
       btnArea.innerHTML=cfg.buttons
         ?cfg.buttons.map(b=>`<button class="ov-reveal btn-sim" style="background:${b.color==='#4ade80'?'#061a06':'#1a0606'};border-color:${b.color};color:${b.color}" onclick="handleWCEventChoice('${b.action}')">${b.label}</button>`).join('')
-        :`<button class="ov-reveal btn-sim" onclick="handleWCEventChoice('auto')">Continue →</button>`;
+        :`<button class="ov-reveal btn-sim" onclick="handleWCEventChoice('auto')">Continue</button>`;
       go('s-wc-event');
       requestAnimationFrame(()=>wireReveals(document.getElementById('s-wc-event')));
     }
@@ -12966,7 +13079,7 @@
       if(!repl){
         document.getElementById('wc-repl-drum-text').textContent='No eligible replacement found';
         WCS.pendingWCReplacement={repl:null,squadIdx};
-        btnArea.innerHTML=`<button class="ov-reveal btn-sim" onclick="confirmWCReplacement()">Continue →</button>`;
+        btnArea.innerHTML=`<button class="ov-reveal btn-sim" onclick="confirmWCReplacement()">Continue</button>`;
         requestAnimationFrame(()=>wireReveals(document.getElementById('s-wc-event')));
         return;
       }
@@ -13001,7 +13114,7 @@
         </div>
       `;
       const btnArea=document.getElementById('wc-event-buttons');
-      btnArea.innerHTML=`<button class="ov-reveal btn-sim" onclick="confirmWCReplacement()">Confirm &amp; Continue →</button>`;
+      btnArea.innerHTML=`<button class="ov-reveal btn-sim" onclick="confirmWCReplacement()">Confirm &amp; Continue</button>`;
       requestAnimationFrame(()=>wireReveals(document.getElementById('s-wc-event')));
     }
 
@@ -13062,7 +13175,7 @@
           <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">${sec.label}</div>
           <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${sec.results.map(wcRoundResultRow).join('')}</div>
         `).join('')}
-        <button class="btn-sim" id="wc-stage-advance-btn">Continue →</button>
+        <button class="btn-sim" id="wc-stage-advance-btn">Continue</button>
       `;
       document.getElementById('wc-stage-advance-btn').onclick=cfg.onContinue;
       go('s-wc-stage-advance');
@@ -13087,7 +13200,7 @@
         <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${topA.map(qualRow).join('')}</div>
         <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Group B Qualifiers</div>
         <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1a1a2a;border-radius:10px;padding:0 14px;margin-bottom:18px">${topB.map(qualRow).join('')}</div>
-        <button class="btn-sim" id="wc-stage-advance-btn">Continue to Super Sixes →</button>
+        <button class="btn-sim" id="wc-stage-advance-btn">Continue to Super Sixes</button>
       `;
       document.getElementById('wc-stage-advance-btn').onclick=onContinue;
       go('s-wc-stage-advance');
@@ -13111,7 +13224,7 @@
         </div>
         ${pairCard({flag:WCS.myNation.flag,name:'Your XI'},semiOpp,true)}
         ${pairCard(otherA,otherB,false)}
-        <button class="btn-sim" id="wc-stage-advance-btn">Play Semi-Final →</button>
+        <button class="btn-sim" id="wc-stage-advance-btn">Play Semi-Final</button>
       `;
       document.getElementById('wc-stage-advance-btn').onclick=onPlay;
       go('s-wc-stage-advance');
@@ -13152,7 +13265,7 @@
             <div style="flex:1;text-align:center;min-width:0"><div style="font-size:30px">${finalOpp.flag}</div><div class="wch-hero-name" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${finalOpp.name}</div></div>
           </div>
         </div>
-        <button class="btn-sim" id="wc-stage-advance-btn">Play Final →</button>
+        <button class="btn-sim" id="wc-stage-advance-btn">Play Final</button>
       `;
       document.getElementById('wc-stage-advance-btn').onclick=onPlay;
       go('s-wc-stage-advance');
@@ -13416,7 +13529,7 @@
             <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:3px">Save your drafts</div>
             <div style="font-size:11px;color:#606080;line-height:1.5">Create a free account to track your stats, best runs and most drafted players.</div>
           </div>
-          <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up →</button>
+          <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up</button>
         </div>`:''}
 
         <div class="ov-reveal perf-card ${perfClass}" style="margin-bottom:16px">
@@ -13457,7 +13570,7 @@
         }).join('')}</div>
         </div>
 
-        <button class="wc-btn-primary" onclick="startWCDraft()" style="width:100%;padding:14px;background:linear-gradient(135deg,#f9c846,#f97316);border:none;border-radius:12px;color:#0f0f13;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px">Play Again →</button>
+        <button class="wc-btn-primary" onclick="startWCDraft()" style="width:100%;padding:14px;background:linear-gradient(135deg,#f9c846,#f97316);border:none;border-radius:12px;color:#0f0f13;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px">Play Again</button>
         <button class="wc-btn-secondary" onclick="go('s-home')" style="width:100%;padding:14px 12px;background:#0d0d18;border:1px solid #2a2a50;border-radius:12px;color:#8080c0;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">← Back to Home</button>
       `;
 
@@ -13638,6 +13751,15 @@
       <div class="ob-emoji">✅</div>
       <h2>You're entered!</h2>
       <div class="ob-sub">Your giveaway entry is in. OddBalls will be in touch if you win.</div>
+      <div id="ob-double-entry-block" style="margin-top:16px;width:100%;background:#111118;border:1px solid #2a2a3a;border-radius:12px;padding:14px 16px;box-sizing:border-box;text-align:left">
+        <div style="font-size:13px;font-weight:800;color:#f9c846;margin-bottom:4px">🎁 Double your entry</div>
+        <div style="font-size:12px;color:#9090a8;line-height:1.6;margin-bottom:12px">Share your run on X or Instagram and we'll bump you from 1 entry to 2.</div>
+        <div style="display:flex;gap:8px">
+          <button class="ob-share-btn" onclick="obShareAndDouble('x')" style="flex:1;background:#16161f;border:1px solid #2a2a3a;color:#fff;padding:10px 6px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Share on X</button>
+          <button class="ob-share-btn" onclick="obShareAndDouble('instagram')" style="flex:1;background:#16161f;border:1px solid #2a2a3a;color:#fff;padding:10px 6px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Share on Instagram</button>
+        </div>
+        <div id="ob-double-confirmed" style="display:none;margin-top:10px;font-size:12px;color:#4ade80;font-weight:700">✓ Bonus entry unlocked — you're in twice!</div>
+      </div>
       <button class="btn-auth-submit" style="margin-top:18px" onclick="closeOddBallsModal()">Close</button>
     </div>
   </div>
@@ -13645,15 +13767,17 @@
   <!-- ODDBALLS GIVEAWAY T&Cs (dummy placeholder copy) -->
   <div id="oddballs-tc-modal">
     <div class="ob-tc-box">
-      <h2>Giveaway Terms &amp; Conditions</h2>
+      <h2>OddBalls x 19-0 — World Cup Giveaway<br>Terms &amp; Conditions</h2>
       <div class="ob-tc-body">
-        <p>1. The promoter of this giveaway is OddBalls, in partnership with 19-0.</p>
-        <p>2. Entry is open to UK residents aged 18 or over. Employees of the promoter and their immediate families are not eligible to enter.</p>
-        <p>3. To enter, players must complete an unbeaten World Cup run in 19-0 and submit their details via the in-game entry form.</p>
-        <p>4. One entry per person. Multiple entries from the same person will be void.</p>
-        <p>5. The winner will be selected at random from all valid entries and contacted using the email address provided.</p>
-        <p>6. No cash alternative is available. The promoter reserves the right to substitute the prize for one of equivalent value.</p>
-        <p>7. These are placeholder terms. Final wording needs sign-off from OddBalls before launch.</p>
+        <p><strong>1. Promoter</strong><br>This competition is organised and promoted by OddBalls Apparel Ltd &amp; 19-0 ("OddBalls", "we", "us", or "our").</p>
+        <p><strong>2. Eligibility</strong><br>2.1 The competition is open to residents of the United Kingdom aged 18 years or over at the time of entry.<br>2.2 Employees of OddBalls, its affiliates, subsidiaries, or anyone professionally connected with this promotion are not eligible to enter.<br>2.3 Participants must be a logged in user on 19-0.</p>
+        <p><strong>3. How to Enter</strong><br>3.1 To enter, participants must complete a 11-0 run in the World Cup mode. They must then submit their first name and email address via the competition entry form pop-up.<br>3.2 No purchase is necessary to enter the competition.<br>3.3 Entries must be received before the closing date specified in Section 4.<br>3.4 Incomplete, late, or invalid entries will not be accepted.</p>
+        <p><strong>4. Competition Period</strong><br>4.1 The competition opens upon launch of the promotional campaign and closes at 23:59 (BST) on 31st July 2026.<br>4.2 Entries received after this time will not be included in the draw.</p>
+        <p><strong>5. The Prize</strong><br>5.1 Five (5) winners will receive an OddBalls underwear and accessory bundle worth £100 or over.<br>5.2 The prize is non-transferable, non-exchangeable, and no cash alternative is available.<br>5.3 OddBalls reserves the right to substitute the prize with an alternative of equal or greater value if necessary.</p>
+        <p><strong>6. Winner Selection and Notification</strong><br>6.1 The winners will be selected at random from all valid entries received.<br>6.2 The draw will take place after the competition closing date.<br>6.3 The winner will be contacted via the email address provided within 7 days of the closing date.<br>6.4 If the winner does not respond within 7 days of notification, OddBalls reserves the right to select an alternative winner.</p>
+        <p><strong>7. Prize Fulfilment</strong><br>7.1 Once the winner has been confirmed, they will receive correspondence to confirm their preferred size and style, and delivery address.<br>7.2 The items included in the bundle will be based on the style and size selected by the winner.</p>
+        <p><strong>8. Data Protection</strong><br>8.1 By entering this competition, you agree that your personal data (including your email address) will be processed by OddBalls and 19-0 for the purpose of administering the competition.<br>8.2 Entrants will also receive marketing communications when they opt in at the point of entry.<br>8.3 Personal data will be handled in accordance with applicable data protection laws and OddBalls' Privacy Policy.</p>
+        <p><strong>9. General</strong><br>9.1 OddBalls reserves the right to cancel, suspend, or amend the competition where necessary due to circumstances beyond its reasonable control.<br>9.2 OddBalls reserves the right to disqualify any entrant found to be in breach of these Terms &amp; Conditions.<br>9.3 By entering, participants agree to be bound by these Terms &amp; Conditions.</p>
       </div>
       <button class="btn-auth-submit" onclick="closeOddBallsTC()">Close</button>
     </div>
@@ -13710,7 +13834,7 @@
     <div id="test-bench-list" style="width:100%;margin-bottom:16px"></div>
 
     <div id="xi-confirm-hint" style="display:none;text-align:center;color:#f87171;font-size:12px;font-weight:700;margin-bottom:8px">Select all 11 players first</div>
-    <button class="btn-sim" onclick="confirmTestXI()">Confirm XI & Start Test →</button>
+    <button class="btn-sim" onclick="confirmTestXI()">Confirm XI & Start Test</button>
   </div>
 
   <!-- TEST DRAFT INTRO / HELP -->
@@ -13749,7 +13873,7 @@
 
     </div>
 
-    <button class="btn-start" onclick="startSquadDraft()" style="width:100%">Begin Draft →</button>
+    <button class="btn-start" onclick="startSquadDraft()" style="width:100%">Begin Draft</button>
   </div>
 
   <!-- INJURY NEWS -->
@@ -13768,7 +13892,7 @@
       <div style="font-size:22px;font-weight:900;color:#fff">Team News</div>
     </div>
     <div id="inj-news-content" style="width:100%"></div>
-    <button id="inj-news-btn" onclick="processReplacementOrContinue()" class="btn-sim" style="margin-top:16px">Continue →</button>
+    <button id="inj-news-btn" onclick="processReplacementOrContinue()" class="btn-sim" style="margin-top:16px">Continue</button>
   </div>
 
   <!-- INJURY REPLACEMENT SPIN -->
@@ -13802,7 +13926,7 @@
       <div style="font-size:12px;color:#6060a0;margin-top:6px" id="captain-hint">Select your captain</div>
     </div>
     <div id="captain-player-list" style="width:100%"></div>
-    <button id="captain-confirm-btn" onclick="confirmCaptains()" class="btn-sim" style="display:none;margin-top:12px">Confirm &amp; Continue →</button>
+    <button id="captain-confirm-btn" onclick="confirmCaptains()" class="btn-sim" style="display:none;margin-top:12px">Confirm &amp; Continue</button>
   </div>
 
   <!-- WTC OVERVIEW / SERIES HUB -->
@@ -13826,7 +13950,7 @@
     <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Your Series</div>
     <div id="test-series-list" style="width:100%"></div>
 
-    <button class="btn-sim" id="hub-next-btn" onclick="startNextSeries()" style="margin-top:8px">Next Series →</button>
+    <button class="btn-sim" id="hub-next-btn" onclick="startNextSeries()" style="margin-top:8px">Next Series</button>
 
     <button id="save-test-btn" onclick="saveTestGame()" style="margin-top:10px;width:100%;padding:12px;background:#0a0a18;border:1px solid #2a2a50;border-radius:10px;color:#8080c0;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px">💾 Save Game</button>
     <div id="save-test-nudge" style="display:none;margin-top:8px;padding:10px 14px;background:#1a1010;border:1px solid #4a2020;border-radius:8px;font-size:12px;color:#f87171;text-align:center">Sign in to save your game and continue later</div>
@@ -13904,14 +14028,14 @@
 
     <!-- Result -->
     <div id="tm-result-block" style="display:none;width:100%;margin-top:4px"></div>
-    <button class="btn-sim" id="tm-next-btn" style="display:none;margin-top:12px">Continue →</button>
+    <button class="btn-sim" id="tm-next-btn" style="display:none;margin-top:12px">Continue</button>
   </div>
 
   <!-- TEST SUMMARY (post-test ratings) -->
   <div id="s-test-summary" class="screen">
     <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:16px;text-align:left">Test Summary</div>
     <div id="test-summary-content" style="width:100%;margin-bottom:16px"></div>
-    <button class="btn-sim" id="test-summary-btn" onclick="afterTestSummary()">Pick XI →</button>
+    <button class="btn-sim" id="test-summary-btn" onclick="afterTestSummary()">Pick XI</button>
   </div>
 
   <!-- TEST SERIES RESULT -->
@@ -13927,7 +14051,7 @@
         <div style="font-size:32px;font-weight:900;color:#f9c846">+3</div>
       </div>
     </div>
-    <button id="cap-boost-btn" class="btn-sim">Continue →</button>
+    <button id="cap-boost-btn" class="btn-sim">Continue</button>
   </div>
 
   <div id="s-test-cap-penalty" class="screen">
@@ -13941,7 +14065,7 @@
         <div style="font-size:32px;font-weight:900;color:#f87171">−2</div>
       </div>
     </div>
-    <button id="cap-penalty-btn" class="btn-sim">Continue →</button>
+    <button id="cap-penalty-btn" class="btn-sim">Continue</button>
   </div>
 
   <!-- ASHES NEWS SCREEN -->
@@ -13950,7 +14074,7 @@
       <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6060a0;margin-bottom:2px">BREAKING NEWS</div>
       <div style="height:1px;background:linear-gradient(90deg,#f9c846,transparent);margin-bottom:16px"></div>
       <div id="ashes-news-content" style="font-size:13px;color:#c0c0d8;line-height:1.6"></div>
-      <button onclick="go('s-test-series-result')" style="width:100%;margin-top:8px;padding:16px;background:linear-gradient(135deg,#f9c846,#f97316);color:#000;font-size:15px;font-weight:900;border:none;border-radius:12px;cursor:pointer">See Series Stats →</button>
+      <button onclick="go('s-test-series-result')" style="width:100%;margin-top:8px;padding:16px;background:linear-gradient(135deg,#f9c846,#f97316);color:#000;font-size:15px;font-weight:900;border:none;border-radius:12px;cursor:pointer">See Series Stats</button>
     </div>
   </div>
 
@@ -13958,7 +14082,7 @@
     <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:8px;text-align:left">Series Result</div>
     <div id="test-series-result-card" style="width:100%;margin-bottom:16px"></div>
     <div id="series-result-ad" style="margin:12px 0"></div>
-    <button class="btn-sim" onclick="afterSeriesResult()">Back to WTC Hub →</button>
+    <button class="btn-sim" onclick="afterSeriesResult()">Back to WTC Hub</button>
   </div>
 
   <!-- TEST FINAL -->
@@ -13968,13 +14092,13 @@
     <div style="font-size:13px;color:#7070a0;text-align:center;margin-bottom:20px">Best of 1 Test · Lord's Cricket Ground</div>
     <div id="test-final-sim" style="width:100%"></div>
     <div id="test-final-result" style="width:100%;display:none"></div>
-    <button class="btn-sim" id="test-final-btn" style="display:none;margin-top:12px" onclick="showTestEnd()">See Final Standings →</button>
+    <button class="btn-sim" id="test-final-btn" style="display:none;margin-top:12px" onclick="showTestEnd()">See Final Standings</button>
   </div>
 
   <!-- TEST END SCREEN -->
   <div id="s-test-end" class="screen">
     <div id="test-end-content" style="width:100%"></div>
-    <button class="btn-sim" style="margin-top:16px" onclick="fullReset()">Play Again →</button>
+    <button class="btn-sim" style="margin-top:16px" onclick="fullReset()">Play Again</button>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
@@ -14026,7 +14150,7 @@
         </div>
       </div>
     </div>
-    <button class="btn-start" onclick="startWCSquadDraft()" style="width:100%">Begin Draft →</button>
+    <button class="btn-start" onclick="startWCSquadDraft()" style="width:100%">Begin Draft</button>
     <button id="wc-dev-autodraft-btn" onclick="wcAutoDraftDev()" style="display:none;width:100%;margin-top:8px;padding:12px;background:#1a1400;border:1px solid #f9c846;border-radius:10px;color:#f9c846;font-size:13px;font-weight:700;cursor:pointer">⚡ Auto-Draft (Dev)</button>
   </div>
 
@@ -14064,7 +14188,7 @@
     <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left;width:100%">Bench</div>
     <div id="wc-bench-list" style="width:100%;margin-bottom:16px"></div>
     <div id="wc-xi-confirm-hint" style="display:none;text-align:center;color:#f87171;font-size:12px;font-weight:700;margin-bottom:8px">Select all 11 players first</div>
-    <button class="btn-sim" onclick="confirmWCXI()">Confirm XI &amp; Play →</button>
+    <button class="btn-sim" onclick="confirmWCXI()">Confirm XI &amp; Play</button>
   </div>
 
   <!-- WC CAPTAIN PICKER -->
@@ -14075,13 +14199,13 @@
     </div>
     <div id="wc-captain-player-list" style="width:100%;margin-bottom:16px"></div>
     <div id="wc-captain-hint" class="ov-reveal" style="font-size:13px;font-weight:700;color:#8080a0;text-align:center;margin-bottom:12px;transition:color .2s">Select your captain</div>
-    <button class="btn-sim" id="wc-captain-confirm-btn" style="display:none" onclick="confirmWCCaptains()">Confirm &amp; Continue →</button>
+    <button class="btn-sim" id="wc-captain-confirm-btn" style="display:none" onclick="confirmWCCaptains()">Confirm &amp; Continue</button>
   </div>
 
   <!-- WC TOURNAMENT PREVIEW -->
   <div id="s-wc-news" class="screen">
     <div id="wc-news-content" style="font-size:13px;color:#c0c0d8;line-height:1.6;text-align:left;width:100%"></div>
-    <button class="btn-sim" style="margin-top:16px" onclick="go('s-wc-hub');buildWCHub()">Begin World Cup →</button>
+    <button class="btn-sim" style="margin-top:16px" onclick="go('s-wc-hub');buildWCHub()">Begin World Cup</button>
   </div>
 
   <!-- WC TOURNAMENT HUB -->
@@ -14135,14 +14259,14 @@
 
     <!-- Result -->
     <div id="wm-result-block" style="display:none;width:100%;margin-top:4px"></div>
-    <button class="btn-sim" id="wm-next-btn" style="display:none;margin-top:12px">Continue →</button>
+    <button class="btn-sim" id="wm-next-btn" style="display:none;margin-top:12px">Continue</button>
   </div>
 
   <!-- WC MATCH SUMMARY (post-match ratings) -->
   <div id="s-wc-summary" class="screen">
     <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:16px;text-align:left">World Cup · Match Summary</div>
     <div id="wc-summary-content" style="width:100%;margin-bottom:16px;text-align:left"></div>
-    <button class="btn-sim" id="wc-summary-btn">Continue →</button>
+    <button class="btn-sim" id="wc-summary-btn">Continue</button>
   </div>
 
   <!-- WC STAGE ADVANCE (Super Sixes / Semi / Final announcement) -->
