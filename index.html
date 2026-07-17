@@ -12192,7 +12192,9 @@
     function simODIInnings(batR,bowlR,oversMax,target,batNames,bowlPool,keeperName,batRatings){
       const q=Math.max(0,Math.min(1,(batR-bowlR+50)/100));
       const wktProbBase=0.032-q*0.017;
-      const batters=batNames.slice(0,11).map(n=>({name:n,runs:0,balls:0,out:false,how:''}));
+      const batters=batNames.slice(0,11).map(n=>({name:n,runs:0,balls:0,out:false,how:'',batting:false,batted:false}));
+      batters[0].batting=batters[0].batted=true;
+      batters[1].batting=batters[1].batted=true;
       const bwlrs=bowlPool.map(b=>{
         const bRat=Math.max(55,Math.min(97,b.rating||72));
         // A part-timer or all-rounder given the same numeric rating as a specialist is
@@ -12280,7 +12282,7 @@
           const batWktMod=1.18-(bRat-52)/47*0.42;
           const wktP=wktProbBase*posM*settleM*bowler.ratingFactor*bowler.hotFactor*batWktMod*pressureWktMult*chaseWktMult;
           batters[striker].balls++;
-          if(Math.random()<wktP){batters[striker].out=true;batters[striker].how=makeHow(bowler.name);bowler.wickets++;wkts++;wktsThisOver++;striker=nextIn++;}
+          if(Math.random()<wktP){batters[striker].out=true;batters[striker].batting=false;batters[striker].how=makeHow(bowler.name);bowler.wickets++;wkts++;wktsThisOver++;striker=nextIn++;if(striker<11){batters[striker].batting=batters[striker].batted=true;}}
           else{
             const batScMod=0.68+(bRat-52)/47*0.55;const phaseMult=isPP?1.18:isDeath?1.75:1.0;
             const sc=(0.88+q*0.22)*batScMod*phaseMult*bowler.economyFactor*pressureScMult*chaseScMult;
@@ -12337,6 +12339,17 @@
       document.getElementById('wm-result-block').style.display='none';
       document.getElementById('wm-next-btn').style.display='none';
       let currentInn=0;
+
+      // Sync speed slider on the WC match screen (same control as T20's scorecard)
+      const _wmSpeedBar=document.getElementById('wm-speed-bar');
+      if(_wmSpeedBar&&!_wmSpeedBar.querySelector('.speed-slider')){
+        _wmSpeedBar.innerHTML=
+          '<span class="speed-icon">🐢</span>'+
+          '<input class="speed-slider" type="range" min="0.25" max="2" step="0.25" value="'+SIM_SPEED+'" oninput="setSimSpeed(this.value)" title="Simulation speed">'+
+          '<span class="speed-icon">🐇</span>';
+      } else if(_wmSpeedBar){
+        _wmSpeedBar.querySelector('.speed-slider').value=SIM_SPEED;
+      }
 
       // Restarts a CSS animation on an element even if its class never changed —
       // needed since the score/overs text gets a fresh "pop" every single chunk.
@@ -12404,6 +12417,21 @@
         if(scoreEl)scoreEl.textContent='0/0';
         if(oversEl)oversEl.textContent='0.0 overs';
         setLiveTitle(innNum,teamName,true);
+
+        // The "next" button would otherwise sit idle and stale (still reading "2nd Innings →")
+        // for the whole of the innings it just kicked off — repurpose it as a skip control
+        // instead, so it's always doing something useful while overs are being revealed live.
+        const nextBtn=document.getElementById('wm-next-btn');
+        if(nextBtn){
+          nextBtn.style.display='';
+          nextBtn.textContent='⏩ Sim Innings';
+          nextBtn.onclick=()=>{
+            if(wmTimer)clearTimeout(wmTimer);
+            if(barEl)barEl.style.display='none';
+            finalizeInnings(inn,innNum,teamName,fieldingTeam);
+            advanceOrFinish();
+          };
+        }
 
         let idx=0,prevBatterSnap=null;
         function nextChunk(){
@@ -12487,12 +12515,10 @@
     }
 
     function renderODIBatters(batters,wkts){
-      const allOut=wkts>=10;
-      const maxBatted=allOut?11:Math.min(wkts+2,11);
       const ROW='display:grid;grid-template-columns:110px 1fr 34px 38px;align-items:center;padding:7px 10px;border-bottom:1px solid #111118';
       const rows=batters.map((b,i)=>{
-        const hasBatted=i<maxBatted;
-        const isBatting=!b.out&&i===Math.min(wkts,10);
+        const isBatting=b.batting&&!b.out;
+        const hasBatted=b.batted||b.out;
         if(!hasBatted)return`<div style="${ROW};opacity:0.2"><span style="font-size:12px;font-weight:600;color:#2a2a3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${shortName(b.name)}</span><span></span><span></span><span></span></div>`;
         const nameCol=isBatting?'color:#f9c846;font-weight:800':'color:#c0c0d8';
         const howCol=b.out?'color:#6060a0':'color:#4ade80';
@@ -14077,6 +14103,9 @@
       <div style="text-align:right">
         <div style="font-size:12px;font-weight:700;color:#f9c846" id="wm-phase-label">ODI</div>
       </div>
+    </div>
+    <div style="width:100%;display:flex;justify-content:flex-end;margin-bottom:10px">
+      <div class="speed-wrap" id="wm-speed-bar"></div>
     </div>
     <div style="height:1px;background:#1a1a22;width:100%;margin-bottom:12px"></div>
 
