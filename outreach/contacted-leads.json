@@ -1,0 +1,83 @@
+[
+  {
+    "brand": "Neon Cricket",
+    "domain": "neoncricket.co.uk",
+    "category": "cricket gear/apparel",
+    "date_found": "2026-07-16",
+    "contact_route": "form",
+    "contact": "https://www.neoncricket.co.uk/pages/contact-us"
+  },
+  {
+    "brand": "B3 Cricket",
+    "domain": "b3cricket.com",
+    "category": "cricket gear/apparel",
+    "date_found": "2026-07-16",
+    "contact_route": "form",
+    "contact": "https://b3cricket.com/pages/get-in-touch"
+  },
+  {
+    "brand": "WOW Hydrate",
+    "domain": "drink-wow.com",
+    "category": "hydration/energy drink",
+    "date_found": "2026-07-16",
+    "contact_route": "form",
+    "contact": "https://drink-wow.com/pages/contact"
+  },
+  {
+    "brand": "Prophecy Cricket",
+    "domain": "prophecycricket.com",
+    "category": "cricket gear/apparel",
+    "date_found": "2026-07-16",
+    "contact_route": "form",
+    "contact": "https://prophecycricket.com/pages/contact-prohecy-cricket"
+  },
+  {
+    "brand": "Bespoke Bats",
+    "domain": "bespokebats.com",
+    "category": "cricket gear/apparel",
+    "date_found": "2026-07-16",
+    "contact_route": "email",
+    "contact": "zac.bespokebats@gmail.com"
+  },
+  {
+    "brand": "Nutrition X",
+    "domain": "nutritionx.co.uk",
+    "category": "sports nutrition (cricket-specific line)",
+    "date_found": "2026-07-16",
+    "contact_route": "email",
+    "contact": "info@nutritionx.co.uk"
+  },
+  {
+    "brand": "Cricket Bat Makers (Salix Cricket Bats)",
+    "domain": "cricketbatmakers.com",
+    "category": "cricket gear/apparel",
+    "date_found": "2026-07-16",
+    "contact_route": "email",
+    "contact": "office@salixcricketbats.com",
+    "note": "player-sponsorship scheme currently paused due to demand; pitch framed as separate app-sponsorship opportunity"
+  },
+  {
+    "brand": "UN:IK Clothing",
+    "domain": "unikclothing.co.uk",
+    "category": "streetwear/lifestyle (cricket collabs)",
+    "date_found": "2026-07-16",
+    "contact_route": "form",
+    "contact": "https://www.unikclothing.co.uk/pages/contact-us"
+  },
+  {
+    "brand": "CricketDirect",
+    "domain": "cricketdirect.co.uk",
+    "category": "cricket gear/apparel (retailer)",
+    "date_found": "2026-07-16",
+    "contact_route": "email",
+    "contact": "team@cricketdirect.com"
+  },
+  {
+    "brand": "Bloc Eyewear",
+    "domain": "bloceyewear.com",
+    "category": "sports eyewear",
+    "date_found": "2026-07-16",
+    "contact_route": "email",
+    "contact": "info@blocsystems.co.uk"
+  }
+]

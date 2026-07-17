@@ -1,0 +1,40 @@
+<svg width="100%" viewBox="0 0 1500 500" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>19-0 — Cricket Management and Simulation Game</title>
+  <desc>X profile banner for 19-0, a cricket management and simulation game covering T20 Blast, Test Cricket, and the World Cup.</desc>
+
+  <rect width="1500" height="500" fill="#0f0f13"/>
+
+  <!-- Big 19-0 logo text -->
+  <text x="750" y="245" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="140" font-weight="800" letter-spacing="-7" fill="url(#logoGrad)">19-0</text>
+
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f9c846"/>
+      <stop offset="50%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Divider line -->
+  <line x1="560" y1="278" x2="940" y2="278" stroke="#252535" stroke-width="0.5"/>
+
+  <!-- Tagline -->
+  <text x="750" y="308" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="18" font-weight="600" fill="#9090a8" letter-spacing="2">
+    CRICKET MANAGEMENT AND SIMULATION GAME
+  </text>
+
+  <!-- Mode pills -->
+  <rect x="475" y="330" width="170" height="36" rx="18" fill="#16161f" stroke="#252535" stroke-width="0.5"/>
+  <text x="560" y="353" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="#f9c846">T20 Blast</text>
+
+  <rect x="665" y="330" width="170" height="36" rx="18" fill="#16161f" stroke="#252535" stroke-width="0.5"/>
+  <text x="750" y="353" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="#f97316">Test Cricket</text>
+
+  <rect x="855" y="330" width="170" height="36" rx="18" fill="#16161f" stroke="#252535" stroke-width="0.5"/>
+  <text x="940" y="353" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="#e11d48">World Cup</text>
+
+  <!-- URL -->
+  <text x="750" y="410" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="#404060" letter-spacing="1">
+    www.19-0.co.uk
+  </text>
+</svg>

@@ -1,10 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import { writeFileSync } from 'fs';
 
-const sb = createClient(
-  'https://uxlhzgigjwnsvjucwmrg.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4bGh6Z2lnanduc3ZqdWN3bXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjA5ODMsImV4cCI6MjA5Njc5Njk4M30.YrKFhau7BszHi4J62Ywv5HEVhA7k0KtUoQmpR9CYOUg'
-);
+// Needs the service-role key (Supabase dashboard > Settings > API), not the
+// public anon key — RLS now blocks anon reads of `users` entirely, and this
+// script is a trusted admin tool run locally, not client-facing code.
+// Run as: SUPABASE_SERVICE_ROLE_KEY=... node export-emails.mjs
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!serviceRoleKey) {
+  console.error('Set SUPABASE_SERVICE_ROLE_KEY in the environment before running this script.');
+  process.exit(1);
+}
+
+const sb = createClient('https://uxlhzgigjwnsvjucwmrg.supabase.co', serviceRoleKey);
 
 // Supabase caps a single select at 1000 rows by default — page through in batches
 // of 1000 so this still gets everyone once the users table grows past that.

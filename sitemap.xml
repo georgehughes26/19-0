@@ -19,8 +19,26 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.19-0.co.uk/faq.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.19-0.co.uk/strategy-guide.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.19-0.co.uk/partners.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://www.19-0.co.uk/privacy.html</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>

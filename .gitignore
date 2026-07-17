@@ -1,6 +1,7 @@
 node_modules/
 .env
 *.env
+.DS_Store
 
 # Contains real user PII (emails) — never commit exports of these
 *emails*.csv

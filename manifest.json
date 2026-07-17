@@ -1,7 +1,7 @@
 {
-    "name": "19-0 — T20 Blast Draft Simulator",
+    "name": "19-0",
     "short_name": "19-0",
-    "description": "Draft your ultimate T20 Blast XI and try to go 19-0.",
+    "description": "Cricket Management and Simulation Game",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#0f0f13",
