@@ -1341,84 +1341,6 @@
       letter-spacing: .5px
     }
 
-    .qual-note {
-      font-size: 10px;
-      color: #5a9a68;
-      margin-top: 6px;
-      letter-spacing: .5px;
-      text-align: left
-    }
-
-    .match-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 9px 12px;
-      border-radius: 7px;
-      margin-bottom: 5px;
-      background: #111118;
-      border: 1px solid #161620;
-      opacity: 0;
-      transition: opacity .22s;
-      min-width: 0;
-    }
-
-    .match-row.vis {
-      opacity: 1
-    }
-
-    .match-row.mine-win {
-      border-color: #1a3a1a;
-      background: #0c180c
-    }
-
-    .match-row.mine-loss {
-      border-color: #3a1a1a;
-      background: #180c0c
-    }
-
-    .wl-badge {
-      font-size: 11px;
-      font-weight: 900;
-      width: 22px;
-      height: 22px;
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-right: 10px
-    }
-
-    .wl-w {
-      background: #14401a;
-      color: #4ade80
-    }
-
-    .wl-l {
-      background: #401414;
-      color: #f87171
-    }
-
-    .match-left {
-      display: flex;
-      align-items: center;
-      min-width: 0;
-      flex: 1;
-      overflow: hidden
-    }
-
-    .mscore {
-      font-size: 11px;
-      color: #8080a0;
-      font-variant-numeric: tabular-nums;
-      flex-shrink: 0
-    }
-
-    .mscore.mine {
-      color: #9090a8
-    }
-
     .tbl {
       width: 100%;
       border-collapse: collapse;
@@ -1463,24 +1385,6 @@
     .tbl .myrow td:first-child {
       color: #fbbf24;
       font-weight: 800
-    }
-
-    .q-mark {
-      display: inline-block;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: #4ade80;
-      margin-left: 5px;
-      vertical-align: middle
-    }
-
-    .qual-note {
-      font-size: 10px;
-      color: #5a9a68;
-      margin-top: 6px;
-      letter-spacing: .5px;
-      text-align: left
     }
 
     .result-pill {
@@ -1684,18 +1588,7 @@
     /* ── KNOCKOUTS ── */
     .ko-stage-header {
       width: 100%;
-      margin-bottom: 20px
-    }
-
-    .ko-stage-pill {
-      display: inline-block;
-      font-size: 11px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      font-weight: 800;
-      padding: 5px 14px;
-      border-radius: 20px;
-      margin-bottom: 12px
+      margin-bottom: 14px
     }
 
     .kp-qf {
@@ -1719,161 +1612,20 @@
     .kp-f {
       background: linear-gradient(135deg, #1a1400, #0a0a00);
       color: #f9c846;
-      border: 1px solid #6a5000;
-      box-shadow: 0 0 20px rgba(249, 200, 70, .15)
+      border: 1px solid #6a5000
     }
 
     .ko-stage-title {
-      font-size: 28px;
+      font-size: 22px;
       font-weight: 900;
       color: #fff;
-      letter-spacing: -1px
+      letter-spacing: -0.5px
     }
 
     .ko-stage-sub {
       font-size: 13px;
       color: #9090a8;
       margin-top: 4px
-    }
-
-    .finals-day-card {
-      width: 100%;
-      background: linear-gradient(135deg, #1a1000, #0f0a1a);
-      border: 1px solid #4a3800;
-      border-radius: 16px;
-      padding: 28px 20px;
-      text-align: center;
-      margin-bottom: 20px;
-      position: relative;
-      overflow: hidden
-    }
-
-    .fdc-glow {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 300px;
-      height: 160px;
-      background: radial-gradient(ellipse, rgba(249, 200, 70, .18), transparent 65%);
-      pointer-events: none
-    }
-
-    .fdc-icon {
-      font-size: 44px;
-      margin-bottom: 10px;
-      display: block
-    }
-
-    .fdc-title {
-      font-size: 32px;
-      font-weight: 900;
-      background: linear-gradient(135deg, #f9c846, #f97316);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 4px
-    }
-
-    .fdc-venue {
-      font-size: 12px;
-      color: #b08030;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      font-weight: 700
-    }
-
-    .ko-matches {
-      width: 100%;
-      margin-bottom: 12px
-    }
-
-    .ko-card {
-      background: #111118;
-      border: 1px solid #1a1a24;
-      border-radius: 10px;
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      text-align: left;
-      position: relative;
-      overflow: hidden
-    }
-
-    .ko-card::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: #1e1e2a
-    }
-
-    .ko-card.mine::before {
-      background: #818cf8
-    }
-
-    .ko-card.won::before {
-      background: #4ade80
-    }
-
-    .ko-card.lost::before {
-      background: #f87171
-    }
-
-    .ko-match-header {
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #606070;
-      font-weight: 700;
-      margin-bottom: 10px
-    }
-
-    .ko-teams-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px
-    }
-
-    .ko-team {
-      font-size: 15px;
-      font-weight: 700
-    }
-
-    .ko-team.winner {
-      color: #f0f0ff
-    }
-
-    .ko-team.loser {
-      color: #606070
-    }
-
-    .ko-team.my-win {
-      color: #f9c846
-    }
-
-    .ko-team.my-loss {
-      color: #f87171
-    }
-
-    .ko-vs {
-      font-size: 10px;
-      color: #606070;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      font-weight: 700
-    }
-
-    .ko-score-line {
-      font-size: 12px;
-      color: #606070;
-      margin-top: 2px
-    }
-
-    .ko-score-line.mine {
-      color: #787890
     }
 
     .my-result-banner {
@@ -2111,7 +1863,9 @@
       margin-bottom: 16px
     }
 
-    /* Season stats panel — sits alongside perf card */
+    /* Season stats panel — sits alongside perf card. Still used as-is by Test mode's
+       end screen; T20's #s-over overrides this below with a full-width grid instead
+       (see the #s-over .ov-season-stats rule further down). */
     .ov-lower {
       display: flex;
       width: 100%;
@@ -2150,6 +1904,21 @@
       display: flex;
       flex-direction: column;
       justify-content: center
+    }
+    /* T20's season review (#s-over) — decoupled from .ov-lower entirely (see the HTML
+       shell), so Most Runs / Most Wickets get a full-width 2-up grid instead of being
+       squeezed into the 152px sidebar, and the MVP card (separate #ov-mvp container)
+       gets full width and the shine/glisten treatment to match WC's end screen. */
+    #s-over .ov-season-stats {
+      flex: none;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px
+    }
+    #s-over .ov-season-stats .stat-card {
+      display: block
     }
     .stat-card {
       background: #13131f;
@@ -2744,7 +2513,7 @@
 
     .btn-new {
       width: 100%;
-      background: #fff;
+      background: linear-gradient(135deg, #f9c846, #f97316);
       color: #0f0f13;
       border: none;
       padding: 15px;
@@ -2755,7 +2524,7 @@
     }
 
     .btn-new:hover {
-      background: #ececec
+      opacity: 0.88
     }
 
 
@@ -3414,8 +3183,8 @@
     .wch-hero-loss { border-color: #6a2e2e; background: linear-gradient(160deg, #1e0f0f, #0d0d12 60%) }
     .wch-hero-loss .wch-hero-tag { color: #e06a6a }
 
-    /* WC hub — qualification-line divider inside standings tables */
-    .wtc-table tr.wch-qual-line td { border-bottom: 2px solid #6a5218; padding-bottom: 4px }
+    /* WC hub — qualification-line divider inside standings tables (also used by T20's live group table, .tbl) */
+    .wtc-table tr.wch-qual-line td, .tbl tr.wch-qual-line td { border-bottom: 2px solid #6a5218; padding-bottom: 4px }
 
     /* WC hub — compact match history */
     .wch-hist-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #1a1a24 }
@@ -3423,6 +3192,15 @@
     .wch-hist-flag { font-size: 16px; flex-shrink: 0 }
     .wch-hist-name { font-size: 12px; font-weight: 700; color: #e0e0f0 }
     .wch-hist-margin { font-size: 10px; color: #6a6a8a; margin-top: 1px }
+    /* Used where rows are inserted one at a time into a live-updating list (e.g. T20's
+       live group-stage results feed) — fades each new row in instead of a hard cut */
+    .wch-hist-row.feed-in { opacity: 0; transition: opacity .25s }
+    .wch-hist-row.feed-in.vis { opacity: 1 }
+    /* Win/loss box tint for the same feed — boxed instead of just divider-separated,
+       so each row's border-bottom divider is replaced by its own card margin */
+    .wch-hist-row.hist-win, .wch-hist-row.hist-loss { border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; border-bottom: none }
+    .wch-hist-row.hist-win { background: #0c180c; border: 1px solid #1a3a1a }
+    .wch-hist-row.hist-loss { background: #180c0c; border: 1px solid #3a1a1a }
 
     /* Session sim */
     .session-block {
@@ -3800,7 +3578,7 @@
       >
       <div style="font-size:10px;color:#404055;text-align:center;margin-top:5px;letter-spacing:.5px">Your team name · optional · 20 chars max <span id="name-counter"></span></div>
     </div>
-    <button class="btn-start" onclick="startDraft()">Start New Run</button>
+    <button class="btn-start" onclick="startT20Draft()">Start New Run</button>
 
 
     <div class="home-stats">
@@ -3920,22 +3698,64 @@
 
   </div>
 
+  <!-- T20 BLAST INTRO -->
+  <div id="s-t20-intro" class="screen">
+    <div style="width:100%;text-align:left;margin-bottom:20px">
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">T20 Blast · How It Works</div>
+      <div style="font-size:26px;font-weight:900;color:#fff;line-height:1.1">Draft your XI.<br>Win the Blast.</div>
+    </div>
+    <div class="wci-tabs" role="tablist">
+      <button class="wci-tab active" data-t20i="squad" role="tab" aria-selected="true" onclick="t20iShow('squad')">Squad</button>
+      <button class="wci-tab" data-t20i="format" role="tab" aria-selected="false" onclick="t20iShow('format')">Format</button>
+      <button class="wci-tab" data-t20i="tournament" role="tab" aria-selected="false" onclick="t20iShow('tournament')">Tournament</button>
+    </div>
+    <div style="width:100%;margin-bottom:24px">
+      <div class="wci-panel active" data-t20i-panel="squad">
+        <div class="wci-card">
+          <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Spin a county and year together, then pick <span style="color:#f9c846;font-weight:800">one player</span> from that county's squad for that year. Your XI needs <span style="color:#f9c846;font-weight:800">4 Batters</span>, <span style="color:#f9c846;font-weight:800">1 Wicket-keeper</span>, <span style="color:#f9c846;font-weight:800">2 All-rounders</span> and <span style="color:#f9c846;font-weight:800">4 Bowlers</span>. Whichever county gave you the most picks is <span style="color:#f9c846;font-weight:800">the side you represent</span>.</div>
+        </div>
+      </div>
+      <div class="wci-panel" data-t20i-panel="format">
+        <div class="wci-card">
+          <div style="font-size:14px;color:#c0c0d8;line-height:1.6"><span style="color:#f9c846;font-weight:800">One innings per side</span>, 20 overs maximum. Win by wickets chasing, or defend your total. No draws.</div>
+        </div>
+      </div>
+      <div class="wci-panel" data-t20i-panel="tournament">
+        <div class="wci-stage-list">
+          <button class="wci-stage-btn active" data-t20i-stage="0" onclick="t20iStage(0)">
+            <span class="wci-stage-num">1</span><span class="wci-stage-name">Group Stage</span><span class="wci-stage-chevron">›</span>
+          </button>
+          <div class="wci-stage-body active" data-t20i-stage-body="0">18 counties, 2 groups of 9. Play the other 8 teams in your group home and away: <span style="color:#f9c846;font-weight:800">16 matches</span> total. The top 4 advance.</div>
+          <button class="wci-stage-btn" data-t20i-stage="1" onclick="t20iStage(1)">
+            <span class="wci-stage-num">2</span><span class="wci-stage-name">Quarter-Final</span><span class="wci-stage-chevron">›</span>
+          </button>
+          <div class="wci-stage-body" data-t20i-stage-body="1">The top 4 from each group go into the knockouts. Win your match to reach Finals Day.</div>
+          <button class="wci-stage-btn" data-t20i-stage="2" onclick="t20iStage(2)">
+            <span class="wci-stage-num">3</span><span class="wci-stage-name">Finals Day</span><span class="wci-stage-chevron">›</span>
+          </button>
+          <div class="wci-stage-body" data-t20i-stage-body="2">The last four teams play the semi-final and the final on the same day at Edgbaston. Win both to lift the trophy.</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-start" onclick="startDraft()" style="width:100%">Begin Draft</button>
+    <button id="t20-dev-autodraft-btn" onclick="t20AutoDraftDev()" style="display:none;width:100%;margin-top:8px;padding:12px;background:#1a1400;border:1px solid #f9c846;border-radius:10px;color:#f9c846;font-size:13px;font-weight:700;cursor:pointer">⚡ Auto-Draft (Dev)</button>
+  </div>
+
   <!-- SPIN / DRAFT -->
   <div id="s-spin" class="screen">
     <div class="pick-header">
       <span class="pick-num" id="pick-num">Pick 1 of 11</span>
-      <div class="pick-slots" id="pick-slots"></div>
     </div>
     <div class="pbar">
       <div class="pfill" id="pbar"></div>
     </div>
-    <div class="drum-card">
+    <div class="drum-card" id="t20-drum-card">
       <div class="drum-glow"></div>
-      <div class="drum-inner">
-        <div class="drum-county" id="d-county">—</div>
-        <div class="drum-divider"></div>
-        <div class="drum-year" id="d-year" style="color:#606070">—</div>
+      <div class="wc-drum-row">
+        <div class="wc-drum-box"><div class="wc-drum-text" id="d-county" style="color:#606070">—</div></div>
+        <div class="wc-drum-box"><div class="wc-drum-text" id="d-year" style="font-size:26px;color:#606070">—</div></div>
       </div>
+      <div class="drum-group" id="d-label" style="color:#606070">Press Spin</div>
     </div>
     <button class="btn-spin" id="spin-btn" onclick="doSpin()">Spin</button>
 
@@ -3993,7 +3813,6 @@
         </div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-        <div class="sim-prog" id="sim-prog"></div>
         <div class="speed-wrap" id="group-speed-bar">
           <span class="speed-icon">🐢</span>
           <input class="speed-slider" type="range" min="0.25" max="2" step="0.25" value="1"
@@ -4004,20 +3823,28 @@
     </div>
     <div style="height:1px;background:#1a1a22;width:100%;margin-bottom:16px"></div>
 
-    <!-- Your matches feed -->
+    <!-- Always-visible live table — pinned above the feed so it's never scrolled out of view -->
+    <div
+      style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:8px;text-align:left;width:100%">
+      Group table <span style="color:#f9c846;font-size:9px">↑ top 4 qualify</span></div>
+    <div id="tbl-wrap" style="width:100%;margin-bottom:18px"></div>
+
+    <!-- Your record — deliberately the most prominent thing between the table and the
+         feed, so wins/losses/games left register at a glance without reading the table. -->
+    <div class="preview-ratings" style="margin-bottom:18px">
+      <div class="pr-box"><div class="pr-n" id="sim-stat-w" style="color:#4ade80">0</div><div class="pr-l">Wins</div></div>
+      <div class="pr-box"><div class="pr-n" id="sim-stat-l" style="color:#f87171">0</div><div class="pr-l">Losses</div></div>
+      <div class="pr-box"><div class="pr-n" id="sim-stat-left" style="color:#f9c846">16</div><div class="pr-l">To Play</div></div>
+    </div>
+
+    <!-- Your results — newest at the top. Fills up to however many rows fit below
+         the table without scrolling, then each new result pushes the oldest one out. -->
     <div
       style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:8px;text-align:left;width:100%">
       Your results</div>
-    <div class="match-feed" id="match-feed" style="width:100%;margin-bottom:20px"></div>
+    <div id="sim-feed" style="width:100%;margin-bottom:20px"></div>
 
-    <!-- Always-visible live table -->
-    <div
-      style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:8px;text-align:left;width:100%">
-      Group table</div>
-    <div id="tbl-wrap" style="width:100%"></div>
-    <div class="qual-note" style="margin-bottom:4px">● Top 4 qualify for quarter-finals</div>
-
-    <div id="sim-next" style="margin-top:18px;width:100%;display:none"></div>
+    <div id="sim-next" style="margin-top:0;width:100%;display:none"></div>
   </div>
 
   <!-- SCORECARD -->
@@ -4032,10 +3859,10 @@
   <!-- KNOCKOUTS -->
   <div id="s-ko" class="screen">
     <div class="ko-stage-header" id="ko-stage-header">
-      <div class="ko-stage-pill kp-qf" id="ko-pill">Quarter-Finals</div>
       <div class="ko-stage-title" id="ko-title">Quarter-Finals</div>
       <div class="ko-stage-sub" id="ko-sub">Top 4 from each group · 8 teams remain</div>
     </div>
+    <div id="ko-pipeline" style="width:100%"></div>
     <div id="ko-body" style="width:100%"></div>
     <div id="ko-next" style="margin-top:8px;width:100%"></div>
   </div>
@@ -4046,9 +3873,10 @@
       <span class="ov-icon" id="ov-icon">📋</span>
       <div class="ov-result" id="ov-result">Season complete</div>
       <div class="ov-sub" id="ov-sub">—</div>
+      <div id="ov-perfect-badge"></div>
     </div>
     <div class="ov-quote" id="ov-q"></div>
-    <div class="ov-stats" id="ov-stats"></div>
+    <div class="ov-stats ov-reveal" id="ov-stats" style="grid-template-columns:1fr 1fr"></div>
     <div id="ov-signup-prompt" style="display:none;width:100%;background:linear-gradient(135deg,#0d0d18,#13131f);border:1px solid #252535;border-radius:12px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
       <div style="text-align:left;min-width:0;flex:1">
         <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:3px">Save your drafts</div>
@@ -4056,10 +3884,9 @@
       </div>
       <button class="btn-auth-small" onclick="openAuthModal()" style="flex-shrink:0;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;font-weight:800;white-space:nowrap">Sign up</button>
     </div>
-    <div class="ov-lower">
-      <div class="ov-reached" id="ov-reached"></div>
-      <div class="ov-season-stats" id="ov-season-stats"></div>
-    </div>
+    <div class="ov-reached ov-reveal" id="ov-reached" style="width:100%"></div>
+    <div class="ov-season-stats ov-stagger" id="ov-season-stats"></div>
+    <div id="ov-mvp" style="width:100%"></div>
     <button class="btn-share-season" onclick="openShareModal()" style="margin-top:4px;margin-bottom:16px">📸 Share your season</button>
     <div id="ov-oddballs" style="width:100%;margin-bottom:16px"></div>
     <!-- Ad slot: season overview (between share button and squad list). Margin lives on this
@@ -4069,9 +3896,12 @@
       <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-7657213088817585" data-ad-slot="1907461690" data-ad-format="auto" data-full-width-responsive="true"></ins>
       <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
+    <div id="ov-table" style="width:100%"></div>
+    <div id="ov-matches" style="width:100%"></div>
     <div class="section-lbl">Your XI</div>
-    <div class="squad-list" id="ov-squad" style="margin-bottom:24px"></div>
-    <button class="btn-new" onclick="fullReset()">New Run</button>
+    <div class="squad-list ov-stagger" id="ov-squad" style="margin-bottom:24px"></div>
+    <button class="btn-new" onclick="startT20Draft()" style="margin-bottom:8px">Play Again</button>
+    <button class="wc-btn-secondary" onclick="fullReset()" style="width:100%;padding:14px 12px;background:#0d0d18;border:1px solid #2a2a50;border-radius:12px;color:#8080c0;font-size:13px;font-weight:700;cursor:pointer">← Back to Home</button>
   </div>
 
   <script src="t20-players.js"></script>
@@ -4241,6 +4071,41 @@
       });
     }
 
+    // "Start New Run" on the home screen lands here first — same pattern as WC's
+    // startWCDraft()/s-wc-intro — rather than jumping straight into the spin.
+    function startT20Draft() {
+      go('s-t20-intro');
+      t20iReset();
+    }
+
+    function t20iReset() {
+      t20iShow('squad');
+      t20iStage(0);
+    }
+
+    function t20iShow(name) {
+      document.querySelectorAll('#s-t20-intro .wci-tab').forEach(t => {
+        const on = t.dataset.t20i === name;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      document.querySelectorAll('#s-t20-intro .wci-panel').forEach(p => {
+        p.classList.toggle('active', p.dataset.t20iPanel === name);
+      });
+    }
+
+    function t20iStage(idx) {
+      idx = String(idx);
+      document.querySelectorAll('#s-t20-intro .wci-stage-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.t20iStage === idx);
+      });
+      document.querySelectorAll('#s-t20-intro .wci-stage-body').forEach(b => {
+        b.classList.toggle('active', b.dataset.t20iStageBody === idx);
+      });
+    }
+
+    // Begin Draft on the intro screen lands here — the actual squad-reset and
+    // spin-start logic, unchanged from before the intro screen existed.
     function startDraft() {
       pingEvent('T20_Sim_Started', { league: 'T20 Blast' });
       const nameInput = document.getElementById('team-name-input');
@@ -4249,12 +4114,54 @@
       go("s-spin"); updatePickUI(); renderSquadTracker(); doSpin();
     }
 
+    // Dev-only helper — instantly fills the strongest legal 11-player squad, skipping
+    // the spin animation. For each slot, picks the highest-rated eligible player across
+    // every county at that player's own best year, not a random legal one — mirrors
+    // wcAutoDraftDev() in spirit, but that one has no notion of "good", just "valid".
+    // Hands off to the same showSquad() completion path a real draft reaches, so
+    // fixtures/ratings/budget downstream are all real.
+    function t20AutoDraftDev() {
+      const nameInput = document.getElementById('team-name-input');
+      if (nameInput) SETTINGS.teamName = nameInput.value.trim() || 'Your XI';
+      S = { slot: 0, squad: [], counts: {}, roleCounts: { bat: 0, bowl: 0, all: 0, wk: 0 }, respinsUsed: 0, budgetSpent: 0 };
+      const taken = new Set();
+      for (const role of ["bat", "wk", "all", "bowl"]) {
+        for (let i = 0; i < ROLE_MAX[role]; i++) {
+          const eligible = [];
+          ALL_C.forEach(county => {
+            (PDB[role][county] || []).forEach(d => {
+              if (taken.has(d.n)) return;
+              const years = Object.keys(d.y);
+              if (!years.length) return;
+              // Best year for this player, not a random one — the point is a strong XI.
+              let bestYear = null, bestRating = -1;
+              years.forEach(year => {
+                const r = getEffectiveRating(d, year);
+                if (r != null && r > bestRating) { bestRating = r; bestYear = year; }
+              });
+              if (bestYear == null) return;
+              if (SETTINGS.budget === 'budget' && !canAfford(getPlayerPrice(bestRating))) return;
+              eligible.push({ name: d.n, rating: bestRating, county, year: parseInt(bestYear), role });
+            });
+          });
+          if (!eligible.length) continue;
+          eligible.sort((a, b) => b.rating - a.rating);
+          const p = eligible[0];
+          taken.add(p.name);
+          if (SETTINGS.budget === 'budget') { p.price = getPlayerPrice(p.rating); S.budgetSpent += p.price; }
+          S.squad.push(p);
+          S.counts[p.county] = (S.counts[p.county] || 0) + 1;
+          S.roleCounts[p.role]++;
+          S.slot++;
+        }
+      }
+      showSquad();
+    }
+
 
     function updatePickUI() {
       document.getElementById("pick-num").textContent = `Pick ${S.slot + 1} of 11`;
       document.getElementById("pbar").style.width = (S.slot / 11 * 100) + "%";
-      const pips = document.getElementById("pick-slots");
-      pips.innerHTML = Array.from({ length: 11 }, (_, i) => `<div class="slot-pip ${i < S.slot ? 'done' : i === S.slot ? 'active' : ''}"></div>`).join("");
       renderSquadTracker();
     }
 
@@ -4285,6 +4192,10 @@
           + '<div style="font-size:10px;color:#404055;margin-top:4px">' + fmtPrice(spent) + ' spent of ' + fmtPrice(BUDGET_TOTAL) + '</div>'
           + '</div>';
       })() : '';
+      // Player names are unique within a squad (showRoster excludes already-taken
+      // names), so the last-picked comparison can key off name the same way WC's
+      // tracker keys off its players' synthetic .id.
+      const lastName = S.squad.length ? S.squad[S.squad.length - 1].name : null;
       let html = _budgetBar + `<div class="st-title">Your XI so far</div>`;
       for (const g of TRACKER_GROUPS) {
         const filled = S.squad.filter(p => p.role === g.role);
@@ -4295,7 +4206,7 @@
           const ratingDisplay = SETTINGS.show === 'hidden'
             ? `<span class="st-slot-rating" style="color:#333">?</span>`
             : `<span class="st-slot-rating" style="color:${ratingColor(p.rating)}">${p.rating}</span>`;
-          html += `<div class="st-slot st-slot-${g.css} filled">
+          html += `<div class="st-slot st-slot-${g.css} filled${p.name === lastName ? ' slot-new' : ''}">
         <span class="st-slot-name">${p.name.split(' ').pop()}</span>
         ${ratingDisplay}
       </div>`;
@@ -4322,77 +4233,105 @@
       btn.disabled = true; btn.textContent = "Spinning…";
       document.getElementById("roster-area").innerHTML = "";
       const dc = document.getElementById("d-county"), dy = document.getElementById("d-year");
-      dc.textContent = "—"; dy.textContent = "—"; dy.style.color = "#252535";
+      const labelEl = document.getElementById("d-label");
+      dc.textContent = "—"; dy.textContent = "—";
+      if (labelEl) { labelEl.textContent = "Spinning…"; labelEl.style.color = "#606070"; }
 
-      let tick = 0; const cm = 18 + Math.floor(Math.random() * 10);
-      function tickCounty() {
-        dc.textContent = ALL_C[Math.floor(Math.random() * ALL_C.length)]; tick++;
-        if (tick < cm) { setTimeout(tickCounty, 72); }
-        else {
-          // In budget mode with limited funds, only spin counties that have
-          // at least one affordable player in a role we still need.
-          // We don't know the year yet so we check across all years.
-          let spinPool = ALL_C;
-          if (SETTINGS.budget === 'budget' && budgetRemaining() < 160000) {
-            const rem = budgetRemaining();
-            const slotsLeft = 11 - S.slot - 1;
-            const minForRest = slotsLeft * 25000;
-            const maxSpend = rem - minForRest;
-            const viable = ALL_C.filter(county => {
-              for (const role of ["bat", "wk", "all", "bowl"]) {
-                if (S.roleCounts[role] >= ROLE_MAX[role]) continue;
-                const taken = new Set(S.squad.map(p => p.name));
-                const defs = PDB[role][county] || [];
-                if (defs.some(d => {
-                  if (taken.has(d.n)) return false;
-                  const vals = Object.values(d.y);
-                  if (!vals.length) return false;
-                  const maxR = Math.max(...vals);
-                  return getPlayerPrice(maxR) <= maxSpend;
-                })) return true;
-              }
-              return false;
-            });
-            if (viable.length > 0) spinPool = viable;
-          }
-          const c = spinPool[Math.floor(Math.random() * spinPool.length)];
-          dc.textContent = c; S.spunTeam = c; S.spunGroup = NORTH.includes(c) ? "north" : "south";
-          setTimeout(startYearSpin, 220);
+      // Fruit-machine feel: fast+blurred ticks that decelerate into the final few
+      // "clunks" as the reel settles — same treatment as WC's doWCSpin(). County
+      // and year spin together in one combined reel, matching WC's single tick
+      // loop, rather than as two separate sequential spins.
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const drumRow = document.querySelector('#t20-drum-card .wc-drum-row');
+      const drum = document.getElementById('t20-drum-card');
+
+      let tick = 0; const maxTicks = 18 + Math.floor(Math.random() * 10);
+      const decelCount = Math.min(8, maxTicks - 1), decelFrom = Math.max(0, maxTicks - decelCount);
+      function doTick() {
+        const county = ALL_C[Math.floor(Math.random() * ALL_C.length)];
+        const year = YEARS[Math.floor(Math.random() * YEARS.length)];
+        const inDecel = tick >= decelFrom;
+        if (inDecel && !reduceMotion) {
+          dc.style.transition = 'opacity .12s ease-out'; dy.style.transition = 'opacity .12s ease-out';
+          dc.style.opacity = '0.25'; dy.style.opacity = '0.25';
         }
-      }
-      function startYearSpin() {
-        dy.style.color = "#888"; let yt = 0; const ym = 18 + Math.floor(Math.random() * 10);
-        function tickYear() {
-          dy.textContent = YEARS[Math.floor(Math.random() * YEARS.length)]; yt++;
-          if (yt < ym) { setTimeout(tickYear, 62); }
-          else {
-            const y = YEARS[Math.floor(Math.random() * YEARS.length)];
-            dy.textContent = y; dy.style.color = "#fff"; S.spunYear = y;
+        dc.textContent = county; dc.style.fontSize = wcNationFontSize(county) + 'px'; dc.style.color = '#9090a8';
+        dy.textContent = year; dy.style.color = '#f9c846';
+        if (inDecel && !reduceMotion) requestAnimationFrame(() => { dc.style.opacity = '1'; dy.style.opacity = '1'; });
+        tick++;
+        if (tick < maxTicks) {
+          let delay = 60, blur = 2;
+          if (tick >= decelFrom) {
+            const p = (tick - decelFrom) / (maxTicks - decelFrom);
+            delay = 60 * Math.pow(260 / 60, p);
+            blur = p < 0.7 ? 2 : 2 * (1 - (p - 0.7) / 0.3);
+          }
+          if (!reduceMotion && drumRow) drumRow.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none';
+          setTimeout(doTick, reduceMotion ? 60 : delay);
+          return;
+        }
 
-            // Check if any players available for any role we still need
-            const hasPlayers = checkHasPlayers(S.spunTeam, y);
-            const used = S.respinsUsed || 0;
-            const limitReached = used >= limit;
-            // Allow spin if: no players available (override) OR limit not reached
-            const canSpin = !limitReached || !hasPlayers;
-            btn.disabled = !canSpin;
-
-            // Button text with respin info
-            if (SETTINGS.diff === 'easy') {
-              btn.textContent = "Spin again";
-            } else if (SETTINGS.diff === 'medium') {
-              const left = Math.max(0, limit - used);
-              btn.textContent = left > 0 ? `Spin again · ${left} left` : "No re-spins left";
-            } else {
-              btn.textContent = hasPlayers ? "No re-spins (Hard)" : "Spin again (no players)";
+        if (drumRow) drumRow.style.filter = 'none';
+        // In budget mode with limited funds, only spin counties that have
+        // at least one affordable player in a role we still need.
+        // We don't know the year yet so we check across all years.
+        let spinPool = ALL_C;
+        if (SETTINGS.budget === 'budget' && budgetRemaining() < 160000) {
+          const rem = budgetRemaining();
+          const slotsLeft = 11 - S.slot - 1;
+          const minForRest = slotsLeft * 25000;
+          const maxSpend = rem - minForRest;
+          const viable = ALL_C.filter(county => {
+            for (const role of ["bat", "wk", "all", "bowl"]) {
+              if (S.roleCounts[role] >= ROLE_MAX[role]) continue;
+              const taken = new Set(S.squad.map(p => p.name));
+              const defs = PDB[role][county] || [];
+              if (defs.some(d => {
+                if (taken.has(d.n)) return false;
+                const vals = Object.values(d.y);
+                if (!vals.length) return false;
+                const maxR = Math.max(...vals);
+                return getPlayerPrice(maxR) <= maxSpend;
+              })) return true;
             }
-
-            showRoster();
-          }
+            return false;
+          });
+          if (viable.length > 0) spinPool = viable;
         }
-        tickYear();
+        const finalCounty = spinPool[Math.floor(Math.random() * spinPool.length)];
+        const finalYear = YEARS[Math.floor(Math.random() * YEARS.length)];
+        dc.textContent = finalCounty; dc.style.fontSize = wcNationFontSize(finalCounty) + 'px'; dc.style.color = '#f9c846';
+        dy.textContent = finalYear; dy.style.color = "#fff";
+        S.spunTeam = finalCounty; S.spunGroup = NORTH.includes(finalCounty) ? "north" : "south";
+        S.spunYear = finalYear;
+
+        if (drum && !reduceMotion) { drum.classList.remove('drum-land'); void drum.offsetWidth; drum.classList.add('drum-land'); }
+
+        // Check if any players available for any role we still need
+        const hasPlayers = checkHasPlayers(S.spunTeam, finalYear);
+        const used = S.respinsUsed || 0;
+        const limitReached = used >= limit;
+        // Allow spin if: no players available (override) OR limit not reached
+        const canSpin = !limitReached || !hasPlayers;
+        btn.disabled = !canSpin;
+
+        // Button text with respin info
+        if (SETTINGS.diff === 'easy') {
+          btn.textContent = "Spin again";
+        } else if (SETTINGS.diff === 'medium') {
+          const left = Math.max(0, limit - used);
+          btn.textContent = left > 0 ? `Spin again · ${left} left` : "No re-spins left";
+        } else {
+          btn.textContent = hasPlayers ? "No re-spins (Hard)" : "Spin again (no players)";
+        }
+        if (labelEl) { labelEl.textContent = "Pick your player"; labelEl.style.color = "#f9c846"; }
+
+        showRoster();
+        // Bring the candidate list into view once the spin lands, so the player
+        // doesn't have to scroll to see who they can pick — same as WC's spin screen.
+        document.getElementById('roster-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      tickCounty();
+      doTick();
     }
 
     function checkHasPlayers(county, year) {
@@ -4416,6 +4355,7 @@
       const roleNames = { bat: "Batters", wk: "Wicket-keepers", all: "All-rounders", bowl: "Bowlers" };
       const hideRatings = SETTINGS.show === 'hidden';
       let html = "";
+      let cardIdx = 0;
       for (const role of ["bat", "wk", "all", "bowl"]) {
         const defs = PDB[role][S.spunTeam] || [];
         const avail = defs
@@ -4441,7 +4381,13 @@
             const _priceTag = SETTINGS.budget === 'budget' ? `<span style="font-size:10px;font-weight:800;color:#f9c846;margin-left:5px">${fmtPrice(_price)}</span>` : "";
             const _tooExp = SETTINGS.budget === 'budget' && !canAfford(_price);
             const _cardDim = atMax || _tooExp;
-            html += `<div class="player-card pc-${role}${_cardDim ? " dimmed" : ""}" data-p="${obj}"><div><div class="pc-name">${p.name}${modeTag}${_priceTag}</div><div class="pc-meta">${p.county} · ${p.year}${_tooExp ? ' · <span style="color:#f87171;font-size:10px">over budget</span>' : ''}</div></div><div class="pc-right">${badgeHTML}</div></div>`;
+            const _delay = Math.min(cardIdx++ * 30, 300);
+            // card-in's animation-fill-mode:both would otherwise pin opacity:1 after
+            // it finishes, permanently overriding .dimmed's opacity — so dimmed cards
+            // skip the entrance animation entirely and just render inert immediately.
+            const _cardCls = `player-card pc-${role}${_cardDim ? " dimmed" : " card-in"}`;
+            const _cardStyle = _cardDim ? "" : ` style="animation-delay:${_delay}ms"`;
+            html += `<div class="${_cardCls}"${_cardStyle} data-p="${obj}"><div><div class="pc-name">${p.name}${modeTag}${_priceTag}</div><div class="pc-meta">${p.county} · ${p.year}${_tooExp ? ' · <span style="color:#f87171;font-size:10px">over budget</span>' : ''}</div></div><div class="pc-right">${badgeHTML}</div></div>`;
           });
         }
         html += `</div>`;
@@ -4586,7 +4532,7 @@
       const grpTableRows = groupRanked.map((t, i) => {
         const r = groupRatings[t];
         const isMe = t === MY;
-        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #111118">
+        return `<div class="ov-row-reveal" style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #111118">
   <div style="display:flex;align-items:center;gap:8px">
     <span style="font-size:10px;color:${i < 4 ? "#4ade80" : "#444"};font-weight:700;width:16px">${i + 1}</span>
     <span style="font-size:12px;font-weight:${isMe ? "800" : "600"};color:${isMe ? "#f9c846" : "#c0c0d8"}">${isMe ? "⭐ " + t : t}</span>
@@ -4596,7 +4542,7 @@
       }).join("");
 
       const html = `
-    <div class="preview-header">
+    <div class="preview-header ov-reveal">
       <div class="ph-eyebrow">Season Preview</div>
       <div class="ph-title">Your XI</div>
       <div class="ph-group ${grpCls}">${grpName} · replacing ${S.repTeam}</div>
@@ -4616,43 +4562,57 @@
       </div>
     </div>
 
-    <div class="preview-ratings">
-      <div class="pr-box"><div class="pr-n" style="color:${ratingColor(ovr)}">${ovr}</div><div class="pr-l">Overall</div></div>
-      <div class="pr-box"><div class="pr-n" style="color:${ratingColor(bat)}">${bat}</div><div class="pr-l">Batting</div></div>
-      <div class="pr-box"><div class="pr-n" style="color:${ratingColor(bowl)}">${bowl}</div><div class="pr-l">Bowling</div></div>
+    <div class="preview-ratings ov-reveal">
+      <div class="pr-box"><div class="pr-n ov-count" data-count="${ovr}" style="color:${ratingColor(ovr)}">0</div><div class="pr-l">Overall</div></div>
+      <div class="pr-box"><div class="pr-n ov-count" data-count="${bat}" style="color:${ratingColor(bat)}">0</div><div class="pr-l">Batting</div></div>
+      <div class="pr-box"><div class="pr-n ov-count" data-count="${bowl}" style="color:${ratingColor(bowl)}">0</div><div class="pr-l">Bowling</div></div>
       ${SETTINGS.budget === 'budget' ? `<div class="pr-box"><div class="pr-n" style="color:#f9c846;font-size:13px;letter-spacing:-.3px;line-height:1.2;padding-top:2px">${fmtPrice(S.budgetSpent||0)}</div><div class="pr-l">Spent</div></div>` : ''}
     </div>
 
-    <div style="width:100%;background:#0d0d12;border:1px solid #1e1e2a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:left">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:800;margin-bottom:10px">Group strength · ${grpName}</div>
+    <div class="ov-stagger" style="width:100%;background:#0d0d12;border:1px solid #1e1e2a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:left">
+      <div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:800;margin-bottom:10px">Group strength · ${grpName}</div>
       ${grpTableRows}
       <div style="font-size:10px;color:#3a9a50;margin-top:8px;letter-spacing:.5px">● Top 4 qualify for quarter-finals</div>
     </div>
 
-    <div style="width:100%;background:#0d0d12;border:1px solid #1e1e2a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:left">
+    <div class="ov-reveal" style="width:100%;background:#0d0d12;border:1px solid #1e1e2a;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:left">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:800;margin-bottom:8px">Key players</div>
-      <div style="display:flex;justify-content:space-between;gap:8px">
-        <div style="flex:1">
-          <div style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-bottom:3px">Star man</div>
-          <div style="font-size:13px;font-weight:800;color:#fff">${star.name}</div>
-          <div style="font-size:11px;color:#9090a8;margin-top:2px">${star.county} ${star.year} · <span style="color:${ratingColor(star.rating)};font-weight:800">${star.rating}</span></div>
+      <div style="display:flex;justify-content:space-between;gap:10px">
+        <div style="flex:1;text-align:center">
+          <div style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-bottom:6px">Star man</div>
+          <div class="rating-badge ${ratingBadgeClass(star.rating)}" style="width:36px;height:36px;font-size:14px;margin:0 auto 6px">${star.rating}</div>
+          <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${star.name}</div>
+          <div style="font-size:11px;color:#9090a8;margin-top:2px">${star.county} ${star.year}</div>
+          <div style="margin-top:6px"><span class="rp-badge rpb-${star.role}">${RL[star.role]}</span></div>
         </div>
         <div style="width:1px;background:#1e1e2a"></div>
-        <div style="flex:1">
-          <div style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-bottom:3px">Weak Link</div>
-          <div style="font-size:13px;font-weight:800;color:#c0c0d8">${weakLink.name}</div>
-          <div style="font-size:11px;color:#8080a0;margin-top:2px">${weakLink.county} ${weakLink.year} · <span style="color:${ratingColor(weakLink.rating)};font-weight:800">${weakLink.rating}</span></div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-bottom:6px">Weak Link</div>
+          <div class="rating-badge ${ratingBadgeClass(weakLink.rating)}" style="width:36px;height:36px;font-size:14px;margin:0 auto 6px">${weakLink.rating}</div>
+          <div style="font-size:13px;font-weight:800;color:#c0c0d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${weakLink.name}</div>
+          <div style="font-size:11px;color:#8080a0;margin-top:2px">${weakLink.county} ${weakLink.year}</div>
+          <div style="margin-top:6px"><span class="rp-badge rpb-${weakLink.role}">${RL[weakLink.role]}</span></div>
         </div>
       </div>
     </div>
 
-    <div class="media-section-label">Media verdict</div>
-    ${quotes.map(q => `<div class="media-card"><div class="mc-outlet">${q.outlet}</div><div class="mc-quote">${q.text}</div></div>`).join("")}
+    <div class="media-section-label ov-reveal">Media verdict</div>
+    <div class="ov-stagger">
+      ${quotes.map((q, i) => {
+        const qc = ['#4ade80', '#60a5fa', '#fbbf24'][i % 3];
+        return `<div class="media-card ov-row-reveal">
+          <div style="font-size:20px;font-weight:900;color:${qc};line-height:.6;margin-bottom:4px">&ldquo;</div>
+          <div class="mc-outlet" style="color:${qc}">${q.outlet}</div>
+          <div class="mc-quote">${q.text}</div>
+        </div>`;
+      }).join("")}
+    </div>
   `;
 
       document.getElementById("preview-content").innerHTML = html;
       go("s-preview");
       pushAd('preview-ad', '2052755753');
+      requestAnimationFrame(() => wireReveals(document.getElementById('preview-content')));
     }
 
     function getBookiesOddsRelative(myOvr, allRatings) {
@@ -4879,6 +4839,12 @@
         const totalBW = batWeights.reduce((s, w) => s + w, 0);
         // Assign runs in proportion, then add noise
         let assigned = 0;
+        // Dismissals: an independent, plausible wickets-lost count purely for batting
+        // average on the review screen — doesn't touch the team score/margin/table at
+        // all, just decides which contributors get marked "out" vs "not out".
+        const wicketsLostBatting = Math.min(contributors.length, 3 + Math.floor(Math.random() * 6));
+        const outIdx = new Set();
+        while (outIdx.size < wicketsLostBatting) outIdx.add(Math.floor(Math.random() * contributors.length));
         myBatStats = contributors.map((p, i) => {
           const share = (batWeights[i] / totalBW) * myScore;
           const noise = (Math.random() - 0.5) * share * 0.5;
@@ -4891,7 +4857,7 @@
                    : p.role === "all"  ? 120 + Math.random() * 40
                    :                     130 + Math.random() * 50;
           const balls = Math.max(1, Math.round((runs / sr) * 100));
-          return { name: p.name, role: p.role, runs, balls };
+          return { name: p.name, role: p.role, runs, balls, out: outIdx.has(i) };
         });
         // Fix rounding so runs add up to myScore
         const diff = myScore - myBatStats.reduce((s, p) => s + p.runs, 0);
@@ -4978,9 +4944,10 @@
       simAll.forEach(r => {
         if (!r.myBatStats && !r.myBowlStats) return;
         (r.myBatStats || []).forEach(p => {
-          if (!S.groupStats.bat[p.name]) S.groupStats.bat[p.name] = { runs: 0, balls: 0 };
+          if (!S.groupStats.bat[p.name]) S.groupStats.bat[p.name] = { runs: 0, balls: 0, dismissals: 0 };
           S.groupStats.bat[p.name].runs  += p.runs;
           S.groupStats.bat[p.name].balls += p.balls;
+          if (p.out) S.groupStats.bat[p.name].dismissals++;
         });
         (r.myBowlStats || []).forEach(p => {
           if (!S.groupStats.bowl[p.name]) S.groupStats.bowl[p.name] = { wickets: 0, overs: 0, runs: 0 };
@@ -4990,17 +4957,31 @@
         });
       });
 
-      document.getElementById("match-feed").innerHTML = "";
+      document.getElementById("sim-feed").innerHTML = "";
       document.getElementById("tbl-wrap").innerHTML = "";
       const grpLabel = S.repGroup === "north" ? "North Group" : "South Group";
       document.getElementById("sim-title").textContent = grpLabel;
       document.getElementById("sim-group-sub").textContent = `replacing ${S.repTeam} · 16 games`;
       document.getElementById("sim-next").style.display = "none";
-      document.getElementById("sim-prog").textContent = "";
+      document.getElementById("sim-stat-w").textContent = "0";
+      document.getElementById("sim-stat-l").textContent = "0";
+      document.getElementById("sim-stat-left").textContent = "16";
       go("s-sim");
       // Render empty table immediately
       renderLiveTable();
       setTimeout(dropNext, 400);
+    }
+
+    // Removes the oldest (bottom) feed row(s) while the page is actually taller than
+    // the viewport — measuring reality instead of pre-computing a guessed row budget,
+    // so it self-corrects for whatever else is on screen (table, end-of-group banner).
+    function trimFeedToFit(minRows) {
+      const feed = document.getElementById("sim-feed");
+      if (!feed) return;
+      let guard = 30;
+      while (feed.children.length > minRows && document.documentElement.scrollHeight > window.innerHeight && guard-- > 0) {
+        feed.removeChild(feed.lastChild);
+      }
     }
 
     function dropNext() {
@@ -5009,10 +4990,16 @@
       const MY = S.myTeam;
       const isMe = r.a === MY || r.b === MY;
 
-      // Count only my games for the progress label
-      const myMatches = simAll.filter(m => m.a === MY || m.b === MY);
-      const myDone = simAll.slice(0, simIdx + 1).filter(m => m.a === MY || m.b === MY).length;
-      document.getElementById("sim-prog").textContent = `Game ${simIdx + 1} of ${simAll.length}`;
+      // Progress label counts only my own games (16 of the group's 72), not every
+      // team's fixtures, so it answers "how am I doing / how many do I have left".
+      const myGamesSoFar = simAll.slice(0, simIdx + 1).filter(m => m.a === MY || m.b === MY);
+      const myMatchesTotal = simAll.filter(m => m.a === MY || m.b === MY).length;
+      const myWinsSoFar = myGamesSoFar.filter(m => m.w === MY).length;
+      const myLossesSoFar = myGamesSoFar.length - myWinsSoFar;
+      const myLeft = myMatchesTotal - myGamesSoFar.length;
+      document.getElementById("sim-stat-w").textContent = myWinsSoFar;
+      document.getElementById("sim-stat-l").textContent = myLossesSoFar;
+      document.getElementById("sim-stat-left").textContent = myLeft;
 
       // Only add to feed if it's a match involving the user's team
       if (isMe) {
@@ -5031,20 +5018,26 @@
           marginText = r.batFirst ? `lost by ${r.wk} wickets` : `lost by ${r.ws - r.ls} runs`;
         }
 
-        const feed = document.getElementById("match-feed");
-        const div = document.createElement("div");
-        div.className = `match-row ${won ? "mine-win" : "mine-loss"}`;
-        div.innerHTML = `
-      <div class="match-left">
-        <div class="wl-badge ${won ? "wl-w" : "wl-l"}" style="flex-shrink:0">${won ? "W" : "L"}</div>
-        <div style="min-width:0;overflow:hidden">
-          <div style="font-size:13px;font-weight:700;color:${won ? "#d0eed0" : "#eed0d0"};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${opp} <span style="font-size:11px;color:#606070;font-weight:600">${homeAwayLabel}</span></div>
-          <div style="font-size:11px;color:#8080a0;margin-top:2px;text-align:left">${myScore} vs ${oppScore}</div>
-        </div>
+        // Fixed single-line title/meta (ellipsis, no wrap) so every row is exactly the
+        // same height no matter how long the opponent name or margin text happens to be —
+        // otherwise a long county name on one result would push its pill out of line
+        // with the rest of the list.
+        const feed = document.getElementById("sim-feed");
+        const row = document.createElement("div");
+        row.className = `wch-hist-row feed-in ${won ? "hist-win" : "hist-loss"}`;
+        row.innerHTML = `
+      <span class="wch-hist-flag" style="font-size:15px;font-weight:900;color:${won ? "#4ade80" : "#f87171"}">${won ? "✓" : "✗"}</span>
+      <div style="flex:1;min-width:0">
+        <div class="wch-hist-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${won ? "Beat" : "Lost to"} ${opp} ${homeAwayLabel}</div>
+        <div class="wch-hist-margin" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${myScore} vs ${oppScore} · ${marginText}</div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:${won ? "#4ade80" : "#f87171"};flex-shrink:0;text-align:right;padding-left:8px;white-space:nowrap">${marginText}</div>`;
-        feed.appendChild(div);
-        requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add("vis")));
+      <span class="sc-result-pill ${won ? "pill-w" : "pill-l"}" style="flex-shrink:0">${won ? "WON" : "LOST"}</span>`;
+        feed.insertBefore(row, feed.firstChild);
+        requestAnimationFrame(() => requestAnimationFrame(() => row.classList.add("vis")));
+        // Newest stays on top; keep adding until the page would need to scroll, then
+        // each new one pushes the oldest off the bottom. Always leave at least 2 up
+        // so "your results" never collapses to a single row while the group is live.
+        trimFeedToFit(2);
       }
 
       renderLiveTable();
@@ -5069,9 +5062,9 @@
       <col style="width:52px">
     </colgroup>
     <thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead>
-    <tbody>${table.map((r, i) => `<tr class="${r.team === MY ? "myrow" : ""}">
+    <tbody>${table.map((r, i) => `<tr class="${r.team === MY ? "myrow" : ""}${i === 3 ? " wch-qual-line" : ""}">
       <td style="color:${i < 4 ? "#4ade80" : "#606070"};font-weight:700">${i + 1}</td>
-      <td>${r.team}${i < 4 ? `<span class="q-mark"></span>` : ""}</td>
+      <td>${r.team}</td>
       <td>${r.p}</td><td>${r.w}</td><td>${r.l}</td>
       <td style="font-weight:${r.team === MY ? "800" : "400"}">${r.pts}</td>
       <td style="color:${r.nrr >= 0 ? "#4ade80" : "#f87171"}">${r.nrr >= 0 ? "+" : ""}${r.nrr.toFixed(2)}</td>
@@ -5090,13 +5083,19 @@
       const myGames = simAll.filter(r => r.a === MY || r.b === MY);
       const myWins = myGames.filter(r => r.w === MY).length;
       const myLosses = myGames.length - myWins;
-      document.getElementById("sim-prog").textContent = `${myWins}W ${myLosses}L · Complete`;
+      document.getElementById("sim-stat-w").textContent = myWins;
+      document.getElementById("sim-stat-l").textContent = myLosses;
+      document.getElementById("sim-stat-left").textContent = "0";
       const el = document.getElementById("sim-next"); el.style.display = "block";
       if (S.qualified) {
         el.innerHTML = `<div class="result-pill rp-win">✓ Qualified — ${ordinal(S.myPos)} in the group · ${myWins} wins from 16 games</div><button class="btn-next" style="margin-top:10px" onclick="doKO('qf')">Quarter-finals</button>`;
       } else {
         el.innerHTML = `<div class="result-pill rp-loss">✗ Eliminated — ${ordinal(S.myPos)}, only top 4 advance · ${myWins} wins from 16 games</div><button class="btn-next" style="margin-top:10px" onclick="showOverview()">Season overview</button>`;
       }
+      // The live feed's job is done now — shrink it further if needed so the
+      // qualified/eliminated verdict and next-stage button are guaranteed visible
+      // without scrolling too, the same as everything else during the live sim.
+      trimFeedToFit(0);
     }
 
     // ── FULL MATCH SIMULATION ──────────────────────────────────────────────────────
@@ -5401,7 +5400,7 @@
     </div>
 
     <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:8px;text-align:left">
-      1st Innings · <span style="color:#c0c0d8">${matchData.inns1.team}</span>
+      <span id="sc-inn1-title">1st Innings · <span style="color:#c0c0d8">${matchData.inns1.team}</span></span>
     </div>
 
     <div id="sc-live-score" style="text-align:center;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:14px;margin-bottom:10px">
@@ -5409,7 +5408,7 @@
       <div style="font-size:13px;color:#8080a0;margin-top:4px" id="sc-live-overs">0.0 overs</div>
       <div style="font-size:12px;color:#606070;margin-top:2px" id="sc-target-line"></div>
     </div>
-    <div id="sc-overs-bar" class="sc-overs-bar" style="background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;margin-bottom:10px;min-height:38px;padding:8px 10px"></div>
+    <div id="sc-overs-bar" class="sc-overs-bar wm-overbar" style="background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;margin-bottom:10px;min-height:38px;padding:8px 10px"></div>
     <div id="sc-bat-table" style="width:100%;margin-bottom:4px"></div>
     <div id="sc-bowl-table" style="width:100%;margin-bottom:6px"></div>
 
@@ -5444,7 +5443,7 @@
       sec.innerHTML = `
     <div style="height:1px;background:#1a1a24;margin:14px 0"></div>
     <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:8px;text-align:left">
-      2nd Innings · <span style="color:#c0c0d8">${matchData.inns2.team}</span>
+      <span id="sc-inn2-title">2nd Innings · <span style="color:#c0c0d8">${matchData.inns2.team}</span></span>
     </div>
     ${matchData.target ? `<div style="font-size:12px;color:#8080a0;margin-bottom:8px">Target: ${matchData.target}</div>` : ""}
 
@@ -5453,7 +5452,7 @@
       <div style="font-size:13px;color:#8080a0;margin-top:4px" id="sc-live-overs2">0.0 overs</div>
       <div style="font-size:12px;color:#606070;margin-top:2px" id="sc-target-line2">${matchData.target ? `Target: ${matchData.target}` : ""}</div>
     </div>
-    <div id="sc-overs-bar2" class="sc-overs-bar" style="background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;margin-bottom:10px;min-height:38px;padding:8px 10px"></div>
+    <div id="sc-overs-bar2" class="sc-overs-bar wm-overbar" style="background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;margin-bottom:10px;min-height:38px;padding:8px 10px"></div>
     <div id="sc-bat-table2" style="width:100%;margin-bottom:4px"></div>
     <div id="sc-bowl-table2" style="width:100%;margin-bottom:6px"></div>
   `;
@@ -5461,32 +5460,44 @@
       setTimeout(() => sec.scrollIntoView({ behavior: "smooth", block: "start" }), simDelay(300));
 
       // Now play innings 2 live
-      let ovIdx2 = 0;
+      let ovIdx2 = 0, prevBatterSnap2 = null;
 
       renderLiveBattingSnap(matchData.inns2.overScores[0] ? matchData.inns2.overScores[0].batterSnap : matchData.inns2.batters, "sc-bat-table2");
+      scSetLiveTitle('sc-inn2-title', '2nd Innings', matchData.inns2.team, true);
 
-      function nextOver2() {
-        if (ovIdx2 >= matchData.inns2.overScores.length) {
-          // Innings 2 complete
-          const inns2 = matchData.inns2;
-          document.getElementById("sc-live-runs2").textContent = inns2.wickets >= 10 ? `${inns2.runs}` : `${inns2.runs}/${inns2.wickets}`;
-          document.getElementById("sc-live-overs2").textContent = inns2.wickets >= 10 ? `All out · ${inns2.oversPlayed} overs` : `${inns2.oversPlayed} overs · Complete`;
-          if (matchData.target) {
-            const made = inns2.runs >= matchData.target;
-            document.getElementById("sc-target-line2").textContent = made ? `Target reached!` : `Fell short by ${matchData.target - inns2.runs} runs`;
-          }
-          renderLiveBattingSnap(matchData.inns2.batters, "sc-bat-table2");
+      const nextEl2 = document.getElementById('sc-next');
+      if (nextEl2) nextEl2.innerHTML = '<button class="btn-next" id="sc-skip-inn2">⏩ Sim Innings</button>';
+      const skipBtn2 = document.getElementById('sc-skip-inn2');
+      if (skipBtn2) skipBtn2.onclick = () => { if (scTimer) clearTimeout(scTimer); finishInn2(); };
 
-          // Innings 2 complete — go straight to result (bowling already shown live in sc-bowl-table2)
-          setTimeout(() => renderResult(matchData, myInvolved, won), simDelay(800));
-          return;
+      function finishInn2() {
+        // Innings 2 complete
+        const inns2 = matchData.inns2;
+        document.getElementById("sc-live-runs2").textContent = inns2.wickets >= 10 ? `${inns2.runs}` : `${inns2.runs}/${inns2.wickets}`;
+        document.getElementById("sc-live-overs2").textContent = inns2.wickets >= 10 ? `All out · ${inns2.oversPlayed} overs` : `${inns2.oversPlayed} overs · Complete`;
+        if (matchData.target) {
+          const made = inns2.runs >= matchData.target;
+          document.getElementById("sc-target-line2").textContent = made ? `Target reached!` : `Fell short by ${matchData.target - inns2.runs} runs`;
         }
+        renderLiveBattingSnap(matchData.inns2.batters, "sc-bat-table2");
+        scSetLiveTitle('sc-inn2-title', '2nd Innings', matchData.inns2.team, false);
+        if (nextEl2) nextEl2.innerHTML = '';
+
+        // Innings 2 complete — go straight to result (bowling already shown live in sc-bowl-table2)
+        setTimeout(() => renderResult(matchData, myInvolved, won), simDelay(800));
+      }
+      function nextOver2() {
+        if (ovIdx2 >= matchData.inns2.overScores.length) { finishInn2(); return; }
 
         const ov = matchData.inns2.overScores[ovIdx2]; ovIdx2++;
         const lrEl = document.getElementById("sc-live-runs2");
         const loEl = document.getElementById("sc-live-overs2");
         const tgEl = document.getElementById("sc-target-line2");
-        if (lrEl) lrEl.textContent = ov.wkts >= 10 ? `${ov.total}` : `${ov.total}/${ov.wkts}`;
+        if (lrEl) {
+          lrEl.textContent = ov.wkts >= 10 ? `${ov.total}` : `${ov.total}/${ov.wkts}`;
+          scPulse(lrEl, 'wm-score-pop');
+          if (ov.wickets > 0) scPulse(lrEl, 'wm-wicket-flash');
+        }
         if (loEl) loEl.textContent = `${ov.over}.0 overs`;
         if (tgEl && matchData.target) {
           const rem = matchData.target - ov.total;
@@ -5503,15 +5514,21 @@
         const bar2 = document.getElementById("sc-overs-bar2");
         if (bar2) {
           const pill = document.createElement("div");
-          const cls = ov.wickets > 0 ? "wicket" : ov.runs >= 10 ? "high" : "mid";
+          const cls = ov.wickets > 0 ? "wicket" : ov.runs >= 14 ? "boundary" : ov.runs >= 10 ? "high" : "mid";
           pill.className = `sc-over ${cls}`;
           pill.textContent = ov.wickets > 0 ? `${ov.runs}W` : ov.runs;
-          pill.style.opacity = "0"; pill.style.transition = "opacity .25s";
           bar2.appendChild(pill);
-          setTimeout(() => pill.style.opacity = "1", 20);
+          requestAnimationFrame(() => pill.classList.add('vis'));
+          while (bar2.children.length > 10) bar2.removeChild(bar2.firstChild);
         }
 
-        renderLiveBattingSnap(ov.batterSnap || matchData.inns2.batters, "sc-bat-table2");
+        const batEl2 = document.getElementById("sc-bat-table2");
+        const snap2 = ov.batterSnap || matchData.inns2.batters;
+        renderLiveBattingSnap(snap2, "sc-bat-table2");
+        if (ov.batterSnap) {
+          scFlashMilestones(batEl2, prevBatterSnap2, ov.batterSnap);
+          prevBatterSnap2 = ov.batterSnap;
+        }
         if (ov.bowlerSnap) renderLiveBowlingSnap(ov.bowlerSnap.filter(b => b.overs > 0), "sc-bowl-table2", matchData.inns1.team);
         scTimer = setTimeout(nextOver2, simDelay(850));
       }
@@ -5557,32 +5574,88 @@
     }
 
     let scTimer = null;
+
+    // Restarts a CSS animation on an element even if its class never changed — needed
+    // since the score text gets a fresh "pop" every single over. Shared with the WC
+    // live-match screen's identical helper (playWCMatchLive).
+    function scPulse(el, cls) {
+      if (!el) return;
+      el.classList.remove(cls);
+      void el.offsetWidth;
+      el.classList.add(cls);
+    }
+
+    function scSetLiveTitle(titleElId, label, teamName, isLive) {
+      const el = document.getElementById(titleElId);
+      if (!el) return;
+      el.innerHTML = `${isLive ? '<span class="wm-live-dot"></span>' : ''}${label} · <span style="color:#c0c0d8">${teamName}</span>`;
+    }
+
+    // Diffs a batter's runs against the last chunk actually rendered and, on crossing
+    // 50/100, adds the gold sweep + floating milestone badge (same treatment as WC's
+    // playWCMatchLive) to that player's row.
+    function scFlashMilestones(batEl, prevSnap, currentSnap) {
+      if (!batEl || !prevSnap) return;
+      currentSnap.forEach(b => {
+        const prev = prevSnap.find(p => p.name === b.name);
+        if (!prev || b.out) return;
+        const hit100 = prev.runs < 100 && b.runs >= 100, hit50 = prev.runs < 50 && b.runs >= 50;
+        if (hit100 || hit50) {
+          const row = batEl.querySelector(`[data-player="${CSS.escape(b.name)}"]`);
+          if (row) {
+            row.classList.add('wm-milestone-glow');
+            const badge = document.createElement('span');
+            badge.className = 'wm-milestone-badge';
+            badge.textContent = hit100 ? '💯 CENTURY' : '🏏 FIFTY';
+            row.appendChild(badge);
+            setTimeout(() => badge.remove(), 2400);
+          }
+        }
+      });
+    }
+
     function playInningsLive(inns, isSecond, target, onDone, fieldingTeam) {
       if (scTimer) clearTimeout(scTimer);
       renderLiveBattingSnap(inns.overScores[0] ? inns.overScores[0].batterSnap : inns.batters, "sc-bat-table");
       renderLiveBowlingSnap([], "sc-bowl-table");
+      scSetLiveTitle('sc-inn1-title', '1st Innings', inns.team, true);
 
-      let ovIdx = 0;
-      function nextOver() {
-        if (ovIdx >= inns.overScores.length) {
-          const lrEl = document.getElementById("sc-live-runs");
-          const loEl = document.getElementById("sc-live-overs");
-          if (lrEl) lrEl.textContent = inns.wickets >= 10 ? `${inns.runs}` : `${inns.runs}/${inns.wickets}`;
-          if (loEl) loEl.textContent = inns.wickets >= 10 ? `All out · ${inns.oversPlayed} overs` : `${inns.oversPlayed} overs · Complete`;
-          if (isSecond && target) {
-            const tgEl = document.getElementById("sc-target-line");
-            if (tgEl) tgEl.textContent = inns.runs >= target ? "Target reached!" : `Fell short by ${target - inns.runs} run${target - inns.runs !== 1 ? "s" : ""}`;
-          }
-          renderLiveBattingSnap(inns.batters, "sc-bat-table");
-          onDone(); return;
+      // Repurpose the otherwise-idle "next" slot as a skip control for the duration of
+      // this innings — same treatment as WC's playWCMatchLive — so there's always
+      // something useful to tap instead of just watching the reveal play out.
+      const nextEl = document.getElementById('sc-next');
+      if (nextEl) nextEl.innerHTML = '<button class="btn-next" id="sc-skip-inn1">⏩ Sim Innings</button>';
+      const skipBtn = document.getElementById('sc-skip-inn1');
+      if (skipBtn) skipBtn.onclick = () => { if (scTimer) clearTimeout(scTimer); finishInn1(); };
+
+      let ovIdx = 0, prevBatterSnap = null;
+      function finishInn1() {
+        const lrEl = document.getElementById("sc-live-runs");
+        const loEl = document.getElementById("sc-live-overs");
+        if (lrEl) lrEl.textContent = inns.wickets >= 10 ? `${inns.runs}` : `${inns.runs}/${inns.wickets}`;
+        if (loEl) loEl.textContent = inns.wickets >= 10 ? `All out · ${inns.oversPlayed} overs` : `${inns.oversPlayed} overs · Complete`;
+        if (isSecond && target) {
+          const tgEl = document.getElementById("sc-target-line");
+          if (tgEl) tgEl.textContent = inns.runs >= target ? "Target reached!" : `Fell short by ${target - inns.runs} run${target - inns.runs !== 1 ? "s" : ""}`;
         }
+        renderLiveBattingSnap(inns.batters, "sc-bat-table");
+        scSetLiveTitle('sc-inn1-title', '1st Innings', inns.team, false);
+        if (nextEl) nextEl.innerHTML = '';
+        onDone();
+      }
+      function nextOver() {
+        if (ovIdx >= inns.overScores.length) { finishInn1(); return; }
 
         const ov = inns.overScores[ovIdx];
         ovIdx++;
 
         const lrEl = document.getElementById("sc-live-runs");
         const loEl = document.getElementById("sc-live-overs");
-        if (lrEl) lrEl.textContent = ov.wkts >= 10 ? `${ov.total}` : `${ov.total}/${ov.wkts}`;
+        if (lrEl) {
+          lrEl.textContent = ov.wkts >= 10 ? `${ov.total}` : `${ov.total}/${ov.wkts}`;
+          scPulse(lrEl, 'wm-score-pop');
+          if (ov.wickets > 0) scPulse(lrEl, 'wm-wicket-flash');
+        }
         if (loEl) loEl.textContent = `${ov.over}.0 overs`;
         if (isSecond && target) {
           const tgEl = document.getElementById("sc-target-line");
@@ -5604,15 +5677,20 @@
         const bar = document.getElementById("sc-overs-bar");
         if (bar) {
           const pill = document.createElement("div");
-          const cls = ov.wickets > 0 ? "wicket" : ov.runs >= 10 ? "high" : "mid";
+          const cls = ov.wickets > 0 ? "wicket" : ov.runs >= 14 ? "boundary" : ov.runs >= 10 ? "high" : "mid";
           pill.className = `sc-over ${cls}`;
           pill.textContent = ov.wickets > 0 ? `${ov.runs}W` : ov.runs;
-          pill.style.opacity = "0"; pill.style.transition = "opacity .22s";
           bar.appendChild(pill);
-          setTimeout(() => pill.style.opacity = "1", 20);
+          requestAnimationFrame(() => pill.classList.add('vis'));
+          while (bar.children.length > 10) bar.removeChild(bar.firstChild);
         }
 
-        if (ov.batterSnap) renderLiveBattingSnap(ov.batterSnap, "sc-bat-table");
+        const batEl = document.getElementById("sc-bat-table");
+        if (ov.batterSnap) {
+          renderLiveBattingSnap(ov.batterSnap, "sc-bat-table");
+          scFlashMilestones(batEl, prevBatterSnap, ov.batterSnap);
+          prevBatterSnap = ov.batterSnap;
+        }
         if (ov.bowlerSnap) renderLiveBowlingSnap(ov.bowlerSnap.filter(b => b.overs > 0), "sc-bowl-table", fieldingTeam);
 
         scTimer = setTimeout(nextOver, simDelay(850));
@@ -5635,7 +5713,7 @@
         const nameStyle = isBatting ? "color:#f9c846;font-weight:800" : "color:#c0c0d8";
         const howStyle = b.out ? "color:#8080a0" : "color:#4ade80";
         const howText = b.out ? b.how : isBatting ? "batting" : "not out";
-        return `<div class="sc-batter-row">
+        return `<div class="sc-batter-row" data-player="${b.name}">
       <span class="sc-batter-name" style="${nameStyle}">${isBatting ? "▶ " : ""}${b.name}</span>
       <span class="sc-batter-how" style="${howStyle}">${howText}</span>
       <span class="sc-batter-runs${b.runs >= 50 ? " fifty" : b.runs >= 25 ? " good" : ""}">${hasBatted ? b.runs : ""}</span>
@@ -5755,73 +5833,102 @@
 
     // ── KNOCKOUTS ──────────────────────────────────────────────────────────────────
 
-    function buildMyQFCard(pair, ratings, MY) {
+    // WC-hub-style matchup card: rating vs rating, plus the full XI vs XI, one line
+    // per player so all 11 rows still stay compact.
+    function buildMyQFCard(pair, ratings, MY, tag) {
       const opp = pair[0] === MY ? pair[1] : pair[0];
       const myR = Math.round(ratings[MY] || 65);
       const oppR = Math.round(ratings[opp] || 65);
 
-      // Squad comparison rows
       const mySquad = S.countySquads && S.countySquads[MY] ? S.countySquads[MY] : S.squad;
       const oppSquad = S.countySquads && S.countySquads[opp] ? S.countySquads[opp] : [];
       const ORDER = ["bat", "wk", "all", "bowl"];
       const mySorted = [...mySquad].sort((a, b) => ORDER.indexOf(a.role) - ORDER.indexOf(b.role));
       const oppSorted = [...oppSquad].sort((a, b) => ORDER.indexOf(a.role) - ORDER.indexOf(b.role));
 
+      // Name + rating on one line per side (role is its own column) — keeps the
+      // full XI compact without needing a second line per player.
+      const playerCell = (p, align, color) => p
+        ? `<div style="text-align:${align};min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px;font-weight:700;color:${color}">${p.name} <span style="font-weight:900;color:${ratingColor(p.rating)}">${p.rating}</span></div>`
+        : `<div style="text-align:${align};font-size:11px;color:#444">—</div>`;
+
       const squadRows = mySorted.map((p, i) => {
         const op = oppSorted[i];
-        const myColor = ratingColor(p.rating);
-        const opColor = op ? ratingColor(op.rating) : "#444";
-        // Both sides: Name · Year · Rating, centred
-        const myCell = `<div style="text-align:center;min-width:0">
-    <div style="font-size:11px;font-weight:700;color:#c0c0d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
-    <div style="font-size:10px;color:#555;margin-top:1px">${p.year} · <span style="font-weight:900;color:${myColor}">${p.rating}</span></div>
-  </div>`;
-        const opCell = op
-          ? `<div style="text-align:center;min-width:0">
-    <div style="font-size:11px;font-weight:700;color:#c0c0d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${op.name}</div>
-    <div style="font-size:10px;color:#555;margin-top:1px">${op.year} · <span style="font-weight:900;color:${opColor}">${op.rating}</span></div>
-  </div>`
-          : `<div style="text-align:center;font-size:11px;color:#444">—</div>`;
-        return `<div style="display:grid;grid-template-columns:1fr 36px 1fr;align-items:center;padding:6px 0;border-bottom:1px solid #0f0f14;gap:4px">
-  ${myCell}
-  <div style="text-align:center;font-size:9px;color:#444;font-weight:800;text-transform:uppercase">${RL[p.role]}</div>
-  ${opCell}
+        return `<div class="ov-row-reveal" style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;padding:4px 0;border-bottom:1px solid #1a1a24;gap:4px">
+  ${playerCell(p, "right", "#e0e0f0")}
+  <div style="text-align:center;font-size:8px;color:#444;font-weight:800;text-transform:uppercase">${RL[p.role]}</div>
+  ${playerCell(op, "left", "#a0a0b8")}
 </div>`;
       }).join("");
 
-      return `<div style="background:#111118;border:1px solid #3a3a60;border-radius:14px;padding:18px;margin-bottom:8px">
-  <div style="display:flex;align-items:stretch;justify-content:space-between;gap:12px;margin-bottom:16px">
-    <div style="flex:1;text-align:center;background:#0d0d14;border-radius:10px;padding:14px 10px">
-      <div style="font-size:12px;color:#f9c846;font-weight:800;margin-bottom:6px">⭐ Your XI</div>
-      <div style="font-size:28px;font-weight:900;color:#f9c846;letter-spacing:-1px">${myR}</div>
-      <div style="font-size:10px;color:#8080a0;margin-top:3px;letter-spacing:1px;text-transform:uppercase">Rating</div>
+      return `<div class="wch-hero ov-reveal ov-pop" style="cursor:default;margin-bottom:8px">
+  <div class="wch-hero-tag">${tag || "⭐ Your Match"}</div>
+  <div style="display:flex;align-items:stretch;justify-content:space-between;gap:10px;margin-bottom:12px">
+    <div style="flex:1;text-align:center;background:#0d0d14;border-radius:10px;padding:12px 8px;min-width:0">
+      <div style="font-size:12px;color:#f9c846;font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">⭐ Your XI</div>
+      <div style="font-size:26px;font-weight:900;color:#f9c846;letter-spacing:-1px">${myR}</div>
     </div>
-    <div style="display:flex;align-items:center;color:#444;font-size:13px;font-weight:700">vs</div>
-    <div style="flex:1;text-align:center;background:#0d0d14;border-radius:10px;padding:14px 10px">
-      <div style="font-size:12px;color:#c0c0d8;font-weight:800;margin-bottom:6px">${opp}</div>
-      <div style="font-size:28px;font-weight:900;color:#c0c0d8;letter-spacing:-1px">${oppR}</div>
-      <div style="font-size:10px;color:#8080a0;margin-top:3px;letter-spacing:1px;text-transform:uppercase">Rating</div>
+    <div style="display:flex;align-items:center;color:#6a5218;font-size:13px;font-weight:700">vs</div>
+    <div style="flex:1;text-align:center;background:#0d0d14;border-radius:10px;padding:12px 8px;min-width:0">
+      <div style="font-size:12px;color:#c0c0d8;font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${opp}</div>
+      <div style="font-size:26px;font-weight:900;color:#c0c0d8;letter-spacing:-1px">${oppR}</div>
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 36px 1fr;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:800;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #252535;text-align:center">
-    <span style="color:#f9c846;text-align:center">Your XI</span>
+  <div style="display:grid;grid-template-columns:1fr 26px 1fr;gap:4px;font-size:8px;letter-spacing:1px;text-transform:uppercase;font-weight:800;margin-bottom:2px;padding-bottom:4px;border-bottom:1px solid #252535">
+    <span style="text-align:right;color:#f9c846">Your XI</span>
     <span style="text-align:center;color:#444">Role</span>
-    <span style="text-align:center;color:#9090a8">${opp}</span>
+    <span style="text-align:left;color:#9090a8">${opp}</span>
   </div>
-  ${squadRows}
+  <div class="ov-stagger">${squadRows}</div>
 </div>`;
+    }
+
+    // Group[done] → Quarter-Final → Finals Day (which itself covers both the semi
+    // and the final, matching how the T20 intro screen already describes the format).
+    function koPipelineHTML(activeIdx) {
+      const stages = ["Group", "Quarter-Final", "Finals Day"];
+      return `<div class="wch-pipeline ov-reveal" style="margin-bottom:16px">${stages.map((label, i) => {
+        const cls = i < activeIdx ? "done" : i === activeIdx ? "active" : "";
+        return `<div class="wch-stage ${cls}"><div class="wch-stage-line"></div><div class="wch-stage-dot">${i < activeIdx ? "✓" : i + 1}</div><div class="wch-stage-label">${label}</div></div>`;
+      }).join("")}</div>`;
+    }
+
+    // Own card per other match — winner right/bold/"Advanced", loser left/dimmed/"Out",
+    // score between them, so who's through and who's eliminated reads at a glance.
+    function koCompactRow(r) {
+      const wScore = r.ws != null ? r.ws : "—", lScore = r.ls != null ? r.ls : "—";
+      return `<div class="ov-row-reveal" style="background:#111118;border:1px solid #1a1a24;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
+    <div style="text-align:right;min-width:0">
+      <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.w}</div>
+      <div style="font-size:9px;color:#4ade80;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-top:2px">✓ Advanced</div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:#606070;font-weight:700;font-variant-numeric:tabular-nums">${wScore}–${lScore}</div>
+    <div style="text-align:left;min-width:0">
+      <div style="font-size:13px;font-weight:700;color:#606070;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.l}</div>
+      <div style="font-size:9px;color:#f87171;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-top:2px">Out</div>
+    </div>
+  </div>`;
+    }
+
+    // Shown directly, not behind a tap, and sits above the action button (in #ko-body,
+    // after your own matchup) so the whole picture — yours plus everyone else's — reads
+    // top to bottom before you commit to simulating.
+    function koOtherMatchesHTML(label, rows) {
+      if (!rows || !rows.length) return "";
+      return `<div class="ov-reveal" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;margin-top:16px;text-align:left">${label}</div>
+  <div class="ov-stagger">${rows.map(koCompactRow).join("")}</div>`;
     }
 
     function doKO(phase) {
       const MY = S.myTeam;
       const bod = document.getElementById("ko-body");
       const nxt = document.getElementById("ko-next");
+      const pipeline = document.getElementById("ko-pipeline");
 
       if (phase === "qf") {
-        document.getElementById("ko-pill").textContent = "Quarter-Finals";
-        document.getElementById("ko-pill").className = "ko-stage-pill kp-qf";
         document.getElementById("ko-title").textContent = "Quarter-Finals";
         document.getElementById("ko-sub").textContent = "Top 4 from each group · 8 teams remain";
+        pipeline.innerHTML = koPipelineHTML(1);
         const og = S.repGroup === "north" ? [...SOUTH] : [...NORTH];
         // Use pre-drafted squads for other group ratings
         const oR = {};
@@ -5842,15 +5949,15 @@
         const otherRes = otherPairs.map(([a, b]) => simMatch(a, b, allR));
         S.qfRes = [...otherRes];
         S._myQFPair = myPair; S._allQFR = allR;
-        bod.innerHTML = `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:10px;text-align:left">Other quarter-finals</div><div class="ko-matches">` + otherRes.map(r => koCard(r, MY)).join("") + `</div><div style="height:1px;background:#1a1a24;margin:18px 0 14px"></div><div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin-bottom:12px;text-align:left">⭐ Your quarter-final</div>` + buildMyQFCard(myPair, allR, MY) + `</div>`;
+        bod.innerHTML = buildMyQFCard(myPair, allR, MY, "⭐ Your Quarter-Final") + koOtherMatchesHTML("Other quarter-finals", otherRes);
         nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('qf')">Simulate Quarter-Final</button>`;
         go("s-ko");
+        requestAnimationFrame(() => wireReveals(document.getElementById("s-ko")));
 
       } else if (phase === "fd") {
-        document.getElementById("ko-pill").textContent = "Finals Day";
-        document.getElementById("ko-pill").className = "ko-stage-pill kp-fd";
         document.getElementById("ko-title").textContent = "Finals Day";
         document.getElementById("ko-sub").textContent = "Edgbaston, Birmingham · The biggest day in county T20";
+        pipeline.innerHTML = koPipelineHTML(2);
         const w = S.qfRes.map(r => r.w);
         if (!w.includes(MY)) w.push(MY); // ensure MY is in after QF win
         const allSFTeams = w.length >= 4 ? w : w.concat(Array.from({ length: 4 - w.length }, (_, i) => SOUTH[i]));
@@ -5859,33 +5966,30 @@
         const myPair = sp.find(([a, b]) => a === MY || b === MY) || sp[0];
         const otherPair = sp.find(([a, b]) => a !== MY && b !== MY);
         S._mySFPair = myPair; S._allSFR = r2;
-        bod.innerHTML = `<div style="width:100%;background:linear-gradient(135deg,#1a1000,#0f0a1a);border:1px solid #4a3800;border-radius:16px;padding:22px 20px;text-align:center;margin-bottom:18px;position:relative;overflow:hidden">
-      <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:300px;height:160px;background:radial-gradient(ellipse,rgba(249,200,70,.18),transparent 65%);pointer-events:none"></div>
-      <div style="font-size:36px;margin-bottom:8px">🏏</div>
-      <div style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#f9c846,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px">Finals Day</div>
-      <div style="font-size:11px;color:#b08030;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:12px">Edgbaston · Birmingham</div>
-      <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">${allSFTeams.map(t => `<div style="background:#1a1200;border:1px solid #3a2800;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:${t === MY ? "#f9c846" : "#887050"}">${t === MY ? "⭐ " + t : t}</div>`).join("")}</div>
-    </div>`;
+        // The header above already carries the "reached Finals Day at Edgbaston"
+        // moment, so this screen goes straight to the actionable matchup — the other
+        // two semi-finalists are still identifiable via the "Other semi-final" list.
+        let otherRes = null;
         if (otherPair) {
-          const otherRes = simMatch(otherPair[0], otherPair[1], r2);
+          otherRes = simMatch(otherPair[0], otherPair[1], r2);
           S._otherSFRes = otherRes;
-          bod.innerHTML += `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8080a0;font-weight:700;margin-bottom:8px;text-align:left">Other semi-final</div><div class="ko-matches">` + koCard(otherRes, MY) + `</div>`;
         }
-        bod.innerHTML += `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin:14px 0 10px;text-align:left">Your semi-final</div>` + buildMyQFCard(myPair, r2, MY);
+        bod.innerHTML = buildMyQFCard(myPair, r2, MY, "⭐ Your Semi-Final") + (otherRes ? koOtherMatchesHTML("Other semi-final", [otherRes]) : "");
         nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('sf')">Simulate Semi-Final</button>`;
         go("s-ko");
+        requestAnimationFrame(() => wireReveals(document.getElementById("s-ko")));
 
       } else {
-        document.getElementById("ko-pill").textContent = "The Final";
-        document.getElementById("ko-pill").className = "ko-stage-pill kp-f";
         document.getElementById("ko-title").textContent = "The Final";
         document.getElementById("ko-sub").textContent = "Edgbaston · One match for the trophy";
+        pipeline.innerHTML = koPipelineHTML(2);
         const f = S.sfRes ? S.sfRes.map(r => r.w) : [MY, "Opponent"];
         const r2 = { ...S.ratings }; f.forEach(t => { if (!r2[t]) r2[t] = Math.round(60 + Math.random() * 12); });
         S._finalPair = f; S._allFR = r2;
-        bod.innerHTML = `<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f9c846;font-weight:700;margin-bottom:10px;text-align:left">T20 Blast Final · Edgbaston</div>` + buildMyQFCard(f, r2, MY);
+        bod.innerHTML = buildMyQFCard(f, r2, MY, "🏆 The Final");
         nxt.innerHTML = `<button class="btn-next" onclick="launchKOScorecard('f')">Watch the final</button>`;
         go("s-ko");
+        requestAnimationFrame(() => wireReveals(document.getElementById("s-ko")));
       }
     }
 
@@ -5928,28 +6032,6 @@
       showScorecard(matchData, stagePills[phase], matchData._next);
     }
 
-    function koCard(r, MY) {
-      const wMe = r.w === MY, lMe = r.l === MY;
-      const cls = wMe ? "won" : lMe ? "lost" : r.a === MY || r.b === MY ? "mine" : "";
-      const wScore = r.ws || "—";
-      const lScore = r.ls || "—";
-      return `<div class="ko-card ${cls}" style="padding:14px 16px">
-  <div style="display:grid;grid-template-columns:1fr 28px 1fr;align-items:center;gap:0">
-    <div style="text-align:center">
-      <div style="font-size:13px;font-weight:700;color:${wMe ? "#f9c846" : "#d0d0e8"};margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.w}</div>
-      <div style="font-size:22px;font-weight:900;color:${wMe ? "#f9c846" : "#d0d0e8"};line-height:1">${wScore}</div>
-      <div style="font-size:9px;color:#4ade80;margin-top:3px;letter-spacing:1px;text-transform:uppercase;font-weight:700">WON</div>
-    </div>
-    <div style="text-align:center;font-size:10px;color:#444;font-weight:700">vs</div>
-    <div style="text-align:center">
-      <div style="font-size:13px;font-weight:700;color:#606070;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.l}</div>
-      <div style="font-size:22px;font-weight:900;color:#606070;line-height:1">${lScore}</div>
-      <div style="font-size:9px;color:#f87171;margin-top:3px;letter-spacing:1px;text-transform:uppercase;font-weight:700">LOST</div>
-    </div>
-  </div>
-</div>`;
-    }
-
     function myResultBanner(match, MY, winText, lossText) {
       if (!match) return "";
       const won = match.w === MY;
@@ -5964,9 +6046,14 @@
       const _gwOv = _myGamesOv.filter(r => r.w === MY).length;
       const _result = S.finalWon ? 'champions' : S.sfWon ? 'runners-up' : S.qfWon ? 'semi-finalists' : S.qualified ? 'quarter-finalists' : 'group-exit';
       pingEvent('T20_Run_Completed', { result: _result, group_wins: _gwOv, group_pos: S.myPos || 9, ovr: S.allRatings ? (S.allRatings[MY] || 0) : 0 });
-      // Reset layout state from any previous run
-      const lower = document.querySelector(".ov-lower");
-      if (lower) lower.classList.remove("ov-lower-full");
+      // Reset reveal-animation state from any previous run — these wrapper elements
+      // are static shell nodes reused across runs (unlike WC's end screen, which
+      // rebuilds its whole container from scratch each time), so wireReveals()'s
+      // "already wired" guard needs clearing by hand for the entrance to replay.
+      ['ov-stats', 'ov-reached', 'ov-season-stats', 'ov-squad', 'ov-matches', 'ov-table'].forEach(id => {
+        const node = document.getElementById(id);
+        if (node) { delete node.dataset.ovWired; node.classList.remove('ov-in'); }
+      });
       const gr = (S.groupTable || []).find(r => r.team === MY) || { w: 0, l: 16, pts: 0 };
       const myGames = S.groupResults ? S.groupResults.filter(r => r.a === MY || r.b === MY) : [];
       const groupWins = myGames.filter(r => r.w === MY).length;
@@ -5984,9 +6071,7 @@
       const diff = actualTier - predTier;
 
       // Build performance verdict
-      let perfClass, perfEyebrow, perfVerdict, perfRows;
-      const predPos = S.preview ? S.preview.predPos : "unknown";
-      const predLabel = S.preview ? S.preview.predLabel : "—";
+      let perfClass, perfEyebrow, perfVerdict;
 
       let reached = "Group stage exit";
       if (S.finalWon) reached = "T20 Blast Champions 🏆";
@@ -5995,96 +6080,141 @@
       else if (S.qualified) reached = "Quarter-finalists";
       else reached = `${ordinal(S.myPos || 9)} in the group`;
 
+      // Icon prefix backs up the over/met/under color coding for colorblind users —
+      // same treatment as WC's perf-verdict icon.
       if (diff >= 2) {
         perfClass = "perf-over";
-        perfEyebrow = "Overperformed";
+        perfEyebrow = "▲ Overperformed";
         perfVerdict = "Well above the prediction";
       } else if (diff === 1) {
         perfClass = "perf-over";
-        perfEyebrow = "Overperformed";
+        perfEyebrow = "▲ Overperformed";
         perfVerdict = "One tier above prediction";
       } else if (diff === 0) {
         perfClass = "perf-met";
-        perfEyebrow = "Prediction met";
+        perfEyebrow = "● Prediction met";
         perfVerdict = "Landed exactly on the call";
       } else if (diff === -1) {
         perfClass = "perf-under";
-        perfEyebrow = "Underperformed";
+        perfEyebrow = "▼ Underperformed";
         perfVerdict = "One tier below prediction";
       } else {
         perfClass = "perf-under";
-        perfEyebrow = "Underperformed";
+        perfEyebrow = "▼ Underperformed";
         perfVerdict = "Well below the prediction";
       }
-
-      // Outcome icons/verdict for header
-      const oh = document.getElementById("ov-header");
-      if (S.finalWon) { oh.className = "ov-header ovh-won"; document.getElementById("ov-icon").textContent = "🏆"; document.getElementById("ov-result").textContent = "T20 Blast Champions!"; const went190 = (groupWins === 16); document.getElementById("ov-sub").textContent = went190 ? "Won it at Edgbaston. 19-0." : "Won the T20 Blast at Edgbaston."; }
-      else if (S.sfWon) { oh.className = "ov-header ovh-final"; document.getElementById("ov-icon").textContent = "🥈"; document.getElementById("ov-result").textContent = "Runners-up"; document.getElementById("ov-sub").textContent = "Made the final at Edgbaston. Lost it."; }
-      else if (S.qfWon) { oh.className = "ov-header ovh-final"; document.getElementById("ov-icon").textContent = "🏟️"; document.getElementById("ov-result").textContent = "Semi-finalists"; document.getElementById("ov-sub").textContent = "Finals Day at Edgbaston. Beaten in the semis."; }
-      else { oh.className = "ov-header ovh-early"; document.getElementById("ov-icon").textContent = S.qualified ? "🎟️" : "📋"; document.getElementById("ov-result").textContent = S.qualified ? "Quarter-finalists" : "Eliminated in the group"; document.getElementById("ov-sub").textContent = S.qualified ? `Finished ${ordinal(S.myPos)} · knocked out in the quarters` : `Finished ${ordinal(S.myPos)} of 9 — only top 4 advance`; }
-
-      document.getElementById("ov-q").textContent = `"${genQuote(S.myPos, groupWins, S.qualified, S.qfWon, S.sfWon, S.finalWon)}"`;
 
       // Total wins = group wins + knockout wins
       const koWins = (S.qfWon ? 1 : 0) + (S.sfWon ? 1 : 0) + (S.finalWon ? 1 : 0);
       const totalWins = (groupWins || 0) + koWins;
       const totalLosses = (16 - (groupWins || 0)) + (S.qualified && !S.qfWon ? 1 : 0) + (S.qfWon && !S.sfWon ? 1 : 0) + (S.sfWon && !S.finalWon ? 1 : 0);
 
+      // Outcome icons/verdict for header. A true 19-0 (16 group wins, then QF/SF/Final
+      // all won too, since reaching S.finalWon already implies those, so totalLosses
+      // is already guaranteed 0 here) gets its own "Invincibles" tier — the game's own
+      // namesake achievement deserves more than the same plain "Champions" header as
+      // any other final win.
+      const isPerfectRun = S.finalWon && groupWins === 16;
+      const oh = document.getElementById("ov-header");
+      const badgeEl = document.getElementById("ov-perfect-badge");
+      if (isPerfectRun) { oh.className = "ov-header ovh-perfect"; document.getElementById("ov-icon").textContent = "👑"; document.getElementById("ov-result").textContent = "THE INVINCIBLES"; document.getElementById("ov-sub").textContent = "19-0. Every match won. Nobody laid a glove on this XI."; if (badgeEl) badgeEl.innerHTML = `<div class="ov-perfect-badge chip-boost">${totalWins}-0</div>`; }
+      else if (S.finalWon) { oh.className = "ov-header ovh-won"; document.getElementById("ov-icon").textContent = "🏆"; document.getElementById("ov-result").textContent = "T20 Blast Champions!"; document.getElementById("ov-sub").textContent = "Won the T20 Blast at Edgbaston."; if (badgeEl) badgeEl.innerHTML = ""; }
+      else if (S.sfWon) { oh.className = "ov-header ovh-final"; document.getElementById("ov-icon").textContent = "🥈"; document.getElementById("ov-result").textContent = "Runners-up"; document.getElementById("ov-sub").textContent = "Made the final at Edgbaston. Lost it."; if (badgeEl) badgeEl.innerHTML = ""; }
+      else if (S.qfWon) { oh.className = "ov-header ovh-final"; document.getElementById("ov-icon").textContent = "🏟️"; document.getElementById("ov-result").textContent = "Semi-finalists"; document.getElementById("ov-sub").textContent = "Finals Day at Edgbaston. Beaten in the semis."; if (badgeEl) badgeEl.innerHTML = ""; }
+      else { oh.className = "ov-header ovh-early"; document.getElementById("ov-icon").textContent = S.qualified ? "🎟️" : "📋"; document.getElementById("ov-result").textContent = S.qualified ? "Quarter-finalists" : "Eliminated in the group"; document.getElementById("ov-sub").textContent = S.qualified ? `Finished ${ordinal(S.myPos)} · knocked out in the quarters` : `Finished ${ordinal(S.myPos)} of 9 — only top 4 advance`; if (badgeEl) badgeEl.innerHTML = ""; }
+
+      const quoteText = isPerfectRun
+        ? "Nineteen matches. Nineteen wins. Every side in the competition had a chance to stop this XI — none of them did."
+        : genQuote(S.myPos, groupWins, S.qualified, S.qfWon, S.sfWon, S.finalWon);
+      document.getElementById("ov-q").textContent = `"${quoteText}"`;
+
+      // Two boxes, same as WC's end screen — Group pts was always just wins×2 in
+      // this format (no ties/no-results), so it added a number with no new
+      // information; the full group table below now covers it if anyone wants it.
       document.getElementById("ov-stats").innerHTML = `
-    <div class="ov-box"><div class="ov-n" style="color:#4ade80">${totalWins}</div><div class="ov-l">Total wins</div></div>
-    <div class="ov-box"><div class="ov-n" style="color:#f87171">${totalLosses}</div><div class="ov-l">Total losses</div></div>
-    <div class="ov-box"><div class="ov-n" style="color:#fbbf24">${(groupWins || 0) * 2}</div><div class="ov-l">Group pts</div></div>
-    ${SETTINGS.budget === 'budget' ? `<div class="ov-box" style="grid-column:span 3"><div class="ov-n" style="color:#f9c846;font-size:22px">${fmtPrice(S.budgetSpent||0)}</div><div class="ov-l">Budget spent of £1m</div></div>` : ''}`;
+    <div class="ov-box"><div class="ov-n ov-count" data-count="${totalWins}" style="color:#4ade80">0</div><div class="ov-l">Wins</div></div>
+    <div class="ov-box"><div class="ov-n ov-count" data-count="${totalLosses}" style="color:#f87171">0</div><div class="ov-l">Losses</div></div>`;
 
-      // Confetti if they won the final
-      if (S.finalWon) launchConfetti();
+      // A perfect 19-0 gets the same two-wave, gold-only confetti treatment as WC's
+      // Invincibles run; any other final win keeps the standard full-palette burst.
+      if (isPerfectRun) { launchConfetti(320, true); setTimeout(() => launchConfetti(200, true), 900); }
+      else if (S.finalWon) launchConfetti();
 
-      const predKO = S.preview ? S.preview.predKO : "—";
-      const perfDiffArrow = diff > 0 ? "↑ " + Math.abs(diff) + " tier" + (Math.abs(diff) > 1 ? "s" : "") + " above" : diff < 0 ? "↓ " + Math.abs(diff) + " tier" + (Math.abs(diff) > 1 ? "s" : "") + " below" : "= Matched prediction";
-      const perfDiffColor = diff > 0 ? "#4ade80" : diff < 0 ? "#f97316" : "#a0a0e0";
-
+      // Same 3 rows as WC's perf-card (Stage reached / Overall record / Group
+      // position) — WC has no separate "predicted" rows either; the comparison to
+      // prediction lives entirely in the verdict wording above, not as raw numbers.
       document.getElementById("ov-reached").innerHTML = `
     <div class="perf-card ${perfClass}">
       <div class="perf-eyebrow">${perfEyebrow}</div>
       <div class="perf-verdict">${perfVerdict}</div>
       <div class="perf-row">
-        <span class="perf-label">Predicted finish</span>
-        <span class="perf-val" style="color:#9090a8">${predPos} in group</span>
-      </div>
-      <div class="perf-row">
-        <span class="perf-label">Predicted knockout</span>
-        <span class="perf-val" style="color:#9090a8">${predKO}</span>
-      </div>
-      <div class="perf-row">
-        <span class="perf-label">Actual group finish</span>
-        <span class="perf-val" style="color:#e0e0f0">${ordinal(S.myPos || 9)} place · ${groupWins}W–${16 - groupWins}L</span>
-      </div>
-      <div class="perf-row">
-        <span class="perf-label">Actual result</span>
+        <span class="perf-label">Stage reached</span>
         <span class="perf-val" style="color:#e0e0f0">${reached}</span>
       </div>
       <div class="perf-row">
-        <span class="perf-label">Verdict</span>
-        <span class="perf-val" style="color:${perfDiffColor}">${perfDiffArrow}</span>
+        <span class="perf-label">Overall record</span>
+        <span class="perf-val" style="color:#e0e0f0">W${totalWins} L${totalLosses}</span>
       </div>
+      <div class="perf-row">
+        <span class="perf-label">Group position</span>
+        <span class="perf-val" style="color:#e0e0f0">${ordinal(S.myPos || 9)} of 9</span>
+      </div>
+      ${SETTINGS.budget === 'budget' ? `<div class="perf-row">
+        <span class="perf-label">Budget spent</span>
+        <span class="perf-val" style="color:#f9c846">${fmtPrice(S.budgetSpent || 0)} of £1m</span>
+      </div>` : ''}
     </div>`;
 
       const OV_ORDER = ["bat", "wk", "all", "bowl"];
       const ovSorted = [...S.squad].sort((a, b) => OV_ORDER.indexOf(a.role) - OV_ORDER.indexOf(b.role));
-      document.getElementById("ov-squad").innerHTML = ovSorted.map(p => `<div class="squad-item si-${p.role}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.county} · ${p.year}${SETTINGS.budget === 'budget' && p.price ? ' · <span style="color:#f9c846;font-weight:800">' + fmtPrice(p.price) + '</span>' : ''}</div></div><div class="si-right"><span class="rp-badge rpb-${p.role}">${RL[p.role]}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`).join("");
+      document.getElementById("ov-squad").innerHTML = ovSorted.map(p => `<div class="squad-item si-${p.role} ov-row-reveal"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.county} · ${p.year}${SETTINGS.budget === 'budget' && p.price ? ' · <span style="color:#f9c846;font-weight:800">' + fmtPrice(p.price) + '</span>' : ''}</div></div><div class="si-right"><span class="rp-badge rpb-${p.role}">${RL[p.role]}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`).join("");
+
+      // ── Final group table, then (only if reached) knockout results, then the
+      // squad — the table already covers the 16 group games in aggregate, so the
+      // results list below it only needs the legs the table can't show: the knockouts.
+      const tableEl = document.getElementById("ov-table");
+      if (tableEl) {
+        const grpLabel = S.repGroup === "north" ? "North Group Table" : "South Group Table";
+        tableEl.innerHTML = (S.groupTable && S.groupTable.length) ? `
+    <div class="ov-reveal">
+    <div class="section-lbl">${grpLabel}</div>
+    <table class="wtc-table" style="margin-bottom:16px">
+      <thead><tr><th style="text-align:center;width:24px">#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead>
+      <tbody>${S.groupTable.map((t, i) => `<tr class="${t.team === MY ? "my-row" : ""}"><td style="text-align:center;color:#606070;font-size:11px">${i + 1}</td><td>${t.team}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td class="wtc-pct">${t.pts}</td></tr>`).join("")}</tbody>
+    </table>
+    </div>` : "";
+      }
+
+      const koLegs = [];
+      if (S._myQFPair && S.qfMatch) koLegs.push({ opp: S._myQFPair[0] === MY ? S._myQFPair[1] : S._myQFPair[0], won: S.qfMatch.winner === MY, phase: "Quarter-Final" });
+      if (S._mySFPair && S.sfMatch) koLegs.push({ opp: S._mySFPair[0] === MY ? S._mySFPair[1] : S._mySFPair[0], won: S.sfMatch.winner === MY, phase: "Semi-Final" });
+      if (S._finalPair && S.finalRes) koLegs.push({ opp: S._finalPair[0] === MY ? S._finalPair[1] : S._finalPair[0], won: S.finalRes.winner === MY, phase: "The Final" });
+      const matchesEl = document.getElementById("ov-matches");
+      if (matchesEl) {
+        matchesEl.innerHTML = koLegs.length ? `
+    <div class="section-lbl">Knockout Results</div>
+    <div class="ov-stagger" style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:0 14px;margin-bottom:16px">${koLegs.map(m => `<div class="ov-row-reveal" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #111118;text-align:left">
+      <div style="font-size:14px;font-weight:900;color:${m.won ? "#4ade80" : "#f87171"};width:18px;flex-shrink:0;text-align:center">${m.won ? "✓" : "✗"}</div>
+      <div style="flex:1;min-width:0;text-align:left">
+        <div style="font-size:13px;font-weight:700;color:#e0e0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.opp}</div>
+        <div style="font-size:11px;color:#6060a0">${m.phase}</div>
+      </div>
+      <div style="font-size:11px;font-weight:800;padding:3px 8px;border-radius:5px;background:${m.won ? "#0a2a0a" : "#2a0a0a"};color:${m.won ? "#4ade80" : "#f87171"};flex-shrink:0">${m.won ? "Won" : "Lost"}</div>
+    </div>`).join("")}</div>` : "";
+      }
 
       // ── Season stats: merge group stage + knockout totals ──────────────────
-      const runTotals = {}, wktTotals = {}, ballsFaced = {};
+      const runTotals = {}, wktTotals = {}, dismissedTotals = {}, runsConcededTotals = {};
 
       // Group stage stats (generated alongside simMatch results)
       if (S.groupStats) {
         for (const [name, s] of Object.entries(S.groupStats.bat || {})) {
-          runTotals[name]  = (runTotals[name]  || 0) + s.runs;
-          ballsFaced[name] = (ballsFaced[name] || 0) + s.balls;
+          runTotals[name] = (runTotals[name] || 0) + s.runs;
+          dismissedTotals[name] = (dismissedTotals[name] || 0) + (s.dismissals || 0);
         }
         for (const [name, s] of Object.entries(S.groupStats.bowl || {})) {
           wktTotals[name] = (wktTotals[name] || 0) + s.wickets;
+          runsConcededTotals[name] = (runsConcededTotals[name] || 0) + s.runs;
         }
       }
 
@@ -6093,12 +6223,14 @@
       for (const m of koMatches) {
         const myInns  = m.inns1.team === MY ? m.inns1 : m.inns2.team === MY ? m.inns2 : null;
         const oppInns = m.inns1.team === MY ? m.inns2  : m.inns2.team === MY ? m.inns1  : null;
-        if (myInns?.batters)  for (const b of myInns.batters)  { if (!b.batted) continue; runTotals[b.name]  = (runTotals[b.name]  || 0) + b.runs;  ballsFaced[b.name] = (ballsFaced[b.name] || 0) + b.balls; }
-        if (oppInns?.bowlers) for (const b of oppInns.bowlers) { if (!b.overs)  continue; wktTotals[b.name]  = (wktTotals[b.name]  || 0) + b.wickets; }
+        if (myInns?.batters)  for (const b of myInns.batters)  { if (!b.batted) continue; runTotals[b.name] = (runTotals[b.name] || 0) + b.runs; if (b.out) dismissedTotals[b.name] = (dismissedTotals[b.name] || 0) + 1; }
+        if (oppInns?.bowlers) for (const b of oppInns.bowlers) { if (!b.overs)  continue; wktTotals[b.name] = (wktTotals[b.name] || 0) + b.wickets; runsConcededTotals[b.name] = (runsConcededTotals[b.name] || 0) + b.runs; }
       }
 
       const topBat  = Object.entries(runTotals).sort((a, b) => b[1] - a[1])[0];
       const topBowl = Object.entries(wktTotals).sort((a, b) => b[1] - a[1])[0];
+      const topBatAvg  = topBat && dismissedTotals[topBat[0]] ? (topBat[1] / dismissedTotals[topBat[0]]).toFixed(1) : null;
+      const topBowlAvg = topBowl && wktTotals[topBowl[0]] ? (runsConcededTotals[topBowl[0]] / wktTotals[topBowl[0]]).toFixed(1) : null;
 
       // MVP = runs/25 + wickets*2
       const mvpScore = {};
@@ -6108,36 +6240,47 @@
 
       const hasStats = topBat || topBowl;
       const statsEl = document.getElementById("ov-season-stats");
+      const mvpEl = document.getElementById("ov-mvp");
       if (hasStats) {
-        const batBalls = topBat ? (ballsFaced[topBat[0]] || 0) : 0;
-        const batSR = batBalls > 0 ? ((topBat[1] / batBalls) * 100).toFixed(0) : "—";
-        const scope = koMatches.length > 0 ? "Full season" : "Group stage";
         statsEl.innerHTML =
-          (topBat ? `<div class="stat-card">
+          (topBat ? `<div class="stat-card ov-row-reveal">
             <div class="stat-card-label">Most Runs</div>
             <div class="stat-card-name">${topBat[0].split(" ").slice(-1)[0]}</div>
             <div class="stat-card-val">${topBat[1]}</div>
-            <div class="stat-card-sub">SR ${batSR} · ${scope}</div>
+            <div class="stat-card-sub">${topBatAvg ? `avg ${topBatAvg}` : "Season"}</div>
           </div>` : "") +
-          (topBowl ? `<div class="stat-card">
+          (topBowl ? `<div class="stat-card ov-row-reveal">
             <div class="stat-card-label">Most Wickets</div>
             <div class="stat-card-name">${topBowl[0].split(" ").slice(-1)[0]}</div>
             <div class="stat-card-val">${topBowl[1]}</div>
-            <div class="stat-card-sub">${topBowl[1] === 1 ? "wicket" : "wickets"} · ${scope}</div>
-          </div>` : "") +
-          (topMVP ? `<div class="stat-card mvp-card">
-            <div class="stat-card-label">⭐ MVP</div>
-            <div class="stat-card-name">${topMVP[0].split(" ").slice(-1)[0]}</div>
-            <div class="stat-card-val">${
-              [runTotals[topMVP[0]] ? runTotals[topMVP[0]] + " runs" : "",
-               wktTotals[topMVP[0]] ? wktTotals[topMVP[0]] + " wkts" : ""].filter(Boolean).join(" · ")
-            }</div>
-            <div class="stat-card-sub">${scope}</div>
+            <div class="stat-card-sub">${topBowlAvg ? `avg ${topBowlAvg}` : "Season"}</div>
           </div>` : "");
+        // MVP gets its own full-width card with the shine sweep + glisten pulse —
+        // DESIGN.md's signature elevation-via-light treatment — rather than being
+        // squeezed in alongside Most Runs/Wickets. Full name (not just surname), and
+        // both batting/bowling average shown where the MVP actually has that stat —
+        // same pattern as WC's own MVP sub-line.
+        let mvpValueStr = "", mvpSubStr = "Season";
+        if (topMVP) {
+          const mvpName = topMVP[0];
+          const mvpRuns = runTotals[mvpName] || 0, mvpWkts = wktTotals[mvpName] || 0;
+          const mvpBowlingLed = (mvpWkts * 2) > (mvpRuns / 25);
+          const mvpBatAvg = dismissedTotals[mvpName] ? (mvpRuns / dismissedTotals[mvpName]).toFixed(1) : null;
+          const mvpBowlAvg = mvpWkts > 0 && runsConcededTotals[mvpName] ? (runsConcededTotals[mvpName] / mvpWkts).toFixed(1) : null;
+          const runsPart = mvpRuns ? `${mvpRuns} runs` : "", wktsPart = mvpWkts ? `${mvpWkts} wkts` : "";
+          const batAvgPart = mvpBatAvg ? `bat avg ${mvpBatAvg}` : "", bowlAvgPart = mvpBowlAvg ? `bowl avg ${mvpBowlAvg}` : "";
+          mvpValueStr = (mvpBowlingLed ? [wktsPart, runsPart] : [runsPart, wktsPart]).filter(Boolean).join(" · ");
+          mvpSubStr = (mvpBowlingLed ? [bowlAvgPart, batAvgPart] : [batAvgPart, bowlAvgPart]).filter(Boolean).join(" · ") || "Season";
+        }
+        mvpEl.innerHTML = topMVP ? `<div class="ov-reveal ov-pop stat-card mvp-card mvp-shine chip-boost" style="margin-bottom:16px">
+            <div class="stat-card-label">⭐ MVP</div>
+            <div class="stat-card-name">${topMVP[0]}</div>
+            <div class="stat-card-val">${mvpValueStr}</div>
+            <div class="stat-card-sub">${mvpSubStr}</div>
+          </div>` : "";
       } else {
         statsEl.innerHTML = "";
-        const lower = document.querySelector(".ov-lower");
-        if (lower) lower.classList.add("ov-lower-full");
+        mvpEl.innerHTML = "";
       }
 
       saveRun().catch(e => console.warn('saveRun failed:', e));
@@ -6148,6 +6291,11 @@
       if (AUTH_USER) setTimeout(openCoffeeModal, 2000);
       const ovOddBallsEl = document.getElementById('ov-oddballs');
       if (ovOddBallsEl) ovOddBallsEl.innerHTML = renderOddBallsBanner('t20-review');
+
+      // Reveal each section as the user scrolls through their season, with staggered
+      // rows for lists and a count-up for the headline numbers — same treatment as
+      // WC's end screen (buildWCEndScreen).
+      requestAnimationFrame(() => wireReveals(document.getElementById('s-over')));
     }
     function genQuote(pos, w, qual, qf, sf, fin) {
       if (fin) return "Won it. Edgbaston. The full 19-0.";
@@ -6388,7 +6536,7 @@
 
       // Result label + colour class
       let finishText, finishCls;
-      if (S.finalWon)      { finishText = groupWins === 16 ? "Champions · 19-0 🏆" : "T20 Blast Champions 🏆"; finishCls = "sc-finish-won"; }
+      if (S.finalWon)      { finishText = groupWins === 16 ? `👑 THE INVINCIBLES · ${totalWins}-0` : "T20 Blast Champions 🏆"; finishCls = "sc-finish-won"; }
       else if (S.sfWon)    { finishText = "Runners-up 🥈"; finishCls = "sc-finish-final"; }
       else if (S.qfWon)    { finishText = "Semi-finalists 🏟️"; finishCls = "sc-finish-sf"; }
       else if (S.qualified){ finishText = "Quarter-finalists 🎟️"; finishCls = "sc-finish-qf"; }
@@ -6640,7 +6788,7 @@
       const ovr = S.allRatings ? (S.allRatings[MY] || '—') : '—';
 
       let result;
-      if (S.finalWon)     result = '🏆 T20 Blast Champions';
+      if (S.finalWon)     result = groupWins === 16 ? '👑 The Invincibles' : '🏆 T20 Blast Champions';
       else if (S.sfWon)   result = '🥈 Runners-up';
       else if (S.qfWon)   result = '🏟️ Semi-finalists';
       else if (S.qualified) result = '🎟️ Quarter-finalists';
@@ -6721,12 +6869,15 @@
     }
 
     // World Cup mode is open to everyone now — this just keeps the dev-only
-    // auto-draft button restricted, re-checked on every sign-in/sign-out.
+    // auto-draft buttons (WC and T20) restricted, re-checked on every sign-in/sign-out.
     function updateWCModeVisibility() {
       const wcBtn = document.getElementById('mode-btn-wc');
       if (wcBtn) wcBtn.style.display = '';
+      const isDev = AUTH_USER && AUTH_USER.username === 'ghughesy';
       const wcDevBtn = document.getElementById('wc-dev-autodraft-btn');
-      if (wcDevBtn) wcDevBtn.style.display = (AUTH_USER && AUTH_USER.username === 'ghughesy') ? '' : 'none';
+      if (wcDevBtn) wcDevBtn.style.display = isDev ? '' : 'none';
+      const t20DevBtn = document.getElementById('t20-dev-autodraft-btn');
+      if (t20DevBtn) t20DevBtn.style.display = isDev ? '' : 'none';
     }
 
     function renderAuthBar() {
