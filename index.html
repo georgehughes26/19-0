@@ -4047,6 +4047,15 @@
       counter.textContent = input.value ? `· ${input.value.length}/20` : '';
     }
 
+    // A team name that exactly matches a real county is a reserved identifier
+    // elsewhere (S.countySquads/S.allRatings keys, group fixture entries) — letting
+    // it through causes the real county of that name to collide with "you" in the
+    // group, doubling up fixtures and merging both teams' records into one.
+    function sanitizeTeamName(raw) {
+      const name = (raw || '').trim() || 'Your XI';
+      return ALL_C.some(c => c.toLowerCase() === name.toLowerCase()) ? name + ' XI' : name;
+    }
+
     function animateHomeStats() {
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       document.querySelectorAll('#s-home .hs-n').forEach(node => {
@@ -4109,7 +4118,7 @@
     function startDraft() {
       pingEvent('T20_Sim_Started', { league: 'T20 Blast' });
       const nameInput = document.getElementById('team-name-input');
-      if (nameInput) SETTINGS.teamName = nameInput.value.trim() || 'Your XI';
+      if (nameInput) SETTINGS.teamName = sanitizeTeamName(nameInput.value);
       S = { slot: 0, squad: [], counts: {}, roleCounts: { bat: 0, bowl: 0, all: 0, wk: 0 }, respinsUsed: 0, budgetSpent: 0 };
       go("s-spin"); updatePickUI(); renderSquadTracker(); doSpin();
     }
@@ -4122,7 +4131,7 @@
     // fixtures/ratings/budget downstream are all real.
     function t20AutoDraftDev() {
       const nameInput = document.getElementById('team-name-input');
-      if (nameInput) SETTINGS.teamName = nameInput.value.trim() || 'Your XI';
+      if (nameInput) SETTINGS.teamName = sanitizeTeamName(nameInput.value);
       S = { slot: 0, squad: [], counts: {}, roleCounts: { bat: 0, bowl: 0, all: 0, wk: 0 }, respinsUsed: 0, budgetSpent: 0 };
       const taken = new Set();
       for (const role of ["bat", "wk", "all", "bowl"]) {
@@ -4434,6 +4443,7 @@
       S.countySquads[MY] = S.squad;
       S.allRatings[MY] = ovr;
       ALL_C.forEach(county => {
+        if (county === MY) return; // don't clobber the squad/rating just drafted above
         const xi = draftCountyXI(county);
         S.countySquads[county] = xi;
         S.allRatings[county] = getCountyRating(xi);
