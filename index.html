@@ -14864,16 +14864,31 @@
         specialistBatting:     { technique:32, power:32, temperament:32 },
         keeperBatsmanFielding: { keeping:60, catching:60, groundFielding:36 },
       },
+      // Catching/groundFielding for the three non-keeper roles — none of their
+      // Type choices are fielding-related, so this is flat per role rather than
+      // per-type, but it must not be left at the base 15: simTrackedPlayerFielding
+      // reads (catching+groundFielding)/2 for every role, so leaving it at 15
+      // meant every Batter/Bowler/All-Rounder in the game shared one identical,
+      // rock-bottom fielding skill regardless of build. All-Rounders get the best
+      // of the three — the dual batting+bowling workload demands the most athletic
+      // players. Doesn't affect OVR: catching/groundFielding aren't in the
+      // batter/bowler/allrounder OVR groups (keeper is the only role that counts them).
+      fielding: {
+        batter:     { catching:42, groundFielding:44 },
+        bowler:     { catching:42, groundFielding:44 },
+        allrounder: { catching:48, groundFielding:50 },
+      },
     };
 
     function buildPlayerRatings(role, opts) {
       const r = {technique:15,power:15,temperament:15,control:15,threat:15,variation:15,keeping:15,catching:15,groundFielding:15};
-      if (role === 'batter') Object.assign(r, CAREER_RATING_TABLES.battingType[opts.type]);
-      else if (role === 'bowler') Object.assign(r, CAREER_RATING_TABLES.bowlType[opts.bowlType]);
+      if (role === 'batter') Object.assign(r, CAREER_RATING_TABLES.battingType[opts.type], CAREER_RATING_TABLES.fielding.batter);
+      else if (role === 'bowler') Object.assign(r, CAREER_RATING_TABLES.bowlType[opts.bowlType], CAREER_RATING_TABLES.fielding.bowler);
       else if (role === 'allrounder') {
         Object.assign(r, opts.lean === 'battingAR'
           ? {...CAREER_RATING_TABLES.battingTypePrimary[opts.battingType], ...CAREER_RATING_TABLES.bowlTypeSecondary[opts.bowlType]}
-          : {...CAREER_RATING_TABLES.bowlTypePrimary[opts.bowlType], ...CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]});
+          : {...CAREER_RATING_TABLES.bowlTypePrimary[opts.bowlType], ...CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]},
+          CAREER_RATING_TABLES.fielding.allrounder);
       } else if (role === 'keeper') {
         if (opts.type === 'specialistKeeper') Object.assign(r, CAREER_RATING_TABLES.keeper.specialistFielding, CAREER_RATING_TABLES.keeper.specialistBatting);
         else Object.assign(r, CAREER_RATING_TABLES.keeper.keeperBatsmanFielding, CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]);
