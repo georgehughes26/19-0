@@ -3915,6 +3915,7 @@
   <script src="t20-players.js"></script>
   <script src="test-players.js"></script>
   <script src="wc-players.js"></script>
+  <script src="career-clubs.js"></script>
   <script>
     const NORTH = ["Derbyshire", "Durham", "Lancashire", "Leicestershire", "Northamptonshire", "Nottinghamshire", "Warwickshire", "Worcestershire", "Yorkshire"];
     const SOUTH = ["Essex", "Glamorgan", "Gloucestershire", "Hampshire", "Kent", "Middlesex", "Somerset", "Surrey", "Sussex"];
@@ -14621,7 +14622,7 @@
     <div style="width:100%;display:flex;flex-direction:column;gap:14px;margin-bottom:28px">
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Create Your Player</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Build a fictional cricketer from scratch: role, type, archetype and handedness all shape their <span style="color:#f9c846;font-weight:800">9 core ratings</span>. Every build starts balanced at a 45 overall.</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Build a fictional cricketer from scratch: role, type and handedness all shape their <span style="color:#f9c846;font-weight:800">9 core ratings</span>. Every build starts balanced at a 45 overall.</div>
       </div>
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Local Club Season</div>
@@ -14643,7 +14644,7 @@
 
   <div id="s-career-create-name" class="screen">
     <div style="width:100%;text-align:left;margin-bottom:24px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 1 of 5</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 1 of 4</div>
       <div style="font-size:24px;font-weight:900;color:#fff">What's your name?</div>
     </div>
     <div class="auth-field" style="width:100%;margin-bottom:24px">
@@ -14657,7 +14658,7 @@
 
   <div id="s-career-create-role" class="screen">
     <div style="width:100%;text-align:left;margin-bottom:20px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 2 of 5</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 2 of 4</div>
       <div style="font-size:24px;font-weight:900;color:#fff">Pick your role</div>
     </div>
     <div class="mode-selector" id="career-role-selector" style="flex-wrap:wrap;row-gap:10px">
@@ -14673,32 +14674,22 @@
 
   <div id="s-career-create-type" class="screen">
     <div style="width:100%;text-align:left;margin-bottom:20px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 3 of 5</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 3 of 4</div>
       <div style="font-size:24px;font-weight:900;color:#fff">Pick your type</div>
     </div>
     <div id="career-type-groups" style="width:100%"></div>
-    <button class="btn-start" id="career-type-continue" style="width:100%;margin-top:10px" onclick="go('s-career-create-archetype');renderCareerArchetypeStep()" disabled>Continue</button>
+    <button class="btn-start" id="career-type-continue" style="width:100%;margin-top:10px" onclick="go('s-career-create-handedness');renderCareerHandednessStep()" disabled>Continue</button>
     <button class="btn-auth-small" onclick="go('s-career-create-role')" style="margin-top:14px">← Back</button>
-  </div>
-
-  <div id="s-career-create-archetype" class="screen">
-    <div style="width:100%;text-align:left;margin-bottom:20px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 4 of 5</div>
-      <div style="font-size:24px;font-weight:900;color:#fff">Pick your archetype</div>
-    </div>
-    <div id="career-archetype-groups" style="width:100%"></div>
-    <button class="btn-start" id="career-archetype-continue" style="width:100%;margin-top:10px" onclick="go('s-career-create-handedness');renderCareerHandednessStep()" disabled>Continue</button>
-    <button class="btn-auth-small" onclick="go('s-career-create-type')" style="margin-top:14px">← Back</button>
   </div>
 
   <div id="s-career-create-handedness" class="screen">
     <div style="width:100%;text-align:left;margin-bottom:20px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 5 of 5</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 4 of 4</div>
       <div style="font-size:24px;font-weight:900;color:#fff">Handedness</div>
     </div>
     <div id="career-hand-groups" style="width:100%"></div>
     <button class="btn-start" id="career-hand-continue" style="width:100%;margin-top:10px" onclick="finishCareerCreation()" disabled>Create Player</button>
-    <button class="btn-auth-small" onclick="go('s-career-create-archetype')" style="margin-top:14px">← Back</button>
+    <button class="btn-auth-small" onclick="go('s-career-create-type')" style="margin-top:14px">← Back</button>
   </div>
 
   <div id="s-career-create-reveal" class="screen">
@@ -14715,13 +14706,40 @@
     </div>
     <div style="width:100%;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:20px 0 8px;text-align:left">Ratings</div>
     <div class="stage-bar" id="career-reveal-bars" style="text-align:left"></div>
-    <button class="btn-start" style="width:100%;margin-top:24px" onclick="beginCareerSeason()">Start Local Club Season</button>
+    <button class="btn-start" style="width:100%;margin-top:24px" onclick="go('s-career-pick-league');renderCareerLeaguePicker()">Continue</button>
+  </div>
+
+  <div id="s-career-pick-league" class="screen">
+    <div style="width:100%;text-align:left;margin-bottom:20px">
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode</div>
+      <div style="font-size:24px;font-weight:900;color:#fff">Choose your league</div>
+    </div>
+    <div id="career-league-list" style="width:100%;margin-bottom:10px"></div>
+    <button class="btn-start" id="career-league-continue" style="width:100%;margin-top:10px" onclick="go('s-career-team-reveal');renderCareerTeamReveal()" disabled>Continue</button>
+    <button class="btn-auth-small" onclick="go('s-career-create-reveal')" style="margin-top:14px">← Back</button>
+  </div>
+
+  <div id="s-career-team-reveal" class="screen">
+    <div style="width:100%;text-align:left;margin-bottom:20px">
+      <div id="team-reveal-league-name" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">—</div>
+      <div style="font-size:24px;font-weight:900;color:#fff">Trials Complete</div>
+    </div>
+    <div id="team-reveal-text" style="width:100%;font-size:14px;color:#c0c0d8;line-height:1.6;text-align:left;margin-bottom:20px"></div>
+    <div class="player-card card-in" style="cursor:default;padding:16px;margin-bottom:24px">
+      <div style="text-align:left;min-width:0">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:4px">You've Signed For</div>
+        <div id="team-reveal-name" style="font-size:19px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+      </div>
+      <div id="team-reveal-badge" class="rating-badge rb-bronze">—</div>
+    </div>
+    <button class="btn-start" style="width:100%" onclick="beginCareerSeason()">Start Local Club Season</button>
+    <button class="btn-auth-small" onclick="go('s-career-pick-league')" style="margin-top:14px">← Back</button>
   </div>
 
   <div id="s-career-hub" class="screen">
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:16px">
       <div style="text-align:left;min-width:0">
-        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">Local Club Season</div>
+        <div id="hub-league-name" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">—</div>
         <div id="hub-club-name" style="font-size:20px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
@@ -14739,9 +14757,34 @@
     <div id="hub-season-stats" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px"></div>
 
     <button class="btn-start" id="hub-play-btn" style="width:100%" onclick="playNextCareerFixture()">Play Next Match</button>
+    <button class="btn-auth-small" onclick="buildCareerStats();go('s-career-stats')" style="margin-top:10px;width:100%;background:#0d0d12">🏆 League Leaders</button>
     <button id="save-career-btn" onclick="saveCareerGame()" style="margin-top:10px;width:100%;padding:12px;background:#0a0a18;border:1px solid #2a2a50;border-radius:10px;color:#8080c0;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px">💾 Save Game</button>
     <div id="save-career-nudge" style="display:none;margin-top:8px;padding:10px 14px;background:#1a1010;border:1px solid #4a2020;border-radius:8px;font-size:12px;color:#f87171;text-align:center">Sign in to save your game and continue later</div>
     <button class="btn-auth-small" onclick="go('s-home')" style="margin-top:14px">← Home</button>
+
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:24px 0 8px;text-align:left">Match History</div>
+    <div id="hub-match-history" style="width:100%"></div>
+  </div>
+
+  <div id="s-career-stats" class="screen">
+    <div style="width:100%;text-align:left;margin-bottom:16px">
+      <div id="stats-league-name" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">—</div>
+      <div style="font-size:24px;font-weight:900;color:#fff">League Leaders</div>
+    </div>
+    <div id="stats-tabs" style="width:100%;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
+    <div id="stats-table-wrap" style="width:100%;margin-bottom:12px;overflow-x:auto"></div>
+    <div id="stats-my-rank" style="width:100%;margin-bottom:20px"></div>
+    <button class="btn-auth-small" onclick="go('s-career-hub')">← Back</button>
+  </div>
+
+  <div id="s-career-scorecard" class="screen">
+    <div style="width:100%;text-align:left;margin-bottom:8px">
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Scorecard</div>
+      <div id="scorecard-title" style="font-size:19px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">—</div>
+      <div id="scorecard-result" style="font-size:12px;color:#9090a8;margin-top:2px">—</div>
+    </div>
+    <div id="scorecard-content" style="width:100%"></div>
+    <button class="btn-auth-small" onclick="go('s-career-hub')" style="margin-top:20px">← Back to Hub</button>
   </div>
 
   <div id="s-career-match" class="screen">
@@ -14774,42 +14817,66 @@
     const careerPick = arr => arr[Math.floor(Math.random() * arr.length)];
 
     // ── Rating tables (spec §6, transcribed exactly) ────────────────────
+    // Every table below is a flat Type-keyed trio (no archetype layer): each
+    // role's ratings come straight from the concrete cricket types picked at
+    // creation. "Primary"/"secondary" variants exist only for All-Rounder and
+    // Keeper-Batsman, where a discipline that isn't the player's main one still
+    // contributes ratings at a reduced weight — primary trios sum to 156 (avg
+    // 52/stat), secondary trios sum to 114 (avg 38/stat), a flat ±7-per-stat
+    // offset from the base (sum 135, avg 45/stat) trios used by the pure roles.
+    // This keeps OVR===45 for every combo, same invariant as before.
     const CAREER_RATING_TABLES = {
-      batter: {
-        opener:   { anchor:{technique:55,power:37,temperament:43}, performer:{technique:43,power:49,temperament:43}, accumulator:{technique:49,power:37,temperament:49} },
-        topOrder: { anchor:{technique:49,power:37,temperament:49}, performer:{technique:37,power:49,temperament:49}, accumulator:{technique:43,power:37,temperament:55} },
+      battingType: {
+        opener:      { technique:51, power:39, temperament:45 },
+        topOrder:    { technique:45, power:39, temperament:51 },
+        middleOrder: { technique:39, power:51, temperament:45 },
       },
-      bowler: {
-        aggressive:{control:39,threat:51,variation:45}, precise:{control:51,threat:39,variation:45}, trickster:{control:39,threat:45,variation:51},
+      battingTypePrimary: {
+        opener:      { technique:58, power:46, temperament:52 },
+        topOrder:    { technique:52, power:46, temperament:58 },
+        middleOrder: { technique:46, power:58, temperament:52 },
       },
-      allrounder: {
-        battingAR: {
-          primary:   { anchor:{technique:64,power:44,temperament:48}, performer:{technique:48,power:60,temperament:48}, accumulator:{technique:52,power:44,temperament:60} },
-          secondary: { aggressive:{control:32,threat:44,variation:38}, precise:{control:44,threat:32,variation:38}, trickster:{control:32,threat:38,variation:44} },
-        },
-        bowlingAR: {
-          primary:   { aggressive:{control:46,threat:58,variation:52}, precise:{control:58,threat:46,variation:52}, trickster:{control:46,threat:52,variation:58} },
-          secondary: { anchor:{technique:50,power:30,temperament:34}, performer:{technique:34,power:46,temperament:34}, accumulator:{technique:38,power:30,temperament:46} },
-        },
+      battingTypeSecondary: {
+        opener:      { technique:44, power:32, temperament:38 },
+        topOrder:    { technique:38, power:32, temperament:44 },
+        middleOrder: { technique:32, power:44, temperament:38 },
+      },
+      bowlType: {
+        fast:   { control:39, threat:51, variation:45 },
+        medium: { control:51, threat:39, variation:45 },
+        leg:    { control:36, threat:48, variation:51 },
+        off:    { control:48, threat:36, variation:51 },
+      },
+      bowlTypePrimary: {
+        fast:   { control:46, threat:58, variation:52 },
+        medium: { control:58, threat:46, variation:52 },
+        leg:    { control:43, threat:55, variation:58 },
+        off:    { control:55, threat:43, variation:58 },
+      },
+      bowlTypeSecondary: {
+        fast:   { control:32, threat:44, variation:38 },
+        medium: { control:44, threat:32, variation:38 },
+        leg:    { control:29, threat:41, variation:44 },
+        off:    { control:41, threat:29, variation:44 },
       },
       keeper: {
-        keeperBatsman:    { fielding:{keeping:58,catching:58,groundFielding:40}, batting:{ anchor:{technique:50,power:30,temperament:34}, performer:{technique:34,power:46,temperament:34}, accumulator:{technique:38,power:30,temperament:46} } },
-        specialistKeeper: { fielding:{keeping:66,catching:66,groundFielding:42}, batting:{ anchor:{technique:42,power:26,temperament:30}, performer:{technique:30,power:38,temperament:30}, accumulator:{technique:32,power:26,temperament:38} } },
+        specialistFielding:    { keeping:68, catching:68, groundFielding:38 },
+        specialistBatting:     { technique:32, power:32, temperament:32 },
+        keeperBatsmanFielding: { keeping:60, catching:60, groundFielding:36 },
       },
     };
 
     function buildPlayerRatings(role, opts) {
       const r = {technique:15,power:15,temperament:15,control:15,threat:15,variation:15,keeping:15,catching:15,groundFielding:15};
-      if (role === 'batter') Object.assign(r, CAREER_RATING_TABLES.batter[opts.type][opts.batArchetype]);
-      else if (role === 'bowler') Object.assign(r, CAREER_RATING_TABLES.bowler[opts.bowlArchetype]);
+      if (role === 'batter') Object.assign(r, CAREER_RATING_TABLES.battingType[opts.type]);
+      else if (role === 'bowler') Object.assign(r, CAREER_RATING_TABLES.bowlType[opts.bowlType]);
       else if (role === 'allrounder') {
-        const lean = CAREER_RATING_TABLES.allrounder[opts.lean];
         Object.assign(r, opts.lean === 'battingAR'
-          ? {...lean.primary[opts.batArchetype], ...lean.secondary[opts.bowlArchetype]}
-          : {...lean.primary[opts.bowlArchetype], ...lean.secondary[opts.batArchetype]});
+          ? {...CAREER_RATING_TABLES.battingTypePrimary[opts.battingType], ...CAREER_RATING_TABLES.bowlTypeSecondary[opts.bowlType]}
+          : {...CAREER_RATING_TABLES.bowlTypePrimary[opts.bowlType], ...CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]});
       } else if (role === 'keeper') {
-        const kt = CAREER_RATING_TABLES.keeper[opts.type];
-        Object.assign(r, kt.fielding, kt.batting[opts.batArchetype]);
+        if (opts.type === 'specialistKeeper') Object.assign(r, CAREER_RATING_TABLES.keeper.specialistFielding, CAREER_RATING_TABLES.keeper.specialistBatting);
+        else Object.assign(r, CAREER_RATING_TABLES.keeper.keeperBatsmanFielding, CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]);
       }
       return r;
     }
@@ -14827,9 +14894,9 @@
     let CAREER = {};
     function resetCareerState() {
       CAREER = {
-        draft: { name:'', role:null, type:null, lean:null, bowlType:null, batArchetype:null, bowlArchetype:null, batHand:null, bowlHand:null },
+        draft: { name:'', role:null, type:null, lean:null, battingType:null, bowlBroadType:null, bowlType:null, batHand:null, bowlHand:null, leagueId:null, assignedClub:null, assignedClubSquad:null, replacedPlayerName:null },
         player: null,
-        myClubId: 0, myClubName: null, myClubRating: null,
+        leagueId: null, myClubId: 0, myClubName: null, myClubRating: null,
         clubs: [],
         fixtures: [],
         table: {},
@@ -14840,6 +14907,8 @@
           field:{ involvements:0, clean:0 },
         },
         matchLog: [],
+        leagueStats: {},
+        statsActiveCategory: null,
         pendingMoments: [],
         currentMomentIdx: 0,
         seasonComplete: false,
@@ -14856,24 +14925,27 @@
 
     // ── Creation flow: option data ───────────────────────────────────────
     const CAREER_TYPE_OPTIONS = {
-      batter: [ {v:'opener', label:'Opener', icon:'🏏', desc:'Opens the innings, faces the new ball first.'}, {v:'topOrder', label:'Top Order', icon:'🏏', desc:'Comes in at first-drop or after, once the shine is off.'} ],
-      bowler: [ {v:'seamer', label:'Seamer', icon:'💨', desc:'Pace and movement off the seam.'}, {v:'legSpin', label:'Leg Spin', icon:'🌀', desc:"Wrist spin, turning away from the right-hander."}, {v:'offSpin', label:'Off Spin', icon:'🔄', desc:'Finger spin, turning into the right-hander.'} ],
+      batter: [ {v:'opener', label:'Opener', icon:'🏏', desc:'Opens the innings, faces the new ball first.'}, {v:'topOrder', label:'Top Order', icon:'🏏', desc:'Comes in at first-drop or after, once the shine is off.'}, {v:'middleOrder', label:'Middle Order', icon:'🏏', desc:'Arrives with the innings already shaped. Built to finish it.'} ],
       keeper: [ {v:'keeperBatsman', label:'Keeper-Batsman', icon:'🧤', desc:'Solid gloves, genuine runs in the bank.'}, {v:'specialistKeeper', label:'Specialist Keeper', icon:'🧤', desc:'Elite hands first, the bat is a bonus.'} ],
     };
     const CAREER_LEAN_OPTIONS = [
       {v:'battingAR', label:'Batting All-Rounder', icon:'🏏', desc:'A batter first who can also turn their arm over.'},
       {v:'bowlingAR', label:'Bowling All-Rounder', icon:'🎯', desc:'A bowler first who can also chip in with the bat.'},
     ];
-    const CAREER_BATTING_ARCHETYPES = [
-      {v:'anchor', label:'Anchor', desc:'Builds the innings. Low risk, high control.'},
-      {v:'performer', label:'Performer', desc:'High risk, high reward. Boundary-heavy.'},
-      {v:'accumulator', label:'Accumulator', desc:'Steady rotation of strike. Hard to dismiss.'},
+    const CAREER_BOWL_BROAD_OPTIONS = [
+      {v:'seam', label:'Seam', icon:'💨', desc:'Pace and movement off the seam.'},
+      {v:'spin', label:'Spin', icon:'🌀', desc:'Flight, turn and deception through the air.'},
     ];
-    const CAREER_BOWLING_ARCHETYPES = [
-      {v:'aggressive', label:'Aggressive', desc:'A wicket-taker. Goes for runs chasing the breakthrough.'},
-      {v:'precise', label:'Precise', desc:'Economical and metronomic. Low threat, hard to get away.'},
-      {v:'trickster', label:'Trickster', desc:'Deception and variation. Wins the mental battle.'},
-    ];
+    const CAREER_BOWL_LEAF_OPTIONS = {
+      seam: [
+        {v:'fast', label:'Fast', icon:'💨', desc:'Raw pace. The biggest wicket-taking threat, at some cost to control.'},
+        {v:'medium', label:'Medium', icon:'🎯', desc:'Seam and consistency. Harder to get away, less express pace.'},
+      ],
+      spin: [
+        {v:'leg', label:'Leg Spin', icon:'🌀', desc:'Wrist spin, turning away from the right-hander. Big turn, buys wickets.'},
+        {v:'off', label:'Off Spin', icon:'🔄', desc:'Finger spin, turning into the right-hander. More containing.'},
+      ],
+    };
 
     function startCareerCreation() {
       resetCareerState();
@@ -14888,8 +14960,8 @@
     }
     function careerSelectRole(role) {
       CAREER.draft.role = role;
-      CAREER.draft.type = null; CAREER.draft.lean = null; CAREER.draft.bowlType = null;
-      CAREER.draft.batArchetype = null; CAREER.draft.bowlArchetype = null;
+      CAREER.draft.type = null; CAREER.draft.lean = null;
+      CAREER.draft.battingType = null; CAREER.draft.bowlBroadType = null; CAREER.draft.bowlType = null;
       document.querySelectorAll('#career-role-selector .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.role === role));
       const descs = {
         batter: 'Bat-first. Judged on Technique, Power and Temperament.',
@@ -14927,43 +14999,77 @@
       if (selectedVal) { const opt = options.find(o => o.v === selectedVal); if (descEl && opt) descEl.textContent = opt.desc; }
     }
 
+    // Renders the two-level Bowling Type picker (Seam/Spin, then the matching
+    // leaf pair) into `container`. Shared by the plain Bowler role and the
+    // All-Rounder flow, which both need one bowling-type answer.
+    function renderCareerBowlTypeGroups(container, checkReady) {
+      const broadWrap = document.createElement('div');
+      container.appendChild(broadWrap);
+      const leafWrap = document.createElement('div');
+      container.appendChild(leafWrap);
+      const renderLeaf = () => {
+        leafWrap.innerHTML = '';
+        if (!CAREER.draft.bowlBroadType) return;
+        careerRenderGroup(leafWrap, 'bowlleaf', CAREER.draft.bowlBroadType === 'seam' ? 'Pace' : 'Spin Type',
+          CAREER_BOWL_LEAF_OPTIONS[CAREER.draft.bowlBroadType], CAREER.draft.bowlType,
+          v => { CAREER.draft.bowlType = v; checkReady(); });
+      };
+      careerRenderGroup(broadWrap, 'bowlbroad', 'Bowling Type', CAREER_BOWL_BROAD_OPTIONS, CAREER.draft.bowlBroadType, v => {
+        if (v !== CAREER.draft.bowlBroadType) CAREER.draft.bowlType = null; // leaf choice may not apply to the new broad type
+        CAREER.draft.bowlBroadType = v;
+        renderLeaf();
+        checkReady();
+      });
+      renderLeaf();
+    }
+
+    function careerTypeStepReady(role) {
+      const d = CAREER.draft;
+      if (role === 'batter') return !!d.type;
+      if (role === 'bowler') return !!(d.bowlBroadType && d.bowlType);
+      if (role === 'allrounder') return !!(d.lean && d.battingType && d.bowlBroadType && d.bowlType);
+      if (role === 'keeper') return d.type === 'specialistKeeper' || !!(d.type === 'keeperBatsman' && d.battingType);
+      return false;
+    }
+
     function renderCareerTypeStep() {
       const role = CAREER.draft.role;
       const container = document.getElementById('career-type-groups');
       container.innerHTML = '';
       const continueBtn = document.getElementById('career-type-continue');
-      const checkReady = () => {
-        if (role === 'allrounder') continueBtn.disabled = !(CAREER.draft.lean && CAREER.draft.bowlType);
-        else continueBtn.disabled = !CAREER.draft.type;
-      };
-      if (role === 'allrounder') {
-        careerRenderGroup(container, 'lean', 'Lean', CAREER_LEAN_OPTIONS, CAREER.draft.lean, v => { CAREER.draft.lean = v; checkReady(); });
-        careerRenderGroup(container, 'bowltype', 'Bowling Type', CAREER_TYPE_OPTIONS.bowler, CAREER.draft.bowlType, v => { CAREER.draft.bowlType = v; checkReady(); });
-      } else if (role === 'keeper') {
-        careerRenderGroup(container, 'ktype', 'Keeper Type', CAREER_TYPE_OPTIONS.keeper, CAREER.draft.type, v => { CAREER.draft.type = v; checkReady(); });
-      } else {
-        careerRenderGroup(container, 'type', role === 'batter' ? 'Batting Type' : 'Bowling Type', CAREER_TYPE_OPTIONS[role], CAREER.draft.type, v => { CAREER.draft.type = v; checkReady(); });
-      }
-      checkReady();
-    }
+      const checkReady = () => { continueBtn.disabled = !careerTypeStepReady(role); };
 
-    function renderCareerArchetypeStep() {
-      const role = CAREER.draft.role;
-      const container = document.getElementById('career-archetype-groups');
-      container.innerHTML = '';
-      const continueBtn = document.getElementById('career-archetype-continue');
-      const checkReady = () => {
-        if (role === 'allrounder') continueBtn.disabled = !(CAREER.draft.batArchetype && CAREER.draft.bowlArchetype);
-        else if (role === 'bowler') continueBtn.disabled = !CAREER.draft.bowlArchetype;
-        else continueBtn.disabled = !CAREER.draft.batArchetype;
-      };
-      if (role === 'allrounder') {
-        careerRenderGroup(container, 'batarch', 'Batting Archetype', CAREER_BATTING_ARCHETYPES, CAREER.draft.batArchetype, v => { CAREER.draft.batArchetype = v; checkReady(); });
-        careerRenderGroup(container, 'bowlarch', 'Bowling Archetype', CAREER_BOWLING_ARCHETYPES, CAREER.draft.bowlArchetype, v => { CAREER.draft.bowlArchetype = v; checkReady(); });
+      if (role === 'batter') {
+        careerRenderGroup(container, 'type', 'Batting Type', CAREER_TYPE_OPTIONS.batter, CAREER.draft.type, v => { CAREER.draft.type = v; checkReady(); });
       } else if (role === 'bowler') {
-        careerRenderGroup(container, 'bowlarch', 'Bowling Archetype', CAREER_BOWLING_ARCHETYPES, CAREER.draft.bowlArchetype, v => { CAREER.draft.bowlArchetype = v; checkReady(); });
-      } else {
-        careerRenderGroup(container, 'batarch', 'Batting Archetype', CAREER_BATTING_ARCHETYPES, CAREER.draft.batArchetype, v => { CAREER.draft.batArchetype = v; checkReady(); });
+        renderCareerBowlTypeGroups(container, checkReady);
+      } else if (role === 'allrounder') {
+        const restWrap = document.createElement('div');
+        const renderRest = () => {
+          restWrap.innerHTML = '';
+          if (!CAREER.draft.lean) return;
+          careerRenderGroup(restWrap, 'battingtype', 'Batting Type', CAREER_TYPE_OPTIONS.batter, CAREER.draft.battingType, v => { CAREER.draft.battingType = v; checkReady(); });
+          renderCareerBowlTypeGroups(restWrap, checkReady);
+        };
+        careerRenderGroup(container, 'lean', 'Lean', CAREER_LEAN_OPTIONS, CAREER.draft.lean, v => { CAREER.draft.lean = v; renderRest(); checkReady(); });
+        container.appendChild(restWrap);
+        renderRest();
+      } else if (role === 'keeper') {
+        const restWrap = document.createElement('div');
+        const renderRest = () => {
+          restWrap.innerHTML = '';
+          if (CAREER.draft.type === 'keeperBatsman') {
+            careerRenderGroup(restWrap, 'kbattype', 'Batting Type', CAREER_TYPE_OPTIONS.batter, CAREER.draft.battingType, v => { CAREER.draft.battingType = v; checkReady(); });
+          }
+        };
+        careerRenderGroup(container, 'ktype', 'Keeper Type', CAREER_TYPE_OPTIONS.keeper, CAREER.draft.type, v => {
+          if (v !== CAREER.draft.type) CAREER.draft.battingType = null;
+          CAREER.draft.type = v;
+          renderRest();
+          checkReady();
+        });
+        container.appendChild(restWrap);
+        renderRest();
       }
       checkReady();
     }
@@ -14989,8 +15095,8 @@
       const ratings = buildPlayerRatings(d.role, d);
       const ovr = computeOVR(ratings, d.role);
       CAREER.player = {
-        name: d.name, role: d.role, type: d.type, lean: d.lean, bowlType: d.bowlType,
-        batArchetype: d.batArchetype, bowlArchetype: d.bowlArchetype,
+        name: d.name, role: d.role, type: d.type, lean: d.lean,
+        battingType: d.battingType, bowlBroadType: d.bowlBroadType, bowlType: d.bowlType,
         batHand: d.batHand, bowlHand: d.bowlHand, ratings, ovr,
       };
       renderCareerReveal();
@@ -14998,20 +15104,21 @@
     }
 
     const CAREER_ROLE_LABEL = { batter:'Batter', bowler:'Bowler', allrounder:'All-Rounder', keeper:'Keeper' };
-    const CAREER_TYPE_LABEL = { opener:'Opener', topOrder:'Top Order', seamer:'Seamer', legSpin:'Leg Spin', offSpin:'Off Spin', keeperBatsman:'Keeper-Batsman', specialistKeeper:'Specialist Keeper' };
-    const CAREER_ARCH_LABEL = { anchor:'Anchor', performer:'Performer', accumulator:'Accumulator', aggressive:'Aggressive', precise:'Precise', trickster:'Trickster' };
+    const CAREER_TYPE_LABEL = { opener:'Opener', topOrder:'Top Order', middleOrder:'Middle Order', fast:'Fast', medium:'Medium', leg:'Leg Spin', off:'Off Spin', keeperBatsman:'Keeper-Batsman', specialistKeeper:'Specialist Keeper' };
 
     function careerPlayerSubtitle(p) {
       const bits = [CAREER_ROLE_LABEL[p.role]];
       if (p.role === 'allrounder') {
         bits.push(p.lean === 'battingAR' ? 'Batting Lean' : 'Bowling Lean');
-        bits.push(`${CAREER_ARCH_LABEL[p.batArchetype]} / ${CAREER_ARCH_LABEL[p.bowlArchetype]}`);
+        bits.push(`${CAREER_TYPE_LABEL[p.battingType]} / ${CAREER_TYPE_LABEL[p.bowlType]}`);
       } else if (p.role === 'bowler') {
-        bits.push(CAREER_TYPE_LABEL[p.type]); bits.push(CAREER_ARCH_LABEL[p.bowlArchetype]);
+        bits.push(CAREER_TYPE_LABEL[p.bowlType]);
+        bits.push(CAREER_BOWL_SLOT_LABEL[careerBowlSlot(p)]);
       } else if (p.role === 'keeper') {
-        bits.push(CAREER_TYPE_LABEL[p.type]); bits.push(CAREER_ARCH_LABEL[p.batArchetype]);
+        bits.push(CAREER_TYPE_LABEL[p.type]);
+        if (p.type === 'keeperBatsman') bits.push(CAREER_TYPE_LABEL[p.battingType]);
       } else {
-        bits.push(CAREER_TYPE_LABEL[p.type]); bits.push(CAREER_ARCH_LABEL[p.batArchetype]);
+        bits.push(CAREER_TYPE_LABEL[p.type]);
       }
       return bits.join(' · ');
     }
@@ -15058,7 +15165,93 @@
     }
 
     // ── Season setup ─────────────────────────────────────────────────
-    const CAREER_CLUB_NAMES = ["Oakfield CC","Riverside CC","Bramwell CC","Ashgrove CC","Millbrook CC","Kingsley CC","Fenwick CC","Hartley CC","Elmside CC","Weststone CC","Chapelfield CC","Longmere CC"];
+    // ── Generated XIs ────────────────────────────────────────────────
+    // Each club's 11 players get individual ratings spread around that
+    // club's target OVR (some higher, some lower) rather than 11 identical
+    // numbers — shift-corrected so the XI's own average lands on the target.
+    const CAREER_XI_FIRST_NAMES = [
+      "James","Oliver","George","Harry","Jack","Charlie","Thomas","Daniel","Josh","Sam","Ben","Will","Alex","Ryan","Luke","Matt","Callum","Liam","Joe","Ethan","Adam","Connor","Jake","Aaron","Dom","Nathan","Kieran","Rhys","Owen","Sean",
+      "Mohammed","Ibrahim","Usman","Imran","Bilal","Hamza","Zain","Rehan","Faisal","Kabir","Adeel","Yusuf",
+      "Arjun","Raj","Vikram","Aditya","Rohan","Dev","Karan","Nikhil",
+      "Marcus","Malachi","Jayden","Tyrese","Kwame","Isaiah","Elijah","Amari","Devonte","Xavier",
+    ];
+    const CAREER_XI_LAST_NAMES = [
+      "Smith","Jones","Taylor","Brown","Wilson","Evans","Roberts","Johnson","Walker","Wright","Robinson","Wood","Thompson","White","Watson","Jackson","Turner","Hall","Green","Baker","Carter","Mitchell","Clarke","Cooper","Bell","Fisher","Ward","Marsh","Hughes","Barlow",
+      "Khan","Ahmed","Hussain","Ali","Malik","Rashid","Iqbal","Sheikh","Chowdhury","Islam","Aziz","Hameed",
+      "Patel","Sharma","Kumar","Singh","Shah","Chopra",
+      "Mensah","Osei","Adeyemi","Campbell","Grant","Lewis","Bailey","Francis","Joseph","Morgan",
+    ];
+    function careerRandomXIName(usedNames) {
+      let name;
+      do { name = `${careerPick(CAREER_XI_FIRST_NAMES)} ${careerPick(CAREER_XI_LAST_NAMES)}`; } while (usedNames.has(name));
+      usedNames.add(name);
+      return name;
+    }
+    function generateClubXI(targetRating) {
+      const n = 11, used = new Set();
+      const raw = Array.from({ length: n }, () => targetRating + (Math.random() - 0.5) * 16);
+      const shift = targetRating - raw.reduce((s, v) => s + v, 0) / n;
+      return raw.map(v => ({ name: careerRandomXIName(used), rating: Math.max(30, Math.min(60, Math.round(v + shift))) }));
+    }
+    function careerSquadRating(squad) {
+      return Math.round(squad.reduce((s, p) => s + p.rating, 0) / squad.length);
+    }
+    // Stable per-player id (for season-long stat accumulation) + a batting-
+    // order proxy (squad index — earlier = more likely to face more balls).
+    function assignSquadIds(squad, clubId) {
+      squad.forEach((p, i) => { p.id = p.isTrackedPlayer ? 'me' : `${clubId}_${i}`; p.battingOrder = i; });
+      return squad;
+    }
+
+    function renderCareerLeaguePicker() {
+      const list = document.getElementById('career-league-list');
+      list.innerHTML = Object.values(CAREER_LEAGUES).map(l => `
+        <div class="player-card" data-league="${l.id}" onclick="careerSelectLeague('${l.id}')" style="padding:14px 16px;margin-bottom:8px">
+          <div style="text-align:left;min-width:0">
+            <div style="font-size:15px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.name}</div>
+            <div style="font-size:11px;color:#9090a8;margin-top:2px">${l.tier} · ${l.clubs.length} clubs</div>
+          </div>
+          <span class="career-league-check" style="font-size:18px;font-weight:900;color:#f9c846;flex-shrink:0;opacity:${CAREER.draft.leagueId === l.id ? 1 : 0}">✓</span>
+        </div>`).join('');
+      document.getElementById('career-league-continue').disabled = !CAREER.draft.leagueId;
+    }
+    function careerSelectLeague(id) {
+      // Changing to a *different* league invalidates whatever club/squad may
+      // already have been assigned (from a previous pass through this step) —
+      // re-picking the same league leaves an already-generated squad alone.
+      if (id !== CAREER.draft.leagueId) {
+        CAREER.draft.assignedClub = null;
+        CAREER.draft.assignedClubSquad = null;
+        CAREER.draft.replacedPlayerName = null;
+      }
+      CAREER.draft.leagueId = id;
+      document.querySelectorAll('#career-league-list .player-card').forEach(el => {
+        el.querySelector('.career-league-check').style.opacity = el.dataset.league === id ? 1 : 0;
+      });
+      document.getElementById('career-league-continue').disabled = false;
+    }
+
+    function renderCareerTeamReveal() {
+      const league = CAREER_LEAGUES[CAREER.draft.leagueId];
+      // Assigned once per career, not re-rolled if this screen is revisited
+      // (going back to the reveal card and forward again would otherwise let
+      // someone re-spin for a stronger club).
+      let club = league.clubs.find(c => c.name === CAREER.draft.assignedClub);
+      if (!club) { club = careerPick(league.clubs); CAREER.draft.assignedClub = club.name; }
+      if (!CAREER.draft.assignedClubSquad) {
+        const squad = generateClubXI(club.rating);
+        const idx = Math.floor(Math.random() * squad.length);
+        CAREER.draft.replacedPlayerName = squad[idx].name;
+        squad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true };
+        CAREER.draft.assignedClubSquad = squad;
+      }
+      document.getElementById('team-reveal-league-name').textContent = league.name;
+      document.getElementById('team-reveal-text').textContent = `Your trials impressed the right people. ${club.name} want to sign you for the new season, coming in for ${CAREER.draft.replacedPlayerName}.`;
+      document.getElementById('team-reveal-name').textContent = club.name;
+      const badge = document.getElementById('team-reveal-badge');
+      badge.textContent = club.rating;
+      badge.className = 'rating-badge ' + ratingBadgeClass(club.rating);
+    }
 
     function generateRoundRobin(teamIds) {
       const n = teamIds.length, fixed = teamIds[0], rot = teamIds.slice(1);
@@ -15075,15 +15268,24 @@
     }
 
     function beginCareerSeason() {
-      const names = [...CAREER_CLUB_NAMES];
-      for (let i = names.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [names[i], names[j]] = [names[j], names[i]]; }
+      const league = CAREER_LEAGUES[CAREER.draft.leagueId];
+      const assigned = league.clubs.find(c => c.name === CAREER.draft.assignedClub) || league.clubs[0];
+      // My assigned club sits at id 0, the other 11 keep the league's own order.
+      const others = league.clubs.filter(c => c.name !== assigned.name);
+      // The reveal screen already generated + swapped my own club's XI; reuse
+      // it rather than re-rolling a different one at season start.
+      const mySquad = CAREER.draft.assignedClubSquad || generateClubXI(assigned.rating);
+      CAREER.leagueId = league.id;
       CAREER.myClubId = 0;
-      CAREER.myClubName = names[0];
-      CAREER.myClubRating = Math.round(45 + (CAREER.player.ovr - 45) * 0.3);
-      CAREER.clubs = names.map((name, id) => ({
-        id, name, isMine: id === 0,
-        rating: id === 0 ? CAREER.myClubRating : 40 + Math.floor(Math.random() * 11),
-      }));
+      CAREER.myClubName = assigned.name;
+      CAREER.myClubRating = careerSquadRating(mySquad);
+      CAREER.clubs = [
+        { id: 0, name: assigned.name, isMine: true, rating: CAREER.myClubRating, squad: assignSquadIds(mySquad, 0) },
+        ...others.map((c, i) => {
+          const squad = assignSquadIds(generateClubXI(c.rating), i + 1);
+          return { id: i + 1, name: c.name, isMine: false, rating: careerSquadRating(squad), squad };
+        }),
+      ];
       CAREER.fixtures = generateRoundRobin(CAREER.clubs.map(c => c.id));
       CAREER.table = {};
       CAREER.clubs.forEach(c => { CAREER.table[c.id] = { id: c.id, p: 0, w: 0, l: 0, pts: 0, nrr: 0 }; });
@@ -15142,11 +15344,104 @@
       CAREER.table[loserId].nrr -= nrrDelta;
     }
 
+    // ── Full match scorecards (every match, not just mine) ──────────────
+    // Every game generates a real batting+bowling card for both XIs so there's
+    // a genuine league-wide stats base. The tracked player's own line (when
+    // their club is involved) comes from their already-tuned individual sim
+    // (simTrackedPlayerInnings/Bowling) rather than being re-rolled here —
+    // the other 10 get a simpler rating+batting-order-weighted distribution,
+    // the same shape T20 Blast's own simMatch() already uses for a real XI.
+    function generateTeamInnings(club, teamScore, teamWkts, myBat) {
+      const card = [];
+      let remainingScore = teamScore, remainingWkts = teamWkts;
+      if (myBat) {
+        card.push({ id: 'me', name: CAREER.player.name, clubId: club.id, clubName: club.name, runs: myBat.runs, balls: myBat.balls, out: myBat.out, isTrackedPlayer: true });
+        remainingScore = Math.max(0, teamScore - myBat.runs);
+        if (myBat.out) remainingWkts = Math.max(0, teamWkts - 1);
+      }
+      // Every non-tracked squad member gets a batting line each match (even a
+      // token one) — capping this at the top 9 by order left the bottom 1-2
+      // players with zero batting appearances all season, and if they also
+      // fell outside the bowling top-6-by-rating, they never showed up in
+      // league stats at all across all 22 games.
+      const contributors = club.squad.filter(p => p.id !== 'me');
+      const weights = contributors.map(p => Math.max(0.15, 1 - p.battingOrder * 0.07) * (0.5 + p.rating / 100));
+      const totalW = weights.reduce((s, w) => s + w, 0) || 1;
+      const wicketsToAssign = Math.min(contributors.length, remainingWkts);
+      const outIdx = new Set();
+      while (outIdx.size < wicketsToAssign) outIdx.add(Math.floor(Math.random() * contributors.length));
+      let assigned = 0;
+      contributors.forEach((p, i) => {
+        const share = (weights[i] / totalW) * remainingScore;
+        const noise = (Math.random() - 0.5) * share * 0.6;
+        const runs = i < contributors.length - 1 ? Math.max(0, Math.round(share + noise)) : Math.max(0, remainingScore - assigned);
+        assigned += runs;
+        const sr = 0.6 + p.rating / 130 + Math.random() * 0.3;
+        const balls = Math.max(1, Math.round(runs / sr));
+        card.push({ id: p.id, name: p.name, clubId: club.id, clubName: club.name, runs, balls, out: outIdx.has(i), isTrackedPlayer: false });
+      });
+      return card;
+    }
+    function generateTeamBowling(club, oppWktsLost, oppScore, myBowl) {
+      const card = [];
+      let remainingWkts = oppWktsLost, remainingRuns = oppScore;
+      if (myBowl) {
+        card.push({ id: 'me', name: CAREER.player.name, clubId: club.id, clubName: club.name, overs: myBowl.overs, runsConceded: myBowl.runsConceded, wickets: myBowl.wickets, isTrackedPlayer: true });
+        remainingWkts = Math.max(0, oppWktsLost - myBowl.wickets);
+        remainingRuns = Math.max(0, oppScore - myBowl.runsConceded);
+      }
+      const bowlers = club.squad.filter(p => p.id !== 'me').sort((a, b) => b.rating - a.rating).slice(0, 6);
+      const weights = bowlers.map(p => 1 + p.rating / 40);
+      const totalW = weights.reduce((s, w) => s + w, 0) || 1;
+      let wktsLeft = remainingWkts, runsLeft = remainingRuns;
+      bowlers.forEach((p, i) => {
+        const overs = Math.min(4, Math.max(1, Math.round(2 + Math.random() * 2)));
+        const wkts = i < bowlers.length - 1
+          ? Math.min(wktsLeft, Math.random() < (weights[i] / totalW) * 2.5 ? Math.floor(Math.random() * 3) + 1 : 0)
+          : wktsLeft;
+        wktsLeft = Math.max(0, wktsLeft - wkts);
+        const runsConceded = i < bowlers.length - 1 ? Math.round(overs * (5 + Math.random() * 6)) : Math.max(0, runsLeft);
+        runsLeft = Math.max(0, runsLeft - runsConceded);
+        card.push({ id: p.id, name: p.name, clubId: club.id, clubName: club.name, overs, runsConceded, wickets: wkts, isTrackedPlayer: false });
+      });
+      return card;
+    }
+    function generateMatchScorecard(clubA, clubB, teamResult, myBat, myBowl) {
+      return {
+        clubAId: clubA.id, clubBId: clubB.id,
+        battingA: generateTeamInnings(clubA, teamResult.scoreA, teamResult.wktsA, clubA.isMine ? myBat : null),
+        battingB: generateTeamInnings(clubB, teamResult.scoreB, teamResult.wktsB, clubB.isMine ? myBat : null),
+        bowlingA: generateTeamBowling(clubA, teamResult.wktsB, teamResult.scoreB, clubA.isMine ? myBowl : null),
+        bowlingB: generateTeamBowling(clubB, teamResult.wktsA, teamResult.scoreA, clubB.isMine ? myBowl : null),
+      };
+    }
+    function careerNewPlayerStatLine(line) {
+      return {
+        id: line.id, name: line.name, clubId: line.clubId, clubName: line.clubName, isTrackedPlayer: !!line.isTrackedPlayer,
+        bat: { innings: 0, runs: 0, balls: 0, outs: 0 },
+        bowl: { innings: 0, wickets: 0, runsConceded: 0, overs: 0 },
+      };
+    }
+    function accumulateLeagueStats(card) {
+      const touch = line => CAREER.leagueStats[line.id] || (CAREER.leagueStats[line.id] = careerNewPlayerStatLine(line));
+      [...card.battingA, ...card.battingB].forEach(line => {
+        const s = touch(line);
+        s.bat.innings++; s.bat.runs += line.runs; s.bat.balls += line.balls;
+        if (line.out) s.bat.outs++;
+      });
+      [...card.bowlingA, ...card.bowlingB].forEach(line => {
+        const s = touch(line);
+        s.bowl.innings++; s.bowl.wickets += line.wickets; s.bowl.runsConceded += line.runsConceded; s.bowl.overs += line.overs;
+      });
+    }
+
     // ── Season loop ─────────────────────────────────────────────────────
     function resolveRoundAIMatches(round) {
       CAREER.fixtures[round].forEach(([a, b]) => {
         if (a === CAREER.myClubId || b === CAREER.myClubId) return;
-        applyResultToTable(simCheapClubMatch(a, b));
+        const result = simCheapClubMatch(a, b);
+        applyResultToTable(result);
+        accumulateLeagueStats(generateMatchScorecard(CAREER.clubs[a], CAREER.clubs[b], result, null, null));
       });
     }
     function findMyFixtureInRound(round) {
@@ -15163,11 +15458,14 @@
     }
 
     // ── Tracked-player match simulation (spec §5 of the plan) ───────────
+    // Forced, not rolled: your build determines exactly where you bat. An
+    // Opener always opens — no more chance of "the top order did the job"
+    // commentary firing for a player whose whole identity is batting first.
     const CAREER_BAT_POSITION = {
-      'batter.opener': [1, 2], 'batter.topOrder': [3, 4],
-      'allrounder.battingAR': [5, 6], 'allrounder.bowlingAR': [7, 8],
-      'keeper.keeperBatsman': [6, 7], 'keeper.specialistKeeper': [8, 9],
-      'bowler': [9, 10, 11],
+      'batter.opener': 1, 'batter.topOrder': 4, 'batter.middleOrder': 6,
+      'allrounder.battingAR': 5, 'allrounder.bowlingAR': 7,
+      'keeper.keeperBatsman': 6, 'keeper.specialistKeeper': 8,
+      'bowler': 10,
     };
     function careerPosKey(p) {
       if (p.role === 'batter') return `batter.${p.type}`;
@@ -15175,8 +15473,17 @@
       if (p.role === 'allrounder') return `allrounder.${p.lean}`;
       return 'bowler';
     }
+    // Same idea for the bowling attack: seamers open it, spinners come on
+    // first change, and an all-rounder is first change regardless of type
+    // (never trusted with the new ball ahead of a specialist opener).
+    function careerBowlSlot(player) {
+      if (player.role === 'allrounder') return 'firstChange';
+      if (player.role === 'bowler') return player.bowlBroadType === 'seam' ? 'opening' : 'firstChange';
+      return null;
+    }
+    const CAREER_BOWL_SLOT_LABEL = { opening: 'Opening Bowler', firstChange: 'First Change' };
     function simTrackedPlayerInnings(player, myTeamScore, myTeamWktsLost) {
-      const pos = careerPick(CAREER_BAT_POSITION[careerPosKey(player)]);
+      const pos = CAREER_BAT_POSITION[careerPosKey(player)];
       if (pos - 1 > myTeamWktsLost && Math.random() > 0.3) return null;
       const r = player.ratings;
       const skill = r.technique * 0.4 + r.power * 0.35 + r.temperament * 0.25;
@@ -15405,12 +15712,15 @@
 
       applyResultToTable(teamResult);
 
+      const scorecard = generateMatchScorecard(CAREER.clubs[teamResult.clubAId], CAREER.clubs[teamResult.clubBId], teamResult, bat, bowl);
+      accumulateLeagueStats(scorecard);
+
       const oppName = CAREER.clubs[oppId].name;
       const ctx = { bat, bowl, field, won, myScore, myWkts, oppScore, oppWkts, oppName, isHome };
       const moments = careerBuildMomentQueue(player, ctx);
       moments.push({ kind: 'verdict', text: careerPickVerdict(ctx) });
 
-      CAREER.matchLog.push({ round, opp: oppName, won, myScore, oppScore, bat, bowl, field });
+      CAREER.matchLog.push({ round, opp: oppName, won, myScore, oppScore, bat, bowl, field, scorecard });
       CAREER.currentRound = round + 1;
 
       CAREER.pendingMoments = moments;
@@ -15447,6 +15757,7 @@
 
     // ── Season hub ──────────────────────────────────────────────────────
     function buildCareerHub() {
+      document.getElementById('hub-league-name').textContent = CAREER_LEAGUES[CAREER.leagueId].name;
       document.getElementById('hub-club-name').textContent = CAREER.myClubName;
       document.getElementById('hub-round').textContent = CAREER.currentRound >= 22 ? '22/22' : `${CAREER.currentRound + 1}/22`;
 
@@ -15477,7 +15788,9 @@
           <td>${row.nrr.toFixed(2)}</td>
         </tr>`;
       }).join('');
-      document.getElementById('hub-table-wrap').innerHTML = `<table class="tbl"><thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead><tbody>${rows}</tbody></table>`;
+      document.getElementById('hub-table-wrap').innerHTML = `<table class="tbl">
+        <colgroup><col style="width:6%"><col style="width:44%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:10%"><col style="width:16%"></colgroup>
+        <thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead><tbody>${rows}</tbody></table>`;
 
       const bs = CAREER.seasonStats.bat, bw = CAREER.seasonStats.bowl;
       const avg = bs.outs ? (bs.runs / bs.outs).toFixed(1) : bs.runs.toFixed(1);
@@ -15487,7 +15800,115 @@
         <div class="stat-card"><div class="stat-card-label">Wickets</div><div class="stat-card-val">${bw.wickets}</div><div class="stat-card-sub">Econ ${econ}</div></div>
         <div class="stat-card"><div class="stat-card-label">Fielding</div><div class="stat-card-val">${CAREER.seasonStats.field.clean}</div><div class="stat-card-sub">of ${CAREER.seasonStats.field.involvements} chances</div></div>`;
 
+      buildCareerMatchHistory();
       checkForSavedCareerGame();
+    }
+
+    function buildCareerMatchHistory() {
+      const el = document.getElementById('hub-match-history');
+      if (!CAREER.matchLog.length) { el.innerHTML = `<div style="font-size:12px;color:#606070;text-align:center;padding:10px 0">No matches played yet.</div>`; return; }
+      el.innerHTML = CAREER.matchLog.map((m, idx) => idx).reverse().map(idx => {
+        const m = CAREER.matchLog[idx];
+        return `<div class="player-card" onclick="buildCareerScorecard(${idx});go('s-career-scorecard')" style="padding:12px 14px;margin-bottom:6px">
+          <div style="text-align:left;min-width:0">
+            <div style="font-size:13px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.won ? 'Beat' : 'Lost to'} ${m.opp}</div>
+            <div style="font-size:11px;color:#9090a8;margin-top:2px">${m.myScore} - ${m.oppScore} · Round ${m.round + 1}</div>
+          </div>
+          <span style="font-size:11px;font-weight:800;color:${m.won ? '#4ade80' : '#f87171'};flex-shrink:0">${m.won ? 'WON' : 'LOST'}</span>
+        </div>`;
+      }).join('');
+    }
+
+    // ── League stats / leaderboard ───────────────────────────────────────
+    const CAREER_STAT_CATEGORIES = [
+      { key: 'runs',    label: 'Most Runs',        qualify: s => true,                value: s => s.bat.runs,                                      fmt: v => v,             sortDesc: true },
+      { key: 'avg',     label: 'Best Average',     qualify: s => s.bat.innings >= 5,  value: s => s.bat.outs ? s.bat.runs / s.bat.outs : s.bat.runs, fmt: v => v.toFixed(1),  sortDesc: true },
+      { key: 'sr',      label: 'Best Strike Rate', qualify: s => s.bat.innings >= 5,  value: s => s.bat.balls ? (s.bat.runs / s.bat.balls) * 100 : 0, fmt: v => v.toFixed(1), sortDesc: true },
+      { key: 'wickets', label: 'Most Wickets',     qualify: s => true,                value: s => s.bowl.wickets,                                   fmt: v => v,             sortDesc: true },
+      { key: 'bowlAvg', label: 'Best Bowling Avg', qualify: s => s.bowl.wickets >= 5, value: s => s.bowl.wickets ? s.bowl.runsConceded / s.bowl.wickets : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
+      { key: 'econ',    label: 'Best Economy',     qualify: s => s.bowl.overs >= 15,  value: s => s.bowl.overs ? s.bowl.runsConceded / s.bowl.overs : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
+    ];
+    function buildCareerStats() {
+      document.getElementById('stats-league-name').textContent = CAREER_LEAGUES[CAREER.leagueId].name + ' · Season Stats';
+      document.getElementById('stats-tabs').innerHTML = CAREER_STAT_CATEGORIES.map(c =>
+        `<button class="stats-tab" data-key="${c.key}" onclick="renderCareerStatCategory('${c.key}')" style="flex-basis:calc(33.33% - 6px)">${c.label}</button>`
+      ).join('');
+      renderCareerStatCategory(CAREER.statsActiveCategory || 'runs');
+    }
+    function renderCareerStatCategory(key) {
+      CAREER.statsActiveCategory = key;
+      document.querySelectorAll('#stats-tabs .stats-tab').forEach(btn => {
+        btn.className = 'stats-tab ' + (btn.dataset.key === key ? 'stats-tab-active' : 'stats-tab-inactive');
+      });
+      const cat = CAREER_STAT_CATEGORIES.find(c => c.key === key);
+      const all = Object.values(CAREER.leagueStats).filter(cat.qualify).map(s => ({ ...s, val: cat.value(s) }));
+      all.sort((a, b) => cat.sortDesc ? b.val - a.val : a.val - b.val);
+      const top = all.slice(0, 10);
+      const myIdx = all.findIndex(s => s.isTrackedPlayer);
+
+      const rows = top.map((s, i) => `
+        <tr class="${s.isTrackedPlayer ? 'myrow' : ''}">
+          <td>${i + 1}</td>
+          <td style="text-align:left">${s.name}</td>
+          <td style="text-align:left;color:#8080a0">${s.clubName}</td>
+          <td style="font-weight:800">${cat.fmt(s.val)}</td>
+        </tr>`).join('');
+      document.getElementById('stats-table-wrap').innerHTML = `<table class="tbl">
+        <colgroup><col style="width:8%"><col style="width:36%"><col style="width:36%"><col style="width:20%"></colgroup>
+        <thead><tr><th>#</th><th>Player</th><th>Club</th><th>${cat.label.replace(/^(Most|Best) /, '')}</th></tr></thead>
+        <tbody>${rows}</tbody></table>`;
+
+      const rankEl = document.getElementById('stats-my-rank');
+      if (myIdx === -1) {
+        rankEl.innerHTML = `<div style="font-size:12px;color:#606070;text-align:center">You haven't qualified for this category yet.</div>`;
+      } else if (myIdx < 10) {
+        rankEl.innerHTML = `<div style="font-size:12px;color:#9090a8;text-align:center">You're ${ordinal(myIdx + 1)} in the league.</div>`;
+      } else {
+        rankEl.innerHTML = `<div style="font-size:13px;color:#f9c846;font-weight:800;text-align:center">You: ${ordinal(myIdx + 1)} of ${all.length} · ${cat.fmt(all[myIdx].val)}</div>`;
+      }
+    }
+
+    // ── Scorecards ────────────────────────────────────────────────────
+    function careerBattingCardHTML(card) {
+      const rows = card.map(p => {
+        const sr = p.balls ? ((p.runs / p.balls) * 100).toFixed(1) : '0.0';
+        return `<tr class="${p.isTrackedPlayer ? 'myrow' : ''}">
+          <td style="text-align:left">${p.name}${p.out ? '' : ' *'}</td>
+          <td>${p.runs}</td><td>${p.balls}</td><td>${sr}</td>
+        </tr>`;
+      }).join('');
+      return `<table class="tbl">
+        <colgroup><col style="width:52%"><col style="width:16%"><col style="width:16%"><col style="width:16%"></colgroup>
+        <thead><tr><th>Batter</th><th>R</th><th>B</th><th>SR</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    function careerBowlingCardHTML(card) {
+      const rows = card.map(p => {
+        const econ = p.overs ? (p.runsConceded / p.overs).toFixed(1) : '0.0';
+        return `<tr class="${p.isTrackedPlayer ? 'myrow' : ''}">
+          <td style="text-align:left">${p.name}</td>
+          <td>${p.overs}</td><td>${p.runsConceded}</td><td>${p.wickets}</td><td>${econ}</td>
+        </tr>`;
+      }).join('');
+      return `<table class="tbl">
+        <colgroup><col style="width:40%"><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:15%"></colgroup>
+        <thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Econ</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    function buildCareerScorecard(matchIdx) {
+      const entry = CAREER.matchLog[matchIdx];
+      const sc = entry.scorecard;
+      const clubA = CAREER.clubs[sc.clubAId], clubB = CAREER.clubs[sc.clubBId];
+      document.getElementById('scorecard-title').textContent = `${clubA.name} vs ${clubB.name}`;
+      document.getElementById('scorecard-result').textContent = entry.won ? `You won · ${entry.myScore}-${entry.oppScore}` : `You lost · ${entry.oppScore}-${entry.myScore}`;
+      document.getElementById('scorecard-content').innerHTML = `
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${clubA.name} Batting</div>
+        ${careerBattingCardHTML(sc.battingA)}
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${clubB.name} Bowling</div>
+        ${careerBowlingCardHTML(sc.bowlingB)}
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:20px 0 8px;text-align:left">${clubB.name} Batting</div>
+        ${careerBattingCardHTML(sc.battingB)}
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${clubA.name} Bowling</div>
+        ${careerBowlingCardHTML(sc.bowlingA)}
+      `;
     }
 
     // ── §9 performance bar + §7 promotion gate ──────────────────────────
