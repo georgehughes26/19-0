@@ -14742,9 +14742,15 @@
         <div id="hub-league-name" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">—</div>
         <div id="hub-club-name" style="font-size:20px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
       </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:10px;color:#606070;letter-spacing:1px;text-transform:uppercase">Round</div>
-        <div id="hub-round" style="font-size:22px;font-weight:900;color:#fff">—</div>
+      <div style="text-align:right;flex-shrink:0;display:flex;gap:16px">
+        <div>
+          <div style="font-size:10px;color:#606070;letter-spacing:1px;text-transform:uppercase">OVR</div>
+          <div id="hub-player-ovr" style="font-size:22px;font-weight:900;color:#fff">—</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#606070;letter-spacing:1px;text-transform:uppercase">Round</div>
+          <div id="hub-round" style="font-size:22px;font-weight:900;color:#fff">—</div>
+        </div>
       </div>
     </div>
 
@@ -14782,18 +14788,37 @@
       <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Scorecard</div>
       <div id="scorecard-title" style="font-size:19px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%">—</div>
       <div id="scorecard-result" style="font-size:12px;color:#9090a8;margin-top:2px">—</div>
+      <div id="scorecard-meta" style="font-size:11px;color:#8080a0;margin-top:6px;line-height:1.6"></div>
     </div>
     <div id="scorecard-content" style="width:100%"></div>
     <button class="btn-auth-small" onclick="go('s-career-hub')" style="margin-top:20px">← Back to Hub</button>
   </div>
 
   <div id="s-career-match" class="screen">
-    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px">
       <div id="career-match-title" style="text-align:left;font-size:13px;font-weight:800;color:#9090a8;letter-spacing:0.5px">—</div>
       <div id="career-match-status" style="font-size:11px;font-weight:800;color:#606070;letter-spacing:1px;text-transform:uppercase">Live</div>
     </div>
-    <div id="career-match-feed" style="width:100%;display:flex;flex-direction:column;gap:8px;min-height:200px;margin-bottom:18px"></div>
-    <button class="btn-start" id="career-match-tap" style="width:100%" onclick="careerAdvanceMoment()">Tap to continue</button>
+    <div id="career-speed-bar" style="display:flex;align-items:center;gap:8px;width:100%;margin-bottom:14px"></div>
+    <div id="career-live-score" style="display:none;width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px;margin-bottom:14px;text-align:center">
+      <div id="career-live-phase-label" style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">—</div>
+      <div id="career-live-score-val" style="font-size:32px;font-weight:900;color:#fff">—</div>
+      <div id="career-live-score-sub" style="font-size:12px;color:#9090a8;margin-top:2px">—</div>
+    </div>
+    <div id="career-match-feed" style="width:100%;display:flex;flex-direction:column;gap:8px;min-height:160px;margin-bottom:18px"></div>
+    <button class="btn-start" id="career-match-tap" style="width:100%;display:none">Tap to continue</button>
+    <button class="btn-auth-small" id="career-match-skip" style="width:100%;margin-top:10px;display:none;background:#0d0d12">⏩ Skip Ahead</button>
+  </div>
+
+  <div id="s-career-points" class="screen">
+    <div style="width:100%;text-align:left;margin-bottom:20px">
+      <div id="points-eyebrow" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">—</div>
+      <div style="font-size:24px;font-weight:900;color:#fff">Pick a stat to improve</div>
+    </div>
+    <div id="points-desc" style="width:100%;font-size:14px;color:#c0c0d8;line-height:1.6;text-align:left;margin-bottom:20px"></div>
+    <div class="stage-bar" id="points-bars" style="text-align:left"></div>
+    <div id="points-result" style="width:100%;text-align:center;min-height:24px;margin-top:20px"></div>
+    <div id="points-continue" style="width:100%"></div>
   </div>
 
   <div id="s-career-season-end" class="screen">
@@ -14826,10 +14851,16 @@
     // offset from the base (sum 135, avg 45/stat) trios used by the pure roles.
     // This keeps OVR===45 for every combo, same invariant as before.
     const CAREER_RATING_TABLES = {
+      // +2/stat over the neutral 45avg base — computeOVR now weights each
+      // role's categories rather than averaging only the relevant ones, and a
+      // pure specialist's fielding(43avg)/dead-discipline(15 floor) drag the
+      // weighted sum below 45 even at 80% weight on their main stat, so the
+      // main stat itself needs to sit slightly above 45 to compensate. See
+      // computeOVR's comment for the actual weights and the arithmetic.
       battingType: {
-        opener:      { technique:51, power:39, temperament:45 },
-        topOrder:    { technique:45, power:39, temperament:51 },
-        middleOrder: { technique:39, power:51, temperament:45 },
+        opener:      { technique:53, power:41, temperament:47 },
+        topOrder:    { technique:47, power:41, temperament:53 },
+        middleOrder: { technique:41, power:53, temperament:47 },
       },
       battingTypePrimary: {
         opener:      { technique:58, power:46, temperament:52 },
@@ -14841,11 +14872,11 @@
         topOrder:    { technique:38, power:32, temperament:44 },
         middleOrder: { technique:32, power:44, temperament:38 },
       },
-      bowlType: {
-        fast:   { control:39, threat:51, variation:45 },
-        medium: { control:51, threat:39, variation:45 },
-        leg:    { control:36, threat:48, variation:51 },
-        off:    { control:48, threat:36, variation:51 },
+      bowlType: { // same +2/stat reasoning as battingType above
+        fast:   { control:41, threat:53, variation:47 },
+        medium: { control:53, threat:41, variation:47 },
+        leg:    { control:38, threat:50, variation:53 },
+        off:    { control:50, threat:38, variation:53 },
       },
       bowlTypePrimary: {
         fast:   { control:46, threat:58, variation:52 },
@@ -14860,7 +14891,10 @@
         off:    { control:41, threat:29, variation:44 },
       },
       keeper: {
-        specialistFielding:    { keeping:68, catching:68, groundFielding:38 },
+        // specialistFielding trimmed -3/stat from its old 58avg so the
+        // weighted formula (60% weight, still the biggest single term) lands
+        // on 45 rather than 47 — see computeOVR.
+        specialistFielding:    { keeping:65, catching:65, groundFielding:35 },
         specialistBatting:     { technique:32, power:32, temperament:32 },
         keeperBatsmanFielding: { keeping:60, catching:60, groundFielding:36 },
       },
@@ -14869,14 +14903,22 @@
       // per-type, but it must not be left at the base 15: simTrackedPlayerFielding
       // reads (catching+groundFielding)/2 for every role, so leaving it at 15
       // meant every Batter/Bowler/All-Rounder in the game shared one identical,
-      // rock-bottom fielding skill regardless of build. All-Rounders get the best
-      // of the three — the dual batting+bowling workload demands the most athletic
-      // players. Doesn't affect OVR: catching/groundFielding aren't in the
-      // batter/bowler/allrounder OVR groups (keeper is the only role that counts them).
+      // rock-bottom fielding skill regardless of build.
+      //
+      // Same value for all three roles, deliberately — this keeps every role's
+      // average across its *active* stats (the ones the sim actually reads, not
+      // the ones deliberately parked at the 15 floor) sitting in the same ~44-45
+      // band: Batter/Bowler average 44.2 across their 5 active stats, Keeper
+      // averages exactly 45.0 across its 6, and All-Rounder averages 44.5 across
+      // its 8 (technique+power+temperament+control+threat+variation, at
+      // 156+114=270, is already within a few points of a strict 45avg budget for
+      // 8 stats — the only thing that would break that balance is over-crediting
+      // one specific role somewhere, which giving All-Rounder better fielding than
+      // everyone else — with zero offsetting cost — did. Not repeating that here.
       fielding: {
         batter:     { catching:42, groundFielding:44 },
         bowler:     { catching:42, groundFielding:44 },
-        allrounder: { catching:48, groundFielding:50 },
+        allrounder: { catching:42, groundFielding:44 },
       },
     };
 
@@ -14895,12 +14937,29 @@
       }
       return r;
     }
+    // Role-weighted OVR: a straight mean of only the "relevant" stats meant a
+    // discipline was either fully counted or fully ignored — fine for OVR
+    // itself, but it meant a progression point spent on fielding could never
+    // move a Batter/Bowler/All-Rounder's OVR at all (only Keeper's OVR ever
+    // included fielding). Weighting every one of the 3 categories by role
+    // instead means every point you spend moves OVR by *something*, just
+    // proportional to how much that category actually matters for your job.
+    // Weights per role (must sum to 1): how much batting/bowling/fielding
+    // each contribute to OVR.
+    const CAREER_OVR_WEIGHTS = {
+      batter:     { bat: 0.80, bowl: 0.05, field: 0.15 },
+      bowler:     { bat: 0.05, bowl: 0.80, field: 0.15 },
+      allrounder: { bat: 0.425, bowl: 0.425, field: 0.15 },
+      keeper:     { bat: 0.35, bowl: 0.05, field: 0.60 },
+    };
     function computeOVR(ratings, role) {
-      const groups = { batter:['technique','power','temperament'], bowler:['control','threat','variation'],
-        allrounder:['technique','power','temperament','control','threat','variation'],
-        keeper:['keeping','catching','groundFielding','technique','power','temperament'] };
-      const keys = groups[role];
-      return Math.round(keys.reduce((s,k)=>s+ratings[k],0) / keys.length);
+      const battingAvg = (ratings.technique + ratings.power + ratings.temperament) / 3;
+      const bowlingAvg = (ratings.control + ratings.threat + ratings.variation) / 3;
+      const fieldingAvg = role === 'keeper'
+        ? (ratings.keeping + ratings.catching + ratings.groundFielding) / 3
+        : (ratings.catching + ratings.groundFielding) / 2;
+      const w = CAREER_OVR_WEIGHTS[role];
+      return Math.round(battingAvg * w.bat + bowlingAvg * w.bowl + fieldingAvg * w.field);
     }
     const CAREER_RATING_LABELS = { technique:'Technique', power:'Power', temperament:'Temperament', control:'Control', threat:'Threat', variation:'Variation', keeping:'Keeping', catching:'Catching', groundFielding:'Ground Fielding' };
     const CAREER_RATING_ORDER = ['technique','power','temperament','control','threat','variation','keeping','catching','groundFielding'];
@@ -14924,8 +14983,8 @@
         matchLog: [],
         leagueStats: {},
         statsActiveCategory: null,
-        pendingMoments: [],
-        currentMomentIdx: 0,
+        pendingPoints: [],
+        seasonStartOvr: null,
         seasonComplete: false,
         promotion: null,
       };
@@ -15306,6 +15365,7 @@
       CAREER.clubs.forEach(c => { CAREER.table[c.id] = { id: c.id, p: 0, w: 0, l: 0, pts: 0, nrr: 0 }; });
       CAREER.currentRound = 0;
       CAREER.seasonComplete = false;
+      CAREER.seasonStartOvr = CAREER.player.ovr;
       go('s-career-hub');
       buildCareerHub();
     }
@@ -15324,6 +15384,21 @@
     // timeline this build doesn't simulate) — final wickets-lost stands in for it.
     function chaseBattingBonus(wktsLost) { return wktsLost <= 1 ? 4 : wktsLost <= 3 ? 3 : wktsLost <= 6 ? 2 : 1; }
 
+    // A flat 0-10 uniform roll gave every wicket count the same ~9% chance
+    // regardless of the score — so a team scoring 250 had the same odds of
+    // finishing 2 down as 9 down. In a real 50-over innings most of the order
+    // gets through by the end whether you're chasing or defending, so this
+    // skews toward the top of the range; a winning team gets a real chance at
+    // a genuinely low-wicket finish (a comfortable chase, wickets in hand),
+    // a losing team essentially never does. This is what was driving the
+    // "nearly everyone shows not out" scorecard bug — the generated batting
+    // card marks (wicketsLost) dismissals across ~10 contributors, so a low
+    // wicket count left most of the XI marked not-out purely by roll, which
+    // also quietly inflated every non-tracked player's batting average league-wide.
+    function careerRandomWickets(won) {
+      if (won && Math.random() < 0.25) return 2 + Math.floor(Math.random() * 4); // 2-5: comfortable chase
+      return 6 + Math.floor(Math.random() * 5); // 6-10: the common case, win or lose
+    }
     function simCheapClubMatch(clubAId, clubBId) {
       const rA = CAREER.clubs[clubAId].rating, rB = CAREER.clubs[clubBId].rating;
       const pA = 1 / (1 + Math.exp(-0.08 * (rA - rB)));
@@ -15332,11 +15407,25 @@
       const loserScore = Math.max(60, winnerScore - (15 + Math.floor(Math.random() * 110)));
       const scoreA = aWins ? winnerScore : loserScore;
       const scoreB = aWins ? loserScore : winnerScore;
-      const wktsA = Math.min(10, Math.floor(Math.random() * 11));
-      const wktsB = Math.min(10, Math.floor(Math.random() * 11));
-      const battingFirstIsA = Math.random() < 0.5;
+      let wktsA = careerRandomWickets(aWins);
+      let wktsB = careerRandomWickets(!aWins);
+      // The toss now actually decides who bats first, rather than that being an
+      // unrelated coin flip — same 50/50-ish spread either way, but it's a real
+      // toss result the live match screen can announce and act on.
+      const tossWinnerIsA = Math.random() < 0.5;
+      const tossChoiceBat = Math.random() < 0.5;
+      const battingFirstIsA = tossWinnerIsA ? tossChoiceBat : !tossChoiceBat;
       const winnerId = aWins ? clubAId : clubBId;
-      return { clubAId, clubBId, scoreA, wktsA, scoreB, wktsB, winnerId, battingFirstIsA };
+      // A side batting second can't be all out (10 wkts) and still have won
+      // the chase — the innings ends the instant the 10th wicket falls, so if
+      // the target had already been reached the match would already be over.
+      // Only matters once a match's "won by N wickets" margin is actually
+      // surfaced (the scorecard screen now does), but fix the source number
+      // rather than patching it at display time — everything else (the
+      // bowling card, league stats) reads wktsA/wktsB too.
+      if (battingFirstIsA && !aWins && wktsB >= 10) wktsB = 9;
+      if (!battingFirstIsA && aWins && wktsA >= 10) wktsA = 9;
+      return { clubAId, clubBId, scoreA, wktsA, scoreB, wktsB, winnerId, battingFirstIsA, tossWinnerIsA, tossChoiceBat };
     }
 
     function applyResultToTable(result) {
@@ -15366,34 +15455,65 @@
     // (simTrackedPlayerInnings/Bowling) rather than being re-rolled here —
     // the other 10 get a simpler rating+batting-order-weighted distribution,
     // the same shape T20 Blast's own simMatch() already uses for a real XI.
+    // Shared rating->weight curve for generated (non-tracked) squad members —
+    // steepened relative to the flat-ish weighting this used to have, so a
+    // genuinely higher-rated player visibly outscores/outbowls a weaker one
+    // instead of everyone in the XI performing near-identically regardless of
+    // build. Mirrors how World Cup mode's simMatch scales contribution share
+    // by rating, rescaled from WC's international-squad band (roughly 60-95)
+    // down to the 30-60 band generateClubXI actually produces.
+    function careerRatingWeight(rating) {
+      return Math.max(0.3, (rating - 10) / 20);
+    }
     function generateTeamInnings(club, teamScore, teamWkts, myBat) {
       const card = [];
       let remainingScore = teamScore, remainingWkts = teamWkts;
+      // A real innings ends with at most 2 batters not out — the pair at the
+      // crease when it finishes — or exactly 1 if all 10 wickets genuinely
+      // fell (last man stranded with no partner left). Marking dismissals as
+      // a random scatter across the whole order (the old approach) could show
+      // 3+ not-outs, which is impossible, and gave no sense of an innings
+      // actually progressing through the order.
+      let notOutBudget = teamWkts >= 10 ? 1 : 2;
       if (myBat) {
         card.push({ id: 'me', name: CAREER.player.name, clubId: club.id, clubName: club.name, runs: myBat.runs, balls: myBat.balls, out: myBat.out, isTrackedPlayer: true });
         remainingScore = Math.max(0, teamScore - myBat.runs);
         if (myBat.out) remainingWkts = Math.max(0, teamWkts - 1);
+        else notOutBudget = Math.max(0, notOutBudget - 1); // tracked player already occupies one of the crease slots
       }
-      // Every non-tracked squad member gets a batting line each match (even a
-      // token one) — capping this at the top 9 by order left the bottom 1-2
-      // players with zero batting appearances all season, and if they also
-      // fell outside the bowling top-6-by-rating, they never showed up in
-      // league stats at all across all 22 games.
+      // Dismissals go in batting order, not scattered: the first `dismissed`
+      // contributors are out, up to `notOutBudget` more reached the crease and
+      // are not out, and anyone further down the order never got to bat —
+      // matching how a real scorecard only lists who actually batted.
       const contributors = club.squad.filter(p => p.id !== 'me');
-      const weights = contributors.map(p => Math.max(0.15, 1 - p.battingOrder * 0.07) * (0.5 + p.rating / 100));
+      const dismissed = Math.min(contributors.length, remainingWkts);
+      const battedCount = Math.min(contributors.length, dismissed + notOutBudget);
+      const batted = contributors.slice(0, battedCount);
+      const weights = batted.map(p => Math.max(0.15, 1 - p.battingOrder * 0.07) * careerRatingWeight(p.rating));
       const totalW = weights.reduce((s, w) => s + w, 0) || 1;
-      const wicketsToAssign = Math.min(contributors.length, remainingWkts);
-      const outIdx = new Set();
-      while (outIdx.size < wicketsToAssign) outIdx.add(Math.floor(Math.random() * contributors.length));
-      let assigned = 0;
-      contributors.forEach((p, i) => {
+      // Per-player noise is mean-zero only in expectation — for any one match
+      // the noise terms can all land the same way (a few early batters rolling
+      // toward the top of their range), and since each `share` already sums
+      // exactly to remainingScore before noise, that drift had nowhere to go
+      // but into the total: the last batter's clamp only prevents going
+      // negative, it can't claw back an overshoot from everyone ahead of them.
+      // Same conservation pattern generateTeamBowling already uses for
+      // runsConceded: build the raw noisy values first, rescale the whole set
+      // back to remainingScore, then round — so only sub-run rounding error
+      // (bounded, tiny) reaches the last-batter remainder step, not noise.
+      const rawRuns = batted.map((p, i) => {
         const share = (weights[i] / totalW) * remainingScore;
-        const noise = (Math.random() - 0.5) * share * 0.6;
-        const runs = i < contributors.length - 1 ? Math.max(0, Math.round(share + noise)) : Math.max(0, remainingScore - assigned);
+        return Math.max(0, share + (Math.random() - 0.5) * share * 0.6);
+      });
+      const rawTotal = rawRuns.reduce((s, x) => s + x, 0) || 1;
+      const scale = remainingScore / rawTotal;
+      let assigned = 0;
+      batted.forEach((p, i) => {
+        const runs = i < batted.length - 1 ? Math.max(0, Math.round(rawRuns[i] * scale)) : Math.max(0, remainingScore - assigned);
         assigned += runs;
-        const sr = 0.6 + p.rating / 130 + Math.random() * 0.3;
+        const sr = 0.5 + p.rating / 90 + Math.random() * 0.3;
         const balls = Math.max(1, Math.round(runs / sr));
-        card.push({ id: p.id, name: p.name, clubId: club.id, clubName: club.name, runs, balls, out: outIdx.has(i), isTrackedPlayer: false });
+        card.push({ id: p.id, name: p.name, clubId: club.id, clubName: club.name, runs, balls, out: i < dismissed, isTrackedPlayer: false });
       });
       return card;
     }
@@ -15406,18 +15526,48 @@
         remainingRuns = Math.max(0, oppScore - myBowl.runsConceded);
       }
       const bowlers = club.squad.filter(p => p.id !== 'me').sort((a, b) => b.rating - a.rating).slice(0, 6);
-      const weights = bowlers.map(p => 1 + p.rating / 40);
+      const weights = bowlers.map(p => careerRatingWeight(p.rating));
       const totalW = weights.reduce((s, w) => s + w, 0) || 1;
-      let wktsLeft = remainingWkts, runsLeft = remainingRuns;
-      bowlers.forEach((p, i) => {
-        const overs = Math.min(4, Math.max(1, Math.round(2 + Math.random() * 2)));
-        const wkts = i < bowlers.length - 1
+      // Overs are allocated by the same rating weights as runs/wickets — a
+      // captain trusts their best bowler with more overs, not a flat random
+      // share — capped at 15 (club cricket's real per-bowler limit, not the
+      // ODI-style 10 this used to assume). 1-4 overs/bowler was a leftover T20
+      // cap (4 max); 6 bowlers at ~3 overs only covered ~18 of the ~50 overs
+      // actually bowled, which forced the runs-conservation step below to
+      // inflate everyone's per-over rate to compensate — that's what was
+      // swamping the rating signal in economy.
+      // The tracked player's own overs (already fixed, up to 15 for a
+      // specialist) come out of this same innings, not on top of it — without
+      // subtracting them here, a match where the tracked player bowled deep
+      // into their spell plus 6 more bowlers each getting a near-full share
+      // could add up to 60+ overs in a 50-over match. Verified this was
+      // producing exactly that (up to 64 overs) before this fix.
+      const oversTarget = Math.max(6, 44 + Math.floor(Math.random() * 6) - (myBowl ? myBowl.overs : 0)); // 44-49 total across the whole innings, allowing for one bowled out early
+      const overs = bowlers.map((p, i) => Math.min(15, Math.max(2, Math.round((weights[i] / totalW) * oversTarget))));
+      let wktsLeft = remainingWkts;
+      const wktsByBowler = bowlers.map((p, i) => {
+        const w = i < bowlers.length - 1
           ? Math.min(wktsLeft, Math.random() < (weights[i] / totalW) * 2.5 ? Math.floor(Math.random() * 3) + 1 : 0)
           : wktsLeft;
-        wktsLeft = Math.max(0, wktsLeft - wkts);
-        const runsConceded = i < bowlers.length - 1 ? Math.round(overs * (5 + Math.random() * 6)) : Math.max(0, runsLeft);
-        runsLeft = Math.max(0, runsLeft - runsConceded);
-        card.push({ id: p.id, name: p.name, clubId: club.id, clubName: club.name, overs, runsConceded, wickets: wkts, isTrackedPlayer: false });
+        wktsLeft = Math.max(0, wktsLeft - w);
+        return w;
+      });
+      // Economy used to be a flat 5-11 regardless of who was bowling — rating
+      // now pulls it down (a 60-rated bowler runs ~4/over cheaper than a
+      // 30-rated one before noise), so a club's better bowlers visibly go for
+      // less, not just take more wickets. Give every bowler a real rating-driven
+      // figure first, then scale the set to match the innings total exactly —
+      // dumping the whole rounding remainder on whichever bowler happened to
+      // be last (the old approach) could hand them a wildly unrepresentative
+      // economy with no relation to their own rating.
+      const rawRuns = bowlers.map((p, i) => overs[i] * Math.max(3, 8 - p.rating / 15 + (Math.random() - 0.5) * 3));
+      const rawTotal = rawRuns.reduce((s, x) => s + x, 0) || 1;
+      const scale = remainingRuns / rawTotal;
+      let assigned = 0;
+      bowlers.forEach((p, i) => {
+        const runsConceded = i < bowlers.length - 1 ? Math.max(0, Math.round(rawRuns[i] * scale)) : Math.max(0, remainingRuns - assigned);
+        assigned += runsConceded;
+        card.push({ id: p.id, name: p.name, clubId: club.id, clubName: club.name, overs: overs[i], runsConceded, wickets: wktsByBowler[i], isTrackedPlayer: false });
       });
       return card;
     }
@@ -15502,7 +15652,14 @@
       if (pos - 1 > myTeamWktsLost && Math.random() > 0.3) return null;
       const r = player.ratings;
       const skill = r.technique * 0.4 + r.power * 0.35 + r.temperament * 0.25;
-      const posFactor = Math.max(0.3, 1 - (pos - 1) * 0.07);
+      // Batting position used to carry its cost two ways: a real chance of
+      // not batting at all, and this per-position runs discount. Making team
+      // wickets realistic (see careerRandomWickets) pushed most matches to
+      // 6-10 down, which means positions 5-7 now almost always get to bat —
+      // so the "might not bat" half of the cost mostly evaporated. Steepened
+      // the discount to compensate, since that's the only lever left doing
+      // real work for a middle-order/all-rounder batting slot.
+      const posFactor = Math.max(0.3, 1 - (pos - 1) * 0.09);
       const out = Math.random() < (0.75 - r.temperament / 400);
       // Exponential rather than uniform: real innings have a long right tail
       // (most are modest, occasionally one runs away from you) — a uniform
@@ -15519,13 +15676,30 @@
     function simTrackedPlayerBowling(player, oppWktsAvailable) {
       const r = player.ratings;
       if (r.control <= 15 && r.threat <= 15) return null;
-      const overShare = player.role === 'bowler' ? 6 + Math.floor(Math.random() * 5)
-        : player.role === 'allrounder' ? 3 + Math.floor(Math.random() * 5)
+      // All-Rounders previously got the same 3-7 overs regardless of lean —
+      // meaning a Batting-AR's "secondary" bowling was handed the exact same
+      // workload as a Bowling-AR's actual primary job, so the rating discount
+      // alone (which is a much weaker lever than overs bowled) barely dented
+      // their bowling output. Bowling-AR keeps the old range since that's
+      // genuinely their main discipline; Batting-AR drops to a real part-timer's
+      // workload, matching how far short its output should fall of a specialist's.
+      // Club cricket allows a bowler up to 15 overs (not the ODI 10-over cap) —
+      // a trusted frontline bowler regularly gets well into double figures.
+      const overShare = player.role === 'bowler' ? 8 + Math.floor(Math.random() * 8)
+        : player.role === 'allrounder' ? (player.lean === 'battingAR' ? 2 + Math.floor(Math.random() * 3) : 5 + Math.floor(Math.random() * 6))
         : Math.random() < 0.3 ? 1 + Math.floor(Math.random() * 3) : 0;
       if (!overShare) return null;
       const economy = Math.max(2.5, 7.5 - r.control / 20);
       const runsConceded = Math.max(0, Math.round(overShare * (economy + (Math.random() - 0.5) * 2)));
-      const wicketChancePerOver = r.threat / 175;
+      // /175 (audited): a starting specialist Bowler (threat~53) landed a
+      // 15.4 bowling average and took a wicket in 96.6% of matches (league-
+      // wide generated bowlers, same 30-60 rating band, averaged 23.3) — an
+      // unprogressed player performing far better than the entire rest of
+      // the league on debut. /350 brings a starting specialist to a plausible
+      // ~30+ average with real wicketless games, leaving room for progression
+      // (cap 80 threat) to earn a genuinely elite ~15 average rather than
+      // start there for free.
+      const wicketChancePerOver = r.threat / 350;
       let wickets = 0;
       for (let i = 0; i < overShare; i++) if (Math.random() < wicketChancePerOver) wickets++;
       wickets = Math.min(wickets, oppWktsAvailable);
@@ -15658,36 +15832,102 @@
       ],
     };
 
-    function careerBuildMomentQueue(player, ctx) {
-      const moments = [];
-      const name = player.name;
-      if (ctx.bat === null) {
-        moments.push({ kind: 'bat', text: careerPick(CAREER_MOMENT_TEMPLATES.didNotBat)(name) });
-      } else {
-        const rn = ctx.bat.runs;
-        const bucket = rn === 0 ? 'duck' : rn < 20 ? 'low' : rn < 50 ? 'solid' : rn < 100 ? 'fifty' : 'hundred';
-        moments.push({ kind: 'bat', text: careerPick(CAREER_MOMENT_TEMPLATES[bucket])(name, rn) });
+    // ── Live match playback: toss, ball-by-ball batting, innings break, ────
+    // over-by-over bowling, then the existing result/verdict beats. The
+    // final bat/bowl numbers (already computed above by simTrackedPlayer*)
+    // never change here — these functions only decompose them into a
+    // plausible delivery-by-delivery sequence for display, so whatever the
+    // live ticker ends on always matches the scorecard exactly.
+    const CAREER_DISMISSAL_TYPES = ['bowled', 'caught', 'lbw', 'caught behind', 'run out', 'stumped'];
+    function careerDecomposeBatting(runs, balls) {
+      const deliveries = [];
+      let runsLeft = runs, ballsLeft = balls;
+      const base = [0, 0, 0, 1, 1, 1, 2, 3, 4, 4, 6];
+      while (ballsLeft > 0) {
+        // Bound every pick from both ends, not just the max: without a floor
+        // too, a run of small picks early on could leave more runs outstanding
+        // than the remaining balls can physically carry (max 6 each), so the
+        // final ball's own clamp would silently drop the shortfall instead of
+        // conserving exactly to the real total — which is what the scorecard
+        // has to match.
+        const maxPossible = Math.max(0, Math.min(6, runsLeft));
+        const minRequired = Math.max(0, runsLeft - (ballsLeft - 1) * 6);
+        if (ballsLeft === 1) { deliveries.push(maxPossible); break; }
+        let pool = base.filter(v => v >= minRequired && v <= maxPossible);
+        if (!pool.length) pool = [Math.min(maxPossible, minRequired)];
+        const val = careerPick(pool);
+        deliveries.push(val);
+        runsLeft -= val; ballsLeft--;
       }
-      if (ctx.bowl === null) {
-        moments.push({ kind: 'bowl', text: careerPick(CAREER_MOMENT_TEMPLATES.bowlingNone)() });
-      } else {
-        const w = ctx.bowl.wickets;
-        if (w === 0) moments.push({ kind: 'bowl', text: careerPick(CAREER_MOMENT_TEMPLATES.bowlingWicketless)(name, ctx.bowl.overs, ctx.bowl.runsConceded) });
-        else if (w < 3) moments.push({ kind: 'bowl', text: careerPick(CAREER_MOMENT_TEMPLATES.oneOrTwo)(name, w, ctx.bowl.overs, ctx.bowl.runsConceded) });
-        else moments.push({ kind: 'bowl', text: careerPick(CAREER_MOMENT_TEMPLATES.threeFor)(name, w, ctx.bowl.overs, ctx.bowl.runsConceded) });
+      return deliveries;
+    }
+    function careerDecomposeBowling(overs, runsConceded, wickets) {
+      const totalBalls = Math.max(1, Math.round(overs * 6));
+      const runs = [];
+      let runsLeft = runsConceded, ballsLeft = totalBalls;
+      const base = [0, 0, 0, 0, 1, 1, 1, 2, 4, 6];
+      while (ballsLeft > 0) {
+        const maxPossible = Math.max(0, Math.min(6, runsLeft));
+        const minRequired = Math.max(0, runsLeft - (ballsLeft - 1) * 6);
+        if (ballsLeft === 1) { runs.push(maxPossible); break; }
+        let pool = base.filter(v => v >= minRequired && v <= maxPossible);
+        if (!pool.length) pool = [Math.min(maxPossible, minRequired)];
+        const val = careerPick(pool);
+        runs.push(val); runsLeft -= val; ballsLeft--;
       }
-      for (let i = 0; i < ctx.field.involvements; i++) {
-        const clean = i < ctx.field.clean;
-        moments.push({ kind: 'field', text: careerPick(CAREER_MOMENT_TEMPLATES[clean ? 'fieldingClean' : 'fieldingDropped'])(name) });
+      // Dismissals land on a 0-run ball wherever possible — most wickets aren't
+      // hit for runs first — falling back to any ball if there aren't enough.
+      const zeroBalls = runs.map((r, i) => ({ r, i })).filter(x => x.r === 0).map(x => x.i);
+      const pool2 = zeroBalls.length >= wickets ? zeroBalls : runs.map((r, i) => i);
+      const wicketBalls = new Set();
+      while (wicketBalls.size < Math.min(wickets, totalBalls) && pool2.length) wicketBalls.add(pool2[Math.floor(Math.random() * pool2.length)]);
+      const oversArr = [];
+      for (let o = 0; o * 6 < totalBalls; o++) {
+        oversArr.push(Array.from({ length: Math.min(6, totalBalls - o * 6) }, (_, b) => {
+          const idx = o * 6 + b;
+          return { runs: runs[idx] || 0, wicket: wicketBalls.has(idx) };
+        }));
       }
-      moments.push({ kind: 'result', text: careerPick(CAREER_MOMENT_TEMPLATES[ctx.won ? 'matchWin' : 'matchLoss'])(ctx.oppName, ctx.myScore, ctx.oppScore) });
-      return moments;
+      return oversArr;
+    }
+    const CAREER_BALL_LINES = {
+      four: [p => `${p} finds the gap — four runs.`, p => `Cracked through the covers, four more.`, p => `${p} times that beautifully for four.`, p => `Short and wide, put away for four.`],
+      six: [p => `${p} launches it — into the crowd for six!`, p => `Enormous hit from ${p} — that's out of here.`, p => `${p} picks the length early and clears the rope. Six.`],
+      closeCall: [p => `Edged! ${p} gets away with it, through the slips.`, p => `Dropped! A regulation chance goes down off ${p}'s bat.`, p => `${p} is beaten all ends up, but it races past off stump.`, p => `Big shout for lbw against ${p} — given not out.`],
+      dismissal: [(p, how) => `Gone! ${p} ${how}.`, (p, how) => `That's the breakthrough — ${p} ${how}.`, (p, how) => `${p} departs, ${how}.`],
+    };
+    const CAREER_BOWL_BALL_LINES = {
+      wicket: [p => `${p} strikes! Straight through the gate.`, p => `Got him! ${p} induces the edge and it carries.`, p => `${p} traps him in front — up goes the finger.`, p => `Big shot attempted — but ${p} has him caught in the deep.`],
+      four: [p => `Away for four off ${p}.`, p => `Finds the gap — four leaked.`, p => `Cracked away, four more off ${p}'s over.`],
+      six: [p => `Full toss, dispatched for six off ${p}.`, p => `Launched miles — that's six conceded.`, p => `${p} drops it short and pays for it — six.`],
+    };
+
+    let careerLiveTimer = null;
+    function careerLiveFeedRow(icon, text, color) {
+      const feed = document.getElementById('career-match-feed');
+      const row = document.createElement('div');
+      row.className = 'player-card card-in';
+      row.style.cssText = 'cursor:default;padding:14px 16px;text-align:left;display:block';
+      row.innerHTML = `<div style="font-size:13px;color:${color || '#c0c0d8'};line-height:1.6"><span style="margin-right:6px">${icon}</span>${text}</div>`;
+      feed.insertBefore(row, feed.firstChild);
+      while (feed.children.length > 12) feed.removeChild(feed.lastChild);
+    }
+    function careerShowSpeedBar() {
+      const bar = document.getElementById('career-speed-bar');
+      const existing = bar.querySelector('.speed-slider');
+      if (existing) { existing.value = SIM_SPEED; return; }
+      bar.innerHTML = '<span class="speed-icon">🐢</span><input class="speed-slider" type="range" min="0.25" max="2" step="0.25" value="' + SIM_SPEED + '" oninput="setSimSpeed(this.value)" title="Simulation speed"><span class="speed-icon">🐇</span>';
     }
 
     function careerPickVerdict(ctx) {
       const runs = ctx.bat ? ctx.bat.runs : 0;
       const wickets = ctx.bowl ? ctx.bowl.wickets : 0;
-      const highScore = runs >= 40, cheapWickets = wickets >= 2;
+      // Was wickets>=2 — with the wicket-rate rebalance a 2-for is now a
+      // solid, fairly ordinary contribution, not the "tore the innings apart"
+      // level "cheap wickets" claims. Reuse the same big-spell bar (3+) the
+      // rest of the game already treats as a standout haul, so the verdict
+      // language only fires for a spell that actually earns it.
+      const highScore = runs >= 40, cheapWickets = wickets >= CAREER_BIG_SPELL_WICKETS;
       let bucket;
       if (highScore) bucket = ctx.won ? 'highScoreWon' : 'highScoreLost';
       else if (cheapWickets) bucket = ctx.won ? 'cheapWicketsWon' : 'cheapWicketsLost';
@@ -15725,49 +15965,301 @@
       }
       { const s = CAREER.seasonStats.field; s.involvements += field.involvements; s.clean += field.clean; }
 
+      // Progression: crossing the same thresholds already tracked for the
+      // performance bar (fifty / three-for / a clean catch) earns a point in
+      // that discipline, spent immediately after the match via s-career-points
+      // — growth is live, not banked to season-end, so it can genuinely move
+      // the promotion-gate rating band before the season is over.
+      if (bat && bat.runs >= CAREER_BIG_INNINGS_THRESHOLD) CAREER.pendingPoints.push({ category: 'bat', detail: bat.runs });
+      if (bowl && bowl.wickets >= CAREER_BIG_SPELL_WICKETS) CAREER.pendingPoints.push({ category: 'bowl', detail: bowl.wickets });
+      for (let i = 0; i < field.clean; i++) CAREER.pendingPoints.push({ category: 'field', detail: null });
+
       applyResultToTable(teamResult);
 
       const scorecard = generateMatchScorecard(CAREER.clubs[teamResult.clubAId], CAREER.clubs[teamResult.clubBId], teamResult, bat, bowl);
       accumulateLeagueStats(scorecard);
 
       const oppName = CAREER.clubs[oppId].name;
-      const ctx = { bat, bowl, field, won, myScore, myWkts, oppScore, oppWkts, oppName, isHome };
-      const moments = careerBuildMomentQueue(player, ctx);
-      moments.push({ kind: 'verdict', text: careerPickVerdict(ctx) });
+      const ctx = { bat, bowl, field, won, myScore, myWkts, oppScore, oppWkts, oppName, isHome, teamResult, myClubId, player };
 
-      CAREER.matchLog.push({ round, opp: oppName, won, myScore, oppScore, bat, bowl, field, scorecard });
+      CAREER.matchLog.push({ round, opp: oppName, won, myScore, oppScore, bat, bowl, field, scorecard, teamResult });
       CAREER.currentRound = round + 1;
 
-      CAREER.pendingMoments = moments;
-      CAREER.currentMomentIdx = 0;
       document.getElementById('career-match-title').textContent = `${isHome ? 'vs' : '@'} ${oppName}`;
       document.getElementById('career-match-status').textContent = 'Live';
-      document.getElementById('career-match-tap').textContent = 'Tap to continue';
       document.getElementById('career-match-feed').innerHTML = '';
+      document.getElementById('career-live-score').style.display = 'none';
+      document.getElementById('career-match-skip').style.display = 'none';
+      document.getElementById('career-match-tap').style.display = 'none';
+      careerShowSpeedBar();
       go('s-career-match');
-      careerAdvanceMoment();
+
+      const myBatsFirst = mine === 'A' ? teamResult.battingFirstIsA : !teamResult.battingFirstIsA;
+      const phases = myBatsFirst ? ['bat', 'bowl'] : ['bowl', 'bat'];
+      careerShowToss(ctx, () =>
+        careerPlayPhase(phases[0], ctx, () =>
+          careerShowInningsBreak(ctx, () =>
+            careerPlayPhase(phases[1], ctx, () =>
+              careerShowVerdict(ctx)))));
     }
 
-    function careerAdvanceMoment() {
-      const idx = CAREER.currentMomentIdx;
-      if (idx >= CAREER.pendingMoments.length) { careerFinishMatch(); return; }
-      const moment = CAREER.pendingMoments[idx];
-      const feed = document.getElementById('career-match-feed');
-      const row = document.createElement('div');
-      row.className = 'player-card card-in';
-      row.style.cssText = 'cursor:default;padding:14px 16px;text-align:left;display:block';
-      const icons = { bat:'🏏', bowl:'🎯', field:'🧤', result:'🏆', verdict:'📣' };
-      row.innerHTML = `<div style="font-size:13px;color:#c0c0d8;line-height:1.6"><span style="margin-right:6px">${icons[moment.kind] || '•'}</span>${moment.text}</div>`;
-      feed.insertBefore(row, feed.firstChild);
-      CAREER.currentMomentIdx++;
-      if (CAREER.currentMomentIdx >= CAREER.pendingMoments.length) {
-        document.getElementById('career-match-tap').textContent = 'Continue';
-        document.getElementById('career-match-status').textContent = 'Full Time';
-      }
+    function careerShowToss(ctx, onDone) {
+      const { teamResult, myClubId, oppName } = ctx;
+      const tossWinnerId = teamResult.tossWinnerIsA ? teamResult.clubAId : teamResult.clubBId;
+      const iWonToss = tossWinnerId === myClubId;
+      const choice = teamResult.tossChoiceBat ? 'bat' : 'field';
+      const text = iWonToss ? `You won the toss and chose to ${choice} first.` : `${oppName} won the toss and chose to ${choice} first.`;
+      careerLiveFeedRow('🪙', text);
+      careerLiveTimer = setTimeout(onDone, simDelay(1100));
     }
+
+    function careerPlayPhase(type, ctx, onDone) {
+      if (type === 'bat') careerPlayBattingPhase(ctx, onDone);
+      else careerPlayBowlingPhase(ctx, onDone);
+    }
+
+    function careerPlayBattingPhase(ctx, onDone) {
+      const { bat, player } = ctx;
+      document.getElementById('career-match-status').textContent = 'Batting';
+      if (!bat) {
+        careerLiveFeedRow('🏏', careerPick(CAREER_MOMENT_TEMPLATES.didNotBat)(player.name));
+        careerLiveTimer = setTimeout(onDone, simDelay(1100));
+        return;
+      }
+      const scoreEl = document.getElementById('career-live-score');
+      const valEl = document.getElementById('career-live-score-val');
+      const subEl = document.getElementById('career-live-score-sub');
+      const labelEl = document.getElementById('career-live-phase-label');
+      scoreEl.style.display = 'block';
+      labelEl.textContent = "🏏 You're batting";
+      valEl.textContent = '0 (0)'; valEl.style.color = '#fff';
+      subEl.textContent = 'SR 0.0';
+      const skipBtn = document.getElementById('career-match-skip');
+      skipBtn.style.display = 'block';
+
+      const deliveries = careerDecomposeBatting(bat.runs, bat.balls);
+      let idx = 0, runs = 0, balls = 0;
+      function finish() {
+        scoreEl.style.display = 'none';
+        skipBtn.style.display = 'none';
+        if (bat.out) careerLiveFeedRow('🏏', careerPick(CAREER_BALL_LINES.dismissal)(player.name, careerPick(CAREER_DISMISSAL_TYPES)), '#f87171');
+        const rn = bat.runs;
+        const bucket = rn === 0 ? 'duck' : rn < 20 ? 'low' : rn < 50 ? 'solid' : rn < 100 ? 'fifty' : 'hundred';
+        careerLiveFeedRow('🏏', careerPick(CAREER_MOMENT_TEMPLATES[bucket])(player.name, rn));
+        careerLiveTimer = setTimeout(onDone, simDelay(1300));
+      }
+      skipBtn.onclick = () => { clearTimeout(careerLiveTimer); finish(); };
+      function nextBall() {
+        if (idx >= deliveries.length) { finish(); return; }
+        const val = deliveries[idx], isLast = idx === deliveries.length - 1;
+        runs += val; balls++;
+        valEl.textContent = `${runs} (${balls})`;
+        valEl.style.color = val >= 4 ? '#4ade80' : '#fff';
+        subEl.textContent = `SR ${((runs / balls) * 100).toFixed(1)}`;
+        if (!(isLast && bat.out)) {
+          if (val === 6) careerLiveFeedRow('🎉', careerPick(CAREER_BALL_LINES.six)(player.name), '#4ade80');
+          else if (val === 4) careerLiveFeedRow('🏏', careerPick(CAREER_BALL_LINES.four)(player.name), '#4ade80');
+          else if (Math.random() < 0.08) careerLiveFeedRow('😬', careerPick(CAREER_BALL_LINES.closeCall)(player.name));
+        }
+        idx++;
+        careerLiveTimer = setTimeout(nextBall, simDelay(420));
+      }
+      nextBall();
+    }
+
+    function careerPlayFieldEventsThenDone(player, fieldEvents, onDone) {
+      let i = 0;
+      function next() {
+        if (i >= fieldEvents.length) { careerLiveTimer = setTimeout(onDone, simDelay(900)); return; }
+        const clean = fieldEvents[i++];
+        careerLiveFeedRow('🧤', careerPick(CAREER_MOMENT_TEMPLATES[clean ? 'fieldingClean' : 'fieldingDropped'])(player.name));
+        careerLiveTimer = setTimeout(next, simDelay(900));
+      }
+      next();
+    }
+
+    function careerPlayBowlingPhase(ctx, onDone) {
+      const { bowl, field, player } = ctx;
+      document.getElementById('career-match-status').textContent = 'Bowling';
+      // Fielding chances happen while your team is in the field, whether or not
+      // you're the one bowling that particular over — woven into this phase's
+      // feed rather than shown separately.
+      const fieldEvents = Array.from({ length: field.involvements }, (_, i) => i < field.clean);
+
+      if (!bowl) {
+        careerLiveFeedRow('🎯', careerPick(CAREER_MOMENT_TEMPLATES.bowlingNone)());
+        careerPlayFieldEventsThenDone(player, fieldEvents, onDone);
+        return;
+      }
+      const scoreEl = document.getElementById('career-live-score');
+      const valEl = document.getElementById('career-live-score-val');
+      const subEl = document.getElementById('career-live-score-sub');
+      const labelEl = document.getElementById('career-live-phase-label');
+      scoreEl.style.display = 'block';
+      labelEl.textContent = "🎯 You're bowling";
+      valEl.textContent = '0.0-0-0'; valEl.style.color = '#fff';
+      subEl.textContent = 'Econ —';
+      const skipBtn = document.getElementById('career-match-skip');
+      skipBtn.style.display = 'block';
+
+      const oversArr = careerDecomposeBowling(bowl.overs, bowl.runsConceded, bowl.wickets);
+      const totalBalls = oversArr.reduce((s, o) => s + o.length, 0);
+      const fieldBallIdxs = new Set();
+      while (fieldBallIdxs.size < Math.min(fieldEvents.length, totalBalls)) fieldBallIdxs.add(Math.floor(Math.random() * totalBalls));
+
+      let oi = 0, bi = 0, runs = 0, wkts = 0, ballCount = 0, fieldPtr = 0;
+      function finish() {
+        scoreEl.style.display = 'none';
+        skipBtn.style.display = 'none';
+        const w = bowl.wickets;
+        if (w === 0) careerLiveFeedRow('🎯', careerPick(CAREER_MOMENT_TEMPLATES.bowlingWicketless)(player.name, bowl.overs, bowl.runsConceded));
+        else if (w < 3) careerLiveFeedRow('🎯', careerPick(CAREER_MOMENT_TEMPLATES.oneOrTwo)(player.name, w, bowl.overs, bowl.runsConceded));
+        else careerLiveFeedRow('🎯', careerPick(CAREER_MOMENT_TEMPLATES.threeFor)(player.name, w, bowl.overs, bowl.runsConceded));
+        careerLiveTimer = setTimeout(onDone, simDelay(1300));
+      }
+      skipBtn.onclick = () => { clearTimeout(careerLiveTimer); finish(); };
+      function nextBall() {
+        if (oi >= oversArr.length) { finish(); return; }
+        if (bi >= oversArr[oi].length) { oi++; bi = 0; nextBall(); return; }
+        const ball = oversArr[oi][bi];
+        runs += ball.runs; if (ball.wicket) wkts++;
+        valEl.textContent = `${oi}.${bi + 1}-${wkts}-${runs}`;
+        if (ball.wicket) { valEl.style.color = '#4ade80'; careerLiveFeedRow('🎯', careerPick(CAREER_BOWL_BALL_LINES.wicket)(player.name), '#4ade80'); }
+        else if (ball.runs === 6) { valEl.style.color = '#f87171'; careerLiveFeedRow('🏏', careerPick(CAREER_BOWL_BALL_LINES.six)(player.name), '#f87171'); }
+        else if (ball.runs === 4) { valEl.style.color = '#f87171'; careerLiveFeedRow('🏏', careerPick(CAREER_BOWL_BALL_LINES.four)(player.name), '#f87171'); }
+        else valEl.style.color = '#fff';
+        subEl.textContent = `Econ ${(runs / (oi + (bi + 1) / 6)).toFixed(1)}`;
+        if (fieldBallIdxs.has(ballCount) && fieldPtr < fieldEvents.length) {
+          const clean = fieldEvents[fieldPtr++];
+          careerLiveFeedRow('🧤', careerPick(CAREER_MOMENT_TEMPLATES[clean ? 'fieldingClean' : 'fieldingDropped'])(player.name));
+        }
+        ballCount++; bi++;
+        careerLiveTimer = setTimeout(nextBall, simDelay(380));
+      }
+      nextBall();
+    }
+
+    function careerShowInningsBreak(ctx, onDone) {
+      const { teamResult } = ctx;
+      document.getElementById('career-match-status').textContent = 'Innings Break';
+      const firstScore = teamResult.battingFirstIsA ? teamResult.scoreA : teamResult.scoreB;
+      const firstWkts = Math.min(10, teamResult.battingFirstIsA ? teamResult.wktsA : teamResult.wktsB);
+      careerLiveFeedRow('🔄', `Innings break: ${firstScore}/${firstWkts}. Second innings starting.`);
+      careerLiveTimer = setTimeout(onDone, simDelay(1300));
+    }
+
+    function careerShowVerdict(ctx) {
+      document.getElementById('career-match-status').textContent = 'Full Time';
+      careerLiveFeedRow('🏆', careerPick(CAREER_MOMENT_TEMPLATES[ctx.won ? 'matchWin' : 'matchLoss'])(ctx.oppName, ctx.myScore, ctx.oppScore));
+      careerLiveFeedRow('📣', careerPickVerdict(ctx));
+      const tapBtn = document.getElementById('career-match-tap');
+      tapBtn.style.display = 'block';
+      tapBtn.textContent = 'Continue';
+      tapBtn.onclick = () => careerFinishMatch();
+    }
+
     function careerFinishMatch() {
+      if (CAREER.pendingPoints.length) { go('s-career-points'); renderCareerPointsStep(); return; }
       if (CAREER.currentRound >= 22) { CAREER.seasonComplete = true; buildCareerSeasonEnd(); go('s-career-season-end'); }
       else { buildCareerHub(); go('s-career-hub'); }
+    }
+
+    // ── Progression: spend a point earned this match on a stat ──────────
+    // A typical season earns only ~3 points in any one discipline, and OVR is
+    // a mean across 3 stats, so +1/point (verified via Monte Carlo) moves OVR
+    // by well under 1 per season on average — nowhere near the +5 needed to
+    // reach the 50-60 promotion band. +3 puts a genuinely outstanding season
+    // (most matches earning a point) within reach of promotion on its own,
+    // while an average season still only nudges OVR a little — growth should
+    // feel real without making a single season a guaranteed ticket up.
+    const CAREER_POINT_VALUE = 3;
+    const CAREER_RATING_CAP = 80;
+    const CAREER_POINT_CATEGORY_LABEL = { bat: 'Batting Point', bowl: 'Bowling Point', field: 'Fielding Point' };
+    function careerPointStatOptions(category, role) {
+      if (category === 'bat') return ['technique', 'power', 'temperament'];
+      if (category === 'bowl') return ['control', 'threat', 'variation'];
+      return role === 'keeper' ? ['keeping', 'catching', 'groundFielding'] : ['catching', 'groundFielding'];
+    }
+    function careerPointDescription(point, p) {
+      if (point.category === 'bat') return `${p.name} crossed fifty this innings (${point.detail} runs). Choose a batting stat to sharpen.`;
+      if (point.category === 'bowl') return `${p.name} took a haul this innings (${point.detail} wickets). Choose a bowling stat to sharpen.`;
+      return `${p.name} held a clean catch. Choose a fielding stat to sharpen.`;
+    }
+    // Same full 9-bar layout as the creation reveal (career-reveal-bars),
+    // reused here for consistency rather than a one-off button list: every
+    // stat shown, the ones this point can actually go into left at full
+    // opacity, everything else dimmed the same way the reveal screen dims
+    // off-role stats. Deliberately doesn't preview the destination value —
+    // only the current rating is shown pre-pick; the raise itself is revealed
+    // as an animation + a line of copy once you've actually chosen.
+    function renderCareerPointsStep() {
+      if (!CAREER.pendingPoints.length) { careerFinishMatch(); return; }
+      const point = CAREER.pendingPoints[0];
+      const p = CAREER.player;
+      document.getElementById('points-eyebrow').textContent = `${CAREER_POINT_CATEGORY_LABEL[point.category]} · ${CAREER.pendingPoints.length} to spend`;
+      document.getElementById('points-desc').textContent = careerPointDescription(point, p);
+      document.getElementById('points-result').innerHTML = '';
+      document.getElementById('points-continue').innerHTML = '';
+
+      const eligible = careerPointStatOptions(point.category, p.role);
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const barsEl = document.getElementById('points-bars');
+      barsEl.innerHTML = CAREER_RATING_ORDER.map(key => {
+        const val = p.ratings[key];
+        const canPick = eligible.includes(key) && val < CAREER_RATING_CAP;
+        const color = ratingColor(val);
+        return `<div class="stage-bar-row" data-stat="${key}" style="opacity:${canPick ? 1 : 0.35};cursor:${canPick ? 'pointer' : 'default'}" ${canPick ? `onclick="careerSpendPoint('${key}')"` : ''}>
+          <div class="stage-bar-label">${CAREER_RATING_LABELS[key]}</div>
+          <div class="stage-bar-track"><div class="stage-bar-fill" data-pct="${val}" style="width:${reduceMotion ? val : 0}%;background:${color};transition:width .6s var(--ease-out-strong)"></div></div>
+          <div class="stage-bar-pct" id="points-val-${key}" style="color:${color}">${val}</div>
+        </div>`;
+      }).join('');
+      if (!reduceMotion) {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          barsEl.querySelectorAll('.stage-bar-fill').forEach((bar, i) => {
+            bar.style.transitionDelay = `${Math.min(i * 35, 250)}ms`;
+            bar.style.width = bar.dataset.pct + '%';
+          });
+        }));
+      }
+    }
+    function careerSpendPoint(stat) {
+      const p = CAREER.player;
+      const before = p.ratings[stat];
+      const after = Math.min(CAREER_RATING_CAP, before + CAREER_POINT_VALUE);
+      const delta = after - before;
+      p.ratings[stat] = after;
+      p.ovr = computeOVR(p.ratings, p.role);
+
+      // Lock every row so this can't be picked twice while the reveal plays.
+      document.querySelectorAll('#points-bars .stage-bar-row').forEach(row => { row.onclick = null; row.style.cursor = 'default'; });
+
+      const row = document.querySelector(`#points-bars [data-stat="${stat}"]`);
+      const fill = row.querySelector('.stage-bar-fill');
+      const numEl = document.getElementById(`points-val-${stat}`);
+      const color = ratingColor(after);
+      row.style.opacity = 1;
+      fill.style.background = color;
+      numEl.style.color = color;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) {
+        fill.style.width = after + '%';
+        numEl.textContent = after;
+      } else {
+        fill.style.width = after + '%';
+        let cur = before;
+        const tick = () => {
+          cur++;
+          numEl.textContent = cur;
+          if (cur < after) setTimeout(tick, 90);
+        };
+        setTimeout(tick, 250);
+      }
+
+      document.getElementById('points-result').innerHTML = `<div style="font-size:16px;font-weight:900;color:#f9c846">Your ${CAREER_RATING_LABELS[stat]} improved by ${delta}!</div>`;
+      CAREER.pendingPoints.shift();
+      const remaining = CAREER.pendingPoints.length;
+      document.getElementById('points-continue').innerHTML = `<button class="btn-start" style="width:100%;margin-top:14px" onclick="renderCareerPointsStep()">${remaining > 0 ? `Next Point (${remaining} left)` : 'Continue'}</button>`;
     }
 
     // ── Season hub ──────────────────────────────────────────────────────
@@ -15775,6 +16267,7 @@
       document.getElementById('hub-league-name').textContent = CAREER_LEAGUES[CAREER.leagueId].name;
       document.getElementById('hub-club-name').textContent = CAREER.myClubName;
       document.getElementById('hub-round').textContent = CAREER.currentRound >= 22 ? '22/22' : `${CAREER.currentRound + 1}/22`;
+      document.getElementById('hub-player-ovr').textContent = CAREER.player.ovr;
 
       const fixtureEl = document.getElementById('hub-next-fixture');
       const playBtn = document.getElementById('hub-play-btn');
@@ -15809,10 +16302,10 @@
 
       const bs = CAREER.seasonStats.bat, bw = CAREER.seasonStats.bowl;
       const avg = bs.outs ? (bs.runs / bs.outs).toFixed(1) : bs.runs.toFixed(1);
-      const econ = bw.overs ? (bw.runsConceded / bw.overs).toFixed(1) : '—';
+      const bowlAvg = bw.wickets ? (bw.runsConceded / bw.wickets).toFixed(1) : '—';
       document.getElementById('hub-season-stats').innerHTML = `
         <div class="stat-card"><div class="stat-card-label">Runs</div><div class="stat-card-val">${bs.runs}</div><div class="stat-card-sub">Avg ${avg}</div></div>
-        <div class="stat-card"><div class="stat-card-label">Wickets</div><div class="stat-card-val">${bw.wickets}</div><div class="stat-card-sub">Econ ${econ}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Wickets</div><div class="stat-card-val">${bw.wickets}</div><div class="stat-card-sub">Avg ${bowlAvg}</div></div>
         <div class="stat-card"><div class="stat-card-label">Fielding</div><div class="stat-card-val">${CAREER.seasonStats.field.clean}</div><div class="stat-card-sub">of ${CAREER.seasonStats.field.involvements} chances</div></div>`;
 
       buildCareerMatchHistory();
@@ -15908,12 +16401,34 @@
         <colgroup><col style="width:40%"><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:15%"></colgroup>
         <thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Econ</th></tr></thead><tbody>${rows}</tbody></table>`;
     }
+    function careerScorecardMetaHTML(entry, sc, clubA, clubB) {
+      const tr = entry.teamResult;
+      if (!tr) return ''; // older saved matches predate this field — degrade quietly, not a crash
+      const tossWinner = CAREER.clubs[tr.tossWinnerIsA ? tr.clubAId : tr.clubBId];
+      const tossChoice = tr.tossChoiceBat ? 'bat' : 'field';
+      const winnerClub = CAREER.clubs[tr.winnerId];
+      const secondBattingId = tr.battingFirstIsA ? tr.clubBId : tr.clubAId;
+      const firstScore = tr.battingFirstIsA ? tr.scoreA : tr.scoreB;
+      const secondScore = tr.battingFirstIsA ? tr.scoreB : tr.scoreA;
+      const secondWkts = tr.battingFirstIsA ? tr.wktsB : tr.wktsA;
+      const margin = tr.winnerId === secondBattingId
+        ? (w => `by ${w} wicket${w === 1 ? '' : 's'}`)(Math.max(1, 10 - secondWkts))
+        : (r => `by ${r} run${r === 1 ? '' : 's'}`)(Math.abs(firstScore - secondScore));
+      // Overs "used" isn't separately simulated — it's the real sum of the
+      // bowling card directly below, so this can never drift from what the
+      // tables actually show.
+      const oversA = sc.bowlingB.reduce((s, p) => s + p.overs, 0);
+      const oversB = sc.bowlingA.reduce((s, p) => s + p.overs, 0);
+      return `<div>${tossWinner.name} won the toss, chose to ${tossChoice} first.</div>
+        <div>${winnerClub.name} won ${margin} · ${clubA.name} ${oversA} ov · ${clubB.name} ${oversB} ov</div>`;
+    }
     function buildCareerScorecard(matchIdx) {
       const entry = CAREER.matchLog[matchIdx];
       const sc = entry.scorecard;
       const clubA = CAREER.clubs[sc.clubAId], clubB = CAREER.clubs[sc.clubBId];
       document.getElementById('scorecard-title').textContent = `${clubA.name} vs ${clubB.name}`;
       document.getElementById('scorecard-result').textContent = entry.won ? `You won · ${entry.myScore}-${entry.oppScore}` : `You lost · ${entry.oppScore}-${entry.myScore}`;
+      document.getElementById('scorecard-meta').innerHTML = careerScorecardMetaHTML(entry, sc, clubA, clubB);
       document.getElementById('scorecard-content').innerHTML = `
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${clubA.name} Batting</div>
         ${careerBattingCardHTML(sc.battingA)}
@@ -15992,6 +16507,7 @@
           <div class="perf-row"><span class="perf-label">Record</span><span class="perf-val" style="color:#e0e0f0">W${wins} L${losses}</span></div>
           <div class="perf-row"><span class="perf-label">Runs</span><span class="perf-val" style="color:#e0e0f0">${stats.bat.runs}</span></div>
           <div class="perf-row"><span class="perf-label">Wickets</span><span class="perf-val" style="color:#e0e0f0">${stats.bowl.wickets}</span></div>
+          <div class="perf-row"><span class="perf-label">Rating</span><span class="perf-val" style="color:#e0e0f0">${CAREER.seasonStartOvr} → ${player.ovr}</span></div>
         </div>`;
 
       const barResult = checkPerformanceBar(player.role, stats);
@@ -16076,7 +16592,8 @@
       if (error || !data) { alert('No saved game found.'); return; }
       try {
         Object.assign(CAREER, data.state);
-        if (CAREER.seasonComplete) { buildCareerSeasonEnd(); go('s-career-season-end'); }
+        if (CAREER.pendingPoints && CAREER.pendingPoints.length) { go('s-career-points'); renderCareerPointsStep(); }
+        else if (CAREER.seasonComplete) { buildCareerSeasonEnd(); go('s-career-season-end'); }
         else { go('s-career-hub'); buildCareerHub(); }
       } catch (e) {
         alert('Could not load saved game. It may be corrupted.');
