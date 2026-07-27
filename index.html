@@ -15639,7 +15639,6 @@
       return Math.max(0.3, (rating - 10) / 20);
     }
     function generateTeamInnings(club, teamScore, teamWkts, myBat) {
-      const card = [];
       let remainingScore = teamScore, remainingWkts = teamWkts;
       // A real innings ends with at most 2 batters not out — the pair at the
       // crease when it finishes — or exactly 1 if all 10 wickets genuinely
@@ -15648,8 +15647,8 @@
       // 3+ not-outs, which is impossible, and gave no sense of an innings
       // actually progressing through the order.
       let notOutBudget = teamWkts >= 10 ? 1 : 2;
+      const myRow = myBat ? { id: 'me', name: CAREER.player.name, clubId: club.id, clubName: club.name, runs: myBat.runs, balls: myBat.balls, out: myBat.out, isTrackedPlayer: true } : null;
       if (myBat) {
-        card.push({ id: 'me', name: CAREER.player.name, clubId: club.id, clubName: club.name, runs: myBat.runs, balls: myBat.balls, out: myBat.out, isTrackedPlayer: true });
         remainingScore = Math.max(0, teamScore - myBat.runs);
         if (myBat.out) remainingWkts = Math.max(0, teamWkts - 1);
         else notOutBudget = Math.max(0, notOutBudget - 1); // tracked player already occupies one of the crease slots
@@ -15681,6 +15680,7 @@
       const rawTotal = rawRuns.reduce((s, x) => s + x, 0) || 1;
       const scale = remainingScore / rawTotal;
       let assigned = 0;
+      const card = [];
       batted.forEach((p, i) => {
         const runs = i < batted.length - 1 ? Math.max(0, Math.round(rawRuns[i] * scale)) : Math.max(0, remainingScore - assigned);
         assigned += runs;
@@ -15688,13 +15688,20 @@
         const balls = Math.max(1, Math.round(runs / sr));
         card.push({ id: p.id, name: p.name, clubId: club.id, clubName: club.name, runs, balls, out: i < dismissed, isTrackedPlayer: false });
       });
+      if (!myRow) return card;
+      // Insert the tracked player at their real batting-order slot instead
+      // of always leading the card off — this used to unconditionally push
+      // "me" first, so a Middle Order batter, All-Rounder or Keeper-Batsman
+      // batting 5th/6th/7th always *looked* like they'd opened the innings
+      // on the scorecard screen, even though the stats math elsewhere
+      // already used the correct position.
+      card.splice(Math.min(card.length, Math.max(0, myBat.pos - 1)), 0, myRow);
       return card;
     }
     function generateTeamBowling(club, oppWktsLost, oppScore, teamOvers, myBowl) {
-      const card = [];
       let remainingWkts = oppWktsLost, remainingRuns = oppScore;
+      const myRow = myBowl ? { id: 'me', name: CAREER.player.name, clubId: club.id, clubName: club.name, overs: myBowl.overs, runsConceded: myBowl.runsConceded, wickets: myBowl.wickets, isTrackedPlayer: true } : null;
       if (myBowl) {
-        card.push({ id: 'me', name: CAREER.player.name, clubId: club.id, clubName: club.name, overs: myBowl.overs, runsConceded: myBowl.runsConceded, wickets: myBowl.wickets, isTrackedPlayer: true });
         remainingWkts = Math.max(0, oppWktsLost - myBowl.wickets);
         remainingRuns = Math.max(0, oppScore - myBowl.runsConceded);
       }
@@ -15772,11 +15779,20 @@
       const rawTotal = rawRuns.reduce((s, x) => s + x, 0) || 1;
       const scale = remainingRuns / rawTotal;
       let assigned = 0;
+      const card = [];
       bowlers.forEach((p, i) => {
         const runsConceded = i < bowlers.length - 1 ? Math.max(0, Math.round(rawRuns[i] * scale)) : Math.max(0, remainingRuns - assigned);
         assigned += runsConceded;
         card.push({ id: p.id, name: p.name, clubId: club.id, clubName: club.name, overs: overs[i], runsConceded, wickets: wktsByBowler[i], isTrackedPlayer: false });
       });
+      if (!myRow) return card;
+      // Same fix as generateTeamInnings: insert at the slot that matches
+      // careerBowlSlot (opening vs first change) instead of always leading
+      // the card off, so a first-change bowler doesn't visibly appear to
+      // have opened the attack. myBowl is only ever passed for CAREER's own
+      // club, so CAREER.player is guaranteed to be the right person here.
+      const insertIdx = careerBowlSlot(CAREER.player) === 'opening' ? 0 : Math.min(card.length, 1);
+      card.splice(insertIdx, 0, myRow);
       return card;
     }
     function generateMatchScorecard(clubA, clubB, teamResult, myBat, myBowl) {
