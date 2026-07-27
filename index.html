@@ -2511,63 +2511,74 @@
       .career-result-card { animation: none !important; opacity: 1 !important }
     }
 
-    /* CAREER MODE — live milestone toast: OUT / double figures / fifty /
-       century need to land harder than just another line lost in the
-       scrolling feed, so this pops as a fixed overlay above everything
-       else rather than competing with the ball-by-ball rows underneath. */
-    .career-milestone-toast {
-      position: fixed;
-      top: 16%;
-      left: 50%;
-      transform: translate(-50%, 0);
-      z-index: 50;
-      padding: 14px 26px;
+    /* CAREER MODE — live moment flash: OUT / WICKET / fifty / century /
+       spell done / final score need to land harder than just another line
+       lost in the scrolling feed — this overlays the live score box itself
+       (where the user's eyes already are, mid-ball) rather than a separate
+       element competing for attention somewhere else on screen. */
+    #career-live-score {
+      position: relative;
+      overflow: hidden
+    }
+
+    .career-inbox-flash {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       border-radius: 12px;
-      text-align: center;
       opacity: 0;
       pointer-events: none;
-      white-space: nowrap;
-      max-width: 88vw;
+      z-index: 3;
+      padding: 8px
     }
 
-    .career-milestone-toast.show {
-      animation: career-milestone-pop 1.7s var(--ease-out-strong) both
+    .career-inbox-flash.show {
+      animation: career-inbox-flash-pop 1.6s var(--ease-out-strong) both
     }
 
-    .career-milestone-toast.cmt-out {
+    .career-inbox-flash.cif-out,
+    .career-inbox-flash.cif-spell {
       background: linear-gradient(135deg, #160808, #0e0606);
-      border: 1px solid #3a1414;
       color: #f87171
     }
 
-    .career-milestone-toast.cmt-milestone {
+    .career-inbox-flash.cif-milestone,
+    .career-inbox-flash.cif-wicket {
       background: linear-gradient(135deg, #0c2006, #081408);
-      border: 1px solid #2a5a14;
       color: #4ade80
     }
 
-    .cmt-icon {
-      font-size: 30px;
+    .career-inbox-flash.cif-final {
+      background: #14141c;
+      color: #fff
+    }
+
+    .cif-icon {
+      font-size: 26px;
       display: block;
       margin-bottom: 4px
     }
 
-    .cmt-text {
-      font-size: 16px;
+    .cif-text {
+      font-size: 15px;
       font-weight: 900;
-      letter-spacing: -0.2px
+      letter-spacing: -0.2px;
+      text-align: center
     }
 
-    @keyframes career-milestone-pop {
-      0% { opacity: 0; transform: translate(-50%, -16px) scale(.85) }
-      15% { opacity: 1; transform: translate(-50%, 0) scale(1.06) }
-      25% { opacity: 1; transform: translate(-50%, 0) scale(1) }
-      82% { opacity: 1; transform: translate(-50%, 0) scale(1) }
-      100% { opacity: 0; transform: translate(-50%, -10px) scale(.96) }
+    @keyframes career-inbox-flash-pop {
+      0% { opacity: 0; transform: scale(.9) }
+      15% { opacity: 1; transform: scale(1.03) }
+      25% { opacity: 1; transform: scale(1) }
+      82% { opacity: 1; transform: scale(1) }
+      100% { opacity: 0; transform: scale(1) }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .career-milestone-toast.show { animation: none !important; opacity: 1 !important }
+      .career-inbox-flash.show { animation: none !important; opacity: 1 !important }
     }
 
     .sc-result-banner {
@@ -14988,7 +14999,6 @@
   </div>
 
   <div id="s-career-match" class="screen">
-    <div id="career-milestone-toast" class="career-milestone-toast" style="display:none"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px">
       <div id="career-match-title" style="text-align:left;font-size:13px;font-weight:800;color:#9090a8;letter-spacing:0.5px">—</div>
       <div id="career-match-status" style="font-size:11px;font-weight:800;color:#606070;letter-spacing:1px;text-transform:uppercase">Live</div>
@@ -14999,6 +15009,7 @@
       <div id="career-live-phase-label" style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">—</div>
       <div id="career-live-score-val" style="font-size:32px;font-weight:900;color:#fff">—</div>
       <div id="career-live-score-sub" style="font-size:12px;color:#9090a8;margin-top:2px">—</div>
+      <div id="career-inbox-flash" class="career-inbox-flash"></div>
     </div>
     <div id="career-match-feed" style="width:100%;display:flex;flex-direction:column;gap:8px;min-height:160px;margin-bottom:18px"></div>
     <div id="career-match-result" style="display:none;width:100%"></div>
@@ -15698,8 +15709,19 @@
     function careerRatingWeight(rating) {
       return Math.max(0.3, (rating - 10) / 20);
     }
-    function generateTeamInnings(club, teamScore, teamWkts, myBat) {
+    function generateTeamInnings(club, teamScore, teamWkts, teamOvers, myBat) {
       let remainingScore = teamScore, remainingWkts = teamWkts;
+      // Balls faced by the "others" is a real, known quantity too — the
+      // innings' actual length (teamOvers, the same figure the bowling card
+      // is conserved against) minus whatever the tracked player personally
+      // faced — not an independent per-player guess. This used to compute
+      // each contributor's balls purely from their own rating via an
+      // unconstrained pseudo strike-rate with no connection to how long the
+      // innings actually lasted, so the batting card's own ball total
+      // routinely came out 50-150+ balls short of the real over count —
+      // "all out for 196" next to a batting list whose own numbers only
+      // accounted for a third of the actual overs bowled at them.
+      let remainingBalls = Math.max(0, Math.round(teamOvers * 6));
       // A real innings ends with at most 2 batters not out — the pair at the
       // crease when it finishes — or exactly 1 if all 10 wickets genuinely
       // fell (last man stranded with no partner left). Marking dismissals as
@@ -15710,6 +15732,7 @@
       const myRow = myBat ? { id: 'me', name: CAREER.player.name, clubId: club.id, clubName: club.name, runs: myBat.runs, balls: myBat.balls, out: myBat.out, isTrackedPlayer: true } : null;
       if (myBat) {
         remainingScore = Math.max(0, teamScore - myBat.runs);
+        remainingBalls = Math.max(0, remainingBalls - myBat.balls);
         if (myBat.out) remainingWkts = Math.max(0, teamWkts - 1);
         else notOutBudget = Math.max(0, notOutBudget - 1); // tracked player already occupies one of the crease slots
       }
@@ -15721,6 +15744,9 @@
       const dismissed = Math.min(contributors.length, remainingWkts);
       const battedCount = Math.min(contributors.length, dismissed + notOutBudget);
       const batted = contributors.slice(0, battedCount);
+      // Every batter faced at least 1 ball, so the target can't be pushed
+      // below however many of them there are.
+      const ballsTarget = Math.max(batted.length, remainingBalls);
       const weights = batted.map(p => Math.max(0.15, 1 - p.battingOrder * 0.07) * careerRatingWeight(p.rating));
       const totalW = weights.reduce((s, w) => s + w, 0) || 1;
       // Per-player noise is mean-zero only in expectation — for any one match
@@ -15739,13 +15765,27 @@
       });
       const rawTotal = rawRuns.reduce((s, x) => s + x, 0) || 1;
       const scale = remainingScore / rawTotal;
-      let assigned = 0;
+      let assigned = 0, ballsAssigned = 0;
       const card = [];
-      batted.forEach((p, i) => {
+      const runsArr = batted.map((p, i) => {
         const runs = i < batted.length - 1 ? Math.max(0, Math.round(rawRuns[i] * scale)) : Math.max(0, remainingScore - assigned);
         assigned += runs;
+        return runs;
+      });
+      // Each batter's own rating still flavours their pace (a higher-rated
+      // batter needs fewer balls per run) — but like runs above, the whole
+      // set is then rescaled to the real, known ball total rather than left
+      // as each player's independent, unconstrained guess.
+      const rawBalls = batted.map((p, i) => {
         const sr = 0.5 + p.rating / 90 + Math.random() * 0.3;
-        const balls = Math.max(1, Math.round(runs / sr));
+        return Math.max(0.5, runsArr[i] / sr);
+      });
+      const rawBallsTotal = rawBalls.reduce((s, x) => s + x, 0) || 1;
+      const ballsScale = ballsTarget / rawBallsTotal;
+      batted.forEach((p, i) => {
+        const runs = runsArr[i];
+        const balls = i < batted.length - 1 ? Math.max(1, Math.round(rawBalls[i] * ballsScale)) : Math.max(1, ballsTarget - ballsAssigned);
+        ballsAssigned += balls;
         card.push({ id: p.id, name: p.name, clubId: club.id, clubName: club.name, runs, balls, out: i < dismissed, isTrackedPlayer: false });
       });
       if (!myRow) return card;
@@ -15858,8 +15898,8 @@
     function generateMatchScorecard(clubA, clubB, teamResult, myBat, myBowl) {
       return {
         clubAId: clubA.id, clubBId: clubB.id,
-        battingA: generateTeamInnings(clubA, teamResult.scoreA, teamResult.wktsA, clubA.isMine ? myBat : null),
-        battingB: generateTeamInnings(clubB, teamResult.scoreB, teamResult.wktsB, clubB.isMine ? myBat : null),
+        battingA: generateTeamInnings(clubA, teamResult.scoreA, teamResult.wktsA, teamResult.oversA, clubA.isMine ? myBat : null),
+        battingB: generateTeamInnings(clubB, teamResult.scoreB, teamResult.wktsB, teamResult.oversB, clubB.isMine ? myBat : null),
         bowlingA: generateTeamBowling(clubA, teamResult.wktsB, teamResult.scoreB, teamResult.oversB, clubA.isMine ? myBowl : null),
         bowlingB: generateTeamBowling(clubB, teamResult.wktsA, teamResult.scoreA, teamResult.oversA, clubB.isMine ? myBowl : null),
       };
@@ -15932,7 +15972,13 @@
     }
     const CAREER_BOWL_SLOT_LABEL = { opening: 'Opening Bowler', firstChange: 'First Change' };
     function simTrackedPlayerInnings(player, myTeamScore, myTeamWktsLost, myTeamOvers) {
-      const pos = CAREER_BAT_POSITION[careerPosKey(player)];
+      // A lookup miss (an old save from before Specialist Keeper was
+      // removed, still carrying that type) must not silently become NaN
+      // here — pos feeds every downstream calculation, so one bad lookup
+      // would cascade into NaN runs/balls for the tracked player AND, via
+      // generateTeamInnings's remainder logic, every other batter on the
+      // card too. Fall back to a sane middle-order slot rather than that.
+      const pos = CAREER_BAT_POSITION[careerPosKey(player)] || 6;
       if (pos - 1 > myTeamWktsLost && Math.random() > 0.3) return null;
       const r = player.ratings;
       const skill = r.technique * 0.4 + r.power * 0.35 + r.temperament * 0.25;
@@ -16281,21 +16327,21 @@
       feed.insertBefore(row, feed.firstChild);
       while (feed.children.length > 12) feed.removeChild(feed.lastChild);
     }
-    // Fixed-position overlay, separate from the scrolling commentary feed —
-    // OUT/double-figures/fifty/century need to be unmissable even if the
-    // feed has already scrolled several rows past by the time the user
-    // looks up, not just another line that scrolls away with the rest.
+    // Overlays the live score box itself (the "batter's score" box, also
+    // reused for bowling figures) rather than a separate element — that's
+    // exactly where the user's eyes already are mid-ball, so OUT/WICKET/
+    // fifty/century/spell-done/final-score land right on top of the number
+    // that just changed instead of pulling attention somewhere else.
     let careerMilestoneTimer = null;
-    function careerShowMilestoneToast(icon, text, kind) {
-      const el = document.getElementById('career-milestone-toast');
+    function careerShowInboxFlash(icon, text, kind) {
+      const el = document.getElementById('career-inbox-flash');
       clearTimeout(careerMilestoneTimer);
-      el.className = 'career-milestone-toast ' + kind;
-      el.innerHTML = `<span class="cmt-icon">${icon}</span><span class="cmt-text">${text}</span>`;
-      el.style.display = 'block';
+      el.className = 'career-inbox-flash ' + kind;
+      el.innerHTML = `<span class="cif-icon">${icon}</span><span class="cif-text">${text}</span>`;
       void el.offsetWidth; // restart the animation if one is already mid-flight
       el.classList.add('show');
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      careerMilestoneTimer = setTimeout(() => { el.style.display = 'none'; el.classList.remove('show'); }, simDelay(reduceMotion ? 1300 : 1700));
+      careerMilestoneTimer = setTimeout(() => { el.classList.remove('show'); }, simDelay(reduceMotion ? 1300 : 1700));
     }
     function careerShowSpeedBar() {
       const bar = document.getElementById('career-speed-bar');
@@ -16380,8 +16426,7 @@
       document.getElementById('career-match-result').style.display = 'none';
       document.getElementById('career-match-result').innerHTML = '';
       clearTimeout(careerMilestoneTimer);
-      document.getElementById('career-milestone-toast').style.display = 'none';
-      document.getElementById('career-milestone-toast').className = 'career-milestone-toast';
+      document.getElementById('career-inbox-flash').className = 'career-inbox-flash';
       document.getElementById('career-match-skip').style.display = 'none';
       document.getElementById('career-match-tap').style.display = 'none';
       careerShowSpeedBar();
@@ -16662,11 +16707,14 @@
       const deliveries = careerDecomposeBatting(bat.runs, bat.balls);
       let idx = 0, runs = 0, balls = 0;
       function finish() {
-        scoreEl.style.display = 'none';
         skipBtn.style.display = 'none';
         if (bat.out) {
           careerLiveFeedRow('🏏', careerPick(CAREER_BALL_LINES.dismissal)(player.name, careerPick(CAREER_DISMISSAL_TYPES)), '#f87171');
-          careerShowMilestoneToast('❌', `OUT — ${bat.runs} (${bat.balls})`, 'cmt-out');
+          careerShowInboxFlash('❌', `OUT — ${bat.runs} (${bat.balls})`, 'cif-out');
+        } else {
+          // "What you finished on" — the not-out case has no dismissal to
+          // flash, so the closing figures themselves are the pop.
+          careerShowInboxFlash('🏏', `Innings over — ${bat.runs}* (${bat.balls})`, 'cif-final');
         }
         const rn = bat.runs;
         let bucket = rn === 0 ? 'duck' : rn < 20 ? 'low' : rn < 50 ? 'solid' : rn < 100 ? 'fifty' : 'hundred';
@@ -16675,7 +16723,10 @@
         // narrate getting out on an innings that didn't end in one.
         if (!bat.out && CAREER_MOMENT_TEMPLATES[bucket + 'NotOut']) bucket += 'NotOut';
         careerLiveFeedRow('🏏', careerPick(CAREER_MOMENT_TEMPLATES[bucket])(player.name, rn));
-        careerLiveTimer = setTimeout(onDone, simDelay(1300));
+        // Score box stays up (with the flash overlaying it) instead of
+        // vanishing the instant the innings ends, so there's actually time
+        // to see it before the next phase takes over.
+        careerLiveTimer = setTimeout(() => { scoreEl.style.display = 'none'; onDone(); }, simDelay(1600));
       }
       skipBtn.onclick = () => { clearTimeout(careerLiveTimer); finish(); };
       function nextBall() {
@@ -16689,9 +16740,9 @@
         // Milestone pop fires the instant the threshold is actually crossed
         // (not just whenever the final tally happens to land past it), same
         // moment the live score ticks over.
-        if (prevRuns < 100 && runs >= 100) careerShowMilestoneToast('💯', `${player.name} brings up the century!`, 'cmt-milestone');
-        else if (prevRuns < 50 && runs >= 50) careerShowMilestoneToast('⭐', `${player.name} raises the bat — fifty!`, 'cmt-milestone');
-        else if (prevRuns < 10 && runs >= 10) careerShowMilestoneToast('🔟', `${player.name} into double figures`, 'cmt-milestone');
+        if (prevRuns < 100 && runs >= 100) careerShowInboxFlash('💯', 'CENTURY!', 'cif-milestone');
+        else if (prevRuns < 50 && runs >= 50) careerShowInboxFlash('⭐', 'FIFTY!', 'cif-milestone');
+        else if (prevRuns < 10 && runs >= 10) careerShowInboxFlash('🔟', 'Double figures', 'cif-milestone');
         const wktBump = (isLast && bat.out) ? 1 : 0;
         // The team's overs can't just be your own balls/6 — your partner is
         // facing deliveries too. Assuming roughly even strike rotation, the
@@ -16759,13 +16810,16 @@
 
       let oi = 0, bi = 0, runs = 0, wkts = 0, ballCount = 0, fieldPtr = 0;
       function finish() {
-        scoreEl.style.display = 'none';
         skipBtn.style.display = 'none';
         const w = bowl.wickets;
         if (w === 0) careerLiveFeedRow('🎯', careerPick(CAREER_MOMENT_TEMPLATES.bowlingWicketless)(player.name, bowl.overs, bowl.runsConceded));
         else if (w < 3) careerLiveFeedRow('🎯', careerPick(CAREER_MOMENT_TEMPLATES.oneOrTwo)(player.name, w, bowl.overs, bowl.runsConceded));
         else careerLiveFeedRow('🎯', careerPick(CAREER_MOMENT_TEMPLATES.threeFor)(player.name, w, bowl.overs, bowl.runsConceded));
-        careerLiveTimer = setTimeout(onDone, simDelay(1300));
+        careerShowInboxFlash('🎯', `Spell done — ${bowl.overs}-${bowl.runsConceded}-${w}`, 'cif-spell');
+        // Score box stays up (with the flash overlaying it) instead of
+        // vanishing the instant the spell ends, so there's actually time
+        // to see it before the next phase takes over.
+        careerLiveTimer = setTimeout(() => { scoreEl.style.display = 'none'; onDone(); }, simDelay(1600));
       }
       skipBtn.onclick = () => { clearTimeout(careerLiveTimer); finish(); };
       function nextBall() {
@@ -16774,7 +16828,11 @@
         const ball = oversArr[oi][bi];
         runs += ball.runs; if (ball.wicket) wkts++;
         valEl.textContent = `${oi}.${bi + 1}-${wkts}-${runs}`;
-        if (ball.wicket) { valEl.style.color = '#4ade80'; careerLiveFeedRow('🎯', careerPick(CAREER_BOWL_BALL_LINES.wicket)(player.name), '#4ade80'); }
+        if (ball.wicket) {
+          valEl.style.color = '#4ade80';
+          careerLiveFeedRow('🎯', careerPick(CAREER_BOWL_BALL_LINES.wicket)(player.name), '#4ade80');
+          careerShowInboxFlash('🎯', 'WICKET!', 'cif-wicket');
+        }
         else if (ball.runs === 6) { valEl.style.color = '#f87171'; careerLiveFeedRow('🏏', careerPick(CAREER_BOWL_BALL_LINES.six)(player.name), '#f87171'); }
         else if (ball.runs === 4) { valEl.style.color = '#f87171'; careerLiveFeedRow('🏏', careerPick(CAREER_BOWL_BALL_LINES.four)(player.name), '#f87171'); }
         else valEl.style.color = '#fff';
