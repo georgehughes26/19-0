@@ -14924,17 +14924,10 @@
   </div>
 
   <div id="s-career-team-reveal" class="screen">
-    <div style="width:100%;text-align:left;margin-bottom:20px">
-      <div id="team-reveal-league-name" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">—</div>
-      <div style="font-size:24px;font-weight:900;color:#fff">Trials Complete</div>
-    </div>
-    <div id="team-reveal-text" style="width:100%;font-size:14px;color:#c0c0d8;line-height:1.6;text-align:left;margin-bottom:20px"></div>
-    <div class="player-card card-in" style="cursor:default;padding:16px;margin-bottom:24px;gap:14px;width:100%">
-      <div style="text-align:left;min-width:0;flex:1">
-        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">You've Signed For</div>
-        <div id="team-reveal-name" style="font-size:19px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
-      </div>
-      <div id="team-reveal-badge" class="rating-badge rb-bronze">—</div>
+    <div style="padding:0 0 8px;width:100%">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6060a0;margin-bottom:2px">Breaking News</div>
+      <div style="height:1px;background:linear-gradient(90deg,#f9c846,transparent);margin-bottom:16px"></div>
+      <div id="team-reveal-article" style="font-size:13px;color:#c0c0d8;line-height:1.6;text-align:left;width:100%"></div>
     </div>
     <button class="btn-start" style="width:100%" onclick="beginCareerSeason()">Start Local Club Season</button>
     <button class="btn-auth-small" onclick="go('s-career-pick-league')" style="margin-top:14px">← Back</button>
@@ -15513,12 +15506,47 @@
         squad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true };
         CAREER.draft.assignedClubSquad = squad;
       }
-      document.getElementById('team-reveal-league-name').textContent = league.name;
-      document.getElementById('team-reveal-text').textContent = `Your trials impressed the right people. ${club.name} want to sign you for the new season, coming in for ${CAREER.draft.replacedPlayerName}.`;
-      document.getElementById('team-reveal-name').textContent = club.name;
-      const badge = document.getElementById('team-reveal-badge');
-      badge.textContent = club.rating;
-      badge.className = 'rating-badge ' + ratingBadgeClass(club.rating);
+      const p = CAREER.player;
+      const roleLabel = CAREER_ROLE_LABEL[p.role];
+      // A believable "club reaction" quote — pick a real squad-mate (not
+      // the tracked player) to attribute it to, same shape as the pundit
+      // quotes on the WTC captain-announcement news screen.
+      const teammates = CAREER.draft.assignedClubSquad.filter(x => !x.isTrackedPlayer);
+      const captain = [...teammates].sort((a, b) => b.rating - a.rating)[0];
+      const captainQuote = careerPick([
+        `"We've had half an eye on ${p.name} for a while now — the trials just confirmed what we already thought. Delighted to get this one over the line."`,
+        `"Losing ${CAREER.draft.replacedPlayerName} leaves a gap, but ${p.name} coming in gives us real competition for places. Good business for the club."`,
+        `"${p.name}'s attitude in the nets sold it as much as the ability did. Excited to see what they can do for us this season."`,
+      ]);
+      document.getElementById('team-reveal-article').innerHTML = `
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">🏏 ${league.name}</div>
+        <div style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px">${club.name} sign promising ${roleLabel.toLowerCase()} ${p.name}</div>
+        <div style="font-size:12px;color:#6060a0;margin-bottom:20px">Trials confirmed ahead of the new season · In for ${CAREER.draft.replacedPlayerName}</div>
+
+        <div style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 16px;margin-bottom:18px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</div>
+              <div style="font-size:32px;font-weight:900;color:${ratingColor(p.ovr)};line-height:1;margin-bottom:4px">${p.ovr}</div>
+              <div style="font-size:11px;color:#8080a0">${roleLabel}</div>
+            </div>
+            <div style="width:1px;background:#252535;margin:4px 0"></div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${club.name}</div>
+              <div style="font-size:32px;font-weight:900;color:${ratingColor(club.rating)};line-height:1;margin-bottom:4px">${club.rating}</div>
+              <div style="font-size:11px;color:#8080a0">squad rating</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:13px;color:#c0c0d8;line-height:1.7;margin-bottom:18px">${club.name} have moved to add depth ahead of the new ${league.tier} campaign, bringing in ${p.name} on the back of a strong trial period. It's the end of the road at the club for ${CAREER.draft.replacedPlayerName}, who makes way in the squad.</div>
+
+        ${captain ? `<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:10px">Club Reaction</div>
+        <div style="background:#0a0a14;border-left:3px solid #4ade80;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:6px">
+          <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${captainQuote}</div>
+          <div style="font-size:10px;color:#4ade80;font-weight:800;margin-top:6px">— ${captain.name}, ${club.name} captain</div>
+        </div>` : ''}
+      `;
     }
 
     function generateRoundRobin(teamIds) {
@@ -16009,7 +16037,7 @@
       // value, so an uncapped overshoot didn't just look wrong here — it
       // forced every other contributor's remaining share to zero, which is
       // what showed up as the rest of the XI all going for first-ball ducks.
-      const runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
+      let runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
       const sr = 0.75 + r.power / 100;
       let balls = Math.max(1, Math.round(runs / sr));
       const teamBalls = Math.max(1, Math.round(myTeamOvers * 6));
@@ -16024,7 +16052,16 @@
         // how long your own scoring took.
         const ballsRemainingAtEntry = teamBalls * Math.max(0.05, 1 - (pos - 1) / 10);
         const presenceFloor = Math.round(ballsRemainingAtEntry * (0.35 + Math.random() * 0.3));
-        balls = Math.max(balls, presenceFloor);
+        if (presenceFloor > balls) {
+          balls = presenceFloor;
+          // Stretching balls out to match how long you were actually there
+          // must not leave runs behind — nobody's not out for 134 balls on
+          // 2 runs, that's a run every 67 deliveries. A long, quiet not-out
+          // innings is still a genuine if unhurried return (a floor around
+          // a run every 3 balls), not the near-zero rate the original
+          // short-innings runs figure implied on its own.
+          runs = Math.max(runs, Math.min(myTeamScore, Math.round(balls * (0.3 + Math.random() * 0.2))));
+        }
       }
       // Can't personally face more balls than the whole team's innings had.
       balls = Math.min(teamBalls, balls);
