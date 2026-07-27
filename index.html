@@ -14799,13 +14799,7 @@
       <div id="career-match-title" style="text-align:left;font-size:13px;font-weight:800;color:#9090a8;letter-spacing:0.5px">—</div>
       <div id="career-match-status" style="font-size:11px;font-weight:800;color:#606070;letter-spacing:1px;text-transform:uppercase">Live</div>
     </div>
-    <div id="career-mini-scorecard" style="display:none;width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:10px 14px;margin-bottom:12px">
-      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
-        <div id="career-mini-team" style="font-size:12px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
-        <div id="career-mini-score" style="font-size:14px;font-weight:900;color:#e8e8f0;flex-shrink:0">—</div>
-      </div>
-      <div id="career-mini-context" style="font-size:11px;color:#8080a0;margin-top:3px;text-align:left;min-height:14px">—</div>
-    </div>
+    <div id="career-mini-scorecard" style="display:none;width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:10px 14px;margin-bottom:12px;flex-direction:column;gap:6px"></div>
     <div id="career-speed-bar" style="display:flex;align-items:center;gap:8px;width:100%;margin-bottom:14px"></div>
     <div id="career-live-score" style="display:none;width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px;margin-bottom:14px;text-align:center">
       <div id="career-live-phase-label" style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">—</div>
@@ -16049,56 +16043,111 @@
     // from your forced batting position or bowling slot) plus your own live
     // figures ticking on top of it — an approximation, not a full ball-by-ball
     // team sim, but bounded and directionally honest rather than fabricated.
+    // "29.8 ov" was a real over.ball value being formatted as a plain
+    // decimal — cricket's X.Y notation only ever has Y in 0-5 (6 balls make
+    // a new over), so a genuine fraction like .8 is nonsense. Everything
+    // below now tracks a ball COUNT internally and only ever formats it
+    // through this, which can't produce an invalid fraction.
+    function formatOversBalls(totalBalls) {
+      const b = Math.max(0, Math.round(totalBalls));
+      return `${Math.floor(b / 6)}.${b % 6}`;
+    }
+    // Total balls actually bowled in a given club's completed/known innings
+    // — read from the opposing bowling card's overs, which conservation
+    // guarantees sums correctly for that innings (verified elsewhere).
+    function careerFinalOversBalls(ctx, clubId) {
+      const card = clubId === ctx.teamResult.clubAId ? ctx.scorecard.bowlingB : ctx.scorecard.bowlingA;
+      return Math.round(card.reduce((s, p) => s + p.overs, 0) * 6);
+    }
     function careerBattingBaseline(ctx) {
       const { scorecard, teamResult, myClubId, bat } = ctx;
       const card = teamResult.clubAId === myClubId ? scorecard.battingA : scorecard.battingB;
       const others = card.filter(p => !p.isTrackedPlayer);
       const before = others.slice(0, Math.min(others.length, Math.max(0, bat.pos - 1)));
-      return { baselineRuns: before.reduce((s, p) => s + p.runs, 0), baselineWkts: before.filter(p => p.out).length };
-    }
-    function careerCurrentBowlerName(ctx, ballIdx) {
-      const { scorecard, teamResult, myClubId } = ctx;
-      const bowlCard = teamResult.clubAId === myClubId ? scorecard.bowlingB : scorecard.bowlingA;
-      const overNow = Math.floor(ballIdx / 6);
-      let acc = 0;
-      for (const b of bowlCard) { acc += b.overs; if (overNow < acc) return b.name; }
-      return bowlCard.length ? bowlCard[bowlCard.length - 1].name : '—';
+      return {
+        baselineRuns: before.reduce((s, p) => s + p.runs, 0),
+        baselineBalls: before.reduce((s, p) => s + p.balls, 0),
+        baselineWkts: before.filter(p => p.out).length,
+      };
     }
     function careerBowlingBaseline(ctx) {
       const { teamResult, myClubId, player, bowl } = ctx;
-      const oppIsA = teamResult.clubAId !== myClubId;
+      const oppClubId = teamResult.clubAId === myClubId ? teamResult.clubBId : teamResult.clubAId;
+      const oppIsA = teamResult.clubAId === oppClubId;
       const finalScore = oppIsA ? teamResult.scoreA : teamResult.scoreB;
       const finalWkts = Math.min(10, oppIsA ? teamResult.wktsA : teamResult.wktsB);
+      const finalBalls = careerFinalOversBalls(ctx, oppClubId);
       // Seamers open the bowling (nothing's happened yet); a first-change
       // bowler (spinners, all-rounders) comes on a handful of overs into the
       // innings — approximate that as a modest share of the eventual total.
       // Unlike the batting baseline (a subset-sum of the real conserved card,
       // safe by construction), this is an independent guess — capped against
-      // however much headroom the tracked player's own bowling figures
-      // actually leave, so baseline+live can never exceed the real final
-      // total the scorecard will show.
+      // however much headroom the tracked player's own figures actually
+      // leave, so baseline+live can never exceed the real final total.
       const frac = careerBowlSlot(player) === 'opening' ? 0 : 0.18;
       return {
         baselineRuns: Math.min(Math.round(finalScore * frac), Math.max(0, finalScore - bowl.runsConceded)),
         baselineWkts: Math.min(Math.round(finalWkts * frac), Math.max(0, finalWkts - bowl.wickets)),
+        baselineBalls: Math.min(Math.round(finalBalls * frac), Math.max(0, finalBalls - bowl.overs * 6)),
       };
-    }
-    function careerCurrentBatterName(ctx, ballIdx) {
-      const { scorecard, teamResult, myClubId } = ctx;
-      const card = teamResult.clubAId !== myClubId ? scorecard.battingA : scorecard.battingB;
-      if (!card.length) return '—';
-      return card[Math.min(card.length - 1, Math.floor(ballIdx / 30))].name;
     }
     function careerTeamName(ctx, clubId) {
       return clubId === ctx.myClubId ? CAREER.myClubName : ctx.oppName;
     }
-    function careerRenderSituation(teamName, runs, wkts, oversText, contextLine) {
+    // The two-row array for whichever club is currently live plus whatever
+    // the other one's already-known state is (finished, if they batted
+    // first; not started, if they're still to come) — always in batting
+    // order (first innings on top).
+    function careerScorecardRows(ctx, liveClubId, liveText) {
+      const { teamResult } = ctx;
+      const firstClubId = teamResult.battingFirstIsA ? teamResult.clubAId : teamResult.clubBId;
+      const otherClubId = liveClubId === teamResult.clubAId ? teamResult.clubBId : teamResult.clubAId;
+      const otherText = otherClubId === firstClubId ? careerFinalRowText(ctx, otherClubId) : 'Yet to bat';
+      const liveRow = { name: careerTeamName(ctx, liveClubId), text: liveText };
+      const otherRow = { name: careerTeamName(ctx, otherClubId), text: otherText };
+      return liveClubId === firstClubId ? [liveRow, otherRow] : [otherRow, liveRow];
+    }
+    // Renders both teams every time — the currently-live one from whatever
+    // figures the caller passes, the other from its already-known state
+    // (finished, or not yet in). Nothing here is faked: a not-yet-batted
+    // side just says so instead of showing a made-up zero that would look
+    // like real data.
+    function careerPaintScorecard(rows) {
       const bar = document.getElementById('career-mini-scorecard');
-      bar.style.display = 'block';
-      document.getElementById('career-mini-team').textContent = teamName;
+      bar.style.display = 'flex';
+      bar.innerHTML = rows.map(r => `
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+          <div style="font-size:12px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">${r.name}</div>
+          <div style="font-size:13px;font-weight:900;color:#e8e8f0;flex-shrink:0">${r.text}</div>
+        </div>`).join('');
+    }
+    function careerLiveRowText(runs, wkts, oversBalls) {
       const w = Math.min(10, wkts);
-      document.getElementById('career-mini-score').textContent = `${runs}${w >= 10 ? '' : '/' + w}${oversText ? ' · ' + oversText : ''}`;
-      document.getElementById('career-mini-context').textContent = contextLine || '';
+      return `${runs}${w >= 10 ? '' : '/' + w} · ${formatOversBalls(oversBalls)} ov`;
+    }
+    function careerFinalRowText(ctx, clubId) {
+      const isA = clubId === ctx.teamResult.clubAId;
+      const score = isA ? ctx.teamResult.scoreA : ctx.teamResult.scoreB;
+      const wkts = Math.min(10, isA ? ctx.teamResult.wktsA : ctx.teamResult.wktsB);
+      return careerLiveRowText(score, wkts, careerFinalOversBalls(ctx, clubId));
+    }
+    // Each bowling wicket gets a plausible dismissal type (the same pool the
+    // live feed already narrates individual dismissals from) and the summary
+    // tallies them by count rather than naming specific opposing batters —
+    // "2 catches, 1 bowled", not a list of names that needs a separate card
+    // to make sense of.
+    const CAREER_DISMISSAL_SUMMARY_LABEL = {
+      bowled: { one: 'bowled', many: 'bowled' },
+      caught: { one: 'catch', many: 'catches' },
+      lbw: { one: 'lbw', many: 'lbws' },
+      'caught behind': { one: 'catch behind', many: 'catches behind' },
+      'run out': { one: 'run out', many: 'run outs' },
+      stumped: { one: 'stumping', many: 'stumpings' },
+    };
+    function careerTallyDismissals(count) {
+      const counts = {};
+      for (let i = 0; i < count; i++) { const t = careerPick(CAREER_DISMISSAL_TYPES); counts[t] = (counts[t] || 0) + 1; }
+      return Object.entries(counts).map(([t, n]) => `${n} ${n > 1 ? CAREER_DISMISSAL_SUMMARY_LABEL[t].many : CAREER_DISMISSAL_SUMMARY_LABEL[t].one}`).join(', ');
     }
     function careerMatchSummaryHTML(ctx) {
       const rows = [];
@@ -16111,11 +16160,7 @@
       if (ctx.bowl) {
         const econ = ctx.bowl.overs ? (ctx.bowl.runsConceded / ctx.bowl.overs).toFixed(1) : '0.0';
         rows.push(`<div><span style="color:#8080a0">Bowling</span> — ${ctx.bowl.overs}-${ctx.bowl.runsConceded}-${ctx.bowl.wickets} · Econ ${econ}</div>`);
-        if (ctx.bowl.wickets > 0) {
-          const oppCard = (ctx.teamResult.clubAId !== ctx.myClubId ? ctx.scorecard.battingA : ctx.scorecard.battingB).filter(p => p.out);
-          const victims = oppCard.slice(0, Math.min(ctx.bowl.wickets, oppCard.length)).map(p => p.name);
-          if (victims.length) rows.push(`<div><span style="color:#8080a0">Victims</span> — ${victims.join(', ')}</div>`);
-        }
+        if (ctx.bowl.wickets > 0) rows.push(`<div><span style="color:#8080a0">Wickets</span> — ${careerTallyDismissals(ctx.bowl.wickets)}</div>`);
       } else {
         rows.push(`<div><span style="color:#8080a0">Bowling</span> — did not bowl</div>`);
       }
@@ -16148,7 +16193,7 @@
       const { bat, player } = ctx;
       document.getElementById('career-match-status').textContent = 'Batting';
       if (!bat) {
-        careerRenderSituation(CAREER.myClubName, ctx.myScore, ctx.myWkts, null, null);
+        careerPaintScorecard(careerScorecardRows(ctx, ctx.myClubId, careerFinalRowText(ctx, ctx.myClubId)));
         careerLiveFeedRow('🏏', careerPick(CAREER_MOMENT_TEMPLATES.didNotBat)(player.name));
         careerLiveTimer = setTimeout(onDone, simDelay(1100));
         return;
@@ -16165,7 +16210,7 @@
       skipBtn.style.display = 'block';
 
       const baseline = careerBattingBaseline(ctx);
-      careerRenderSituation(CAREER.myClubName, baseline.baselineRuns, baseline.baselineWkts, null, `🎯 Bowling: ${careerCurrentBowlerName(ctx, 0)}`);
+      careerPaintScorecard(careerScorecardRows(ctx, ctx.myClubId, careerLiveRowText(baseline.baselineRuns, baseline.baselineWkts, baseline.baselineBalls)));
 
       const deliveries = careerDecomposeBatting(bat.runs, bat.balls);
       let idx = 0, runs = 0, balls = 0;
@@ -16187,8 +16232,13 @@
         valEl.style.color = val >= 4 ? '#4ade80' : '#fff';
         subEl.textContent = `SR ${((runs / balls) * 100).toFixed(1)}`;
         const wktBump = (isLast && bat.out) ? 1 : 0;
-        const oversText = (baseline.baselineRuns / 4.5 + balls / 6).toFixed(1) + ' ov';
-        careerRenderSituation(CAREER.myClubName, baseline.baselineRuns + runs, baseline.baselineWkts + wktBump, oversText, `🎯 Bowling: ${careerCurrentBowlerName(ctx, idx)}`);
+        // The team's overs can't just be your own balls/6 — your partner is
+        // facing deliveries too. Assuming roughly even strike rotation, the
+        // team gets through about twice as many balls as you personally
+        // face; capped against the innings' real known length so it can
+        // never run past the actual final over count.
+        const teamBallsSoFar = Math.min(baseline.baselineBalls + balls * 2, careerFinalOversBalls(ctx, ctx.myClubId));
+        careerPaintScorecard(careerScorecardRows(ctx, ctx.myClubId, careerLiveRowText(baseline.baselineRuns + runs, baseline.baselineWkts + wktBump, teamBallsSoFar)));
         if (!(isLast && bat.out)) {
           if (val === 6) careerLiveFeedRow('🎉', careerPick(CAREER_BALL_LINES.six)(player.name), '#4ade80');
           else if (val === 4) careerLiveFeedRow('🏏', careerPick(CAREER_BALL_LINES.four)(player.name), '#4ade80');
@@ -16213,6 +16263,7 @@
 
     function careerPlayBowlingPhase(ctx, onDone) {
       const { bowl, field, player } = ctx;
+      const oppClubId = ctx.teamResult.clubAId === ctx.myClubId ? ctx.teamResult.clubBId : ctx.teamResult.clubAId;
       document.getElementById('career-match-status').textContent = 'Bowling';
       // Fielding chances happen while your team is in the field, whether or not
       // you're the one bowling that particular over — woven into this phase's
@@ -16220,7 +16271,7 @@
       const fieldEvents = Array.from({ length: field.involvements }, (_, i) => i < field.clean);
 
       if (!bowl) {
-        careerRenderSituation(ctx.oppName, ctx.oppScore, ctx.oppWkts, null, null);
+        careerPaintScorecard(careerScorecardRows(ctx, oppClubId, careerFinalRowText(ctx, oppClubId)));
         careerLiveFeedRow('🎯', careerPick(CAREER_MOMENT_TEMPLATES.bowlingNone)());
         careerPlayFieldEventsThenDone(player, fieldEvents, onDone);
         return;
@@ -16237,7 +16288,7 @@
       skipBtn.style.display = 'block';
 
       const baseline = careerBowlingBaseline(ctx);
-      careerRenderSituation(ctx.oppName, baseline.baselineRuns, baseline.baselineWkts, null, `🏏 At the crease: ${careerCurrentBatterName(ctx, 0)}`);
+      careerPaintScorecard(careerScorecardRows(ctx, oppClubId, careerLiveRowText(baseline.baselineRuns, baseline.baselineWkts, baseline.baselineBalls)));
 
       const oversArr = careerDecomposeBowling(bowl.overs, bowl.runsConceded, bowl.wickets);
       const totalBalls = oversArr.reduce((s, o) => s + o.length, 0);
@@ -16266,7 +16317,12 @@
         else if (ball.runs === 4) { valEl.style.color = '#f87171'; careerLiveFeedRow('🏏', careerPick(CAREER_BOWL_BALL_LINES.four)(player.name), '#f87171'); }
         else valEl.style.color = '#fff';
         subEl.textContent = `Econ ${(runs / (oi + (bi + 1) / 6)).toFixed(1)}`;
-        careerRenderSituation(ctx.oppName, baseline.baselineRuns + runs, baseline.baselineWkts + wkts, `${oi}.${bi + 1} ov`, `🏏 At the crease: ${careerCurrentBatterName(ctx, oi * 6 + bi)}`);
+        // Only one bowler is ever on at once, so unlike batting this is a
+        // true subset of the team's over count — no doubling needed, just
+        // your own progress added on top of however many overs happened
+        // before your spell started.
+        const teamBallsSoFar = baseline.baselineBalls + (oi * 6 + bi + 1);
+        careerPaintScorecard(careerScorecardRows(ctx, oppClubId, careerLiveRowText(baseline.baselineRuns + runs, baseline.baselineWkts + wkts, teamBallsSoFar)));
         if (fieldBallIdxs.has(ballCount) && fieldPtr < fieldEvents.length) {
           const clean = fieldEvents[fieldPtr++];
           careerLiveFeedRow('🧤', careerPick(CAREER_MOMENT_TEMPLATES[clean ? 'fieldingClean' : 'fieldingDropped'])(player.name));
@@ -16280,10 +16336,14 @@
     function careerShowInningsBreak(ctx, onDone) {
       const { teamResult } = ctx;
       document.getElementById('career-match-status').textContent = 'Innings Break';
+      const firstClubId = teamResult.battingFirstIsA ? teamResult.clubAId : teamResult.clubBId;
+      const secondClubId = teamResult.battingFirstIsA ? teamResult.clubBId : teamResult.clubAId;
       const firstScore = teamResult.battingFirstIsA ? teamResult.scoreA : teamResult.scoreB;
       const firstWkts = Math.min(10, teamResult.battingFirstIsA ? teamResult.wktsA : teamResult.wktsB);
-      const firstClubId = teamResult.battingFirstIsA ? teamResult.clubAId : teamResult.clubBId;
-      careerRenderSituation(careerTeamName(ctx, firstClubId), firstScore, firstWkts, null, null);
+      careerPaintScorecard([
+        { name: careerTeamName(ctx, firstClubId), text: careerFinalRowText(ctx, firstClubId) },
+        { name: careerTeamName(ctx, secondClubId), text: 'Yet to bat' },
+      ]);
       careerLiveFeedRow('🔄', `Innings break: ${firstScore}/${firstWkts}. Second innings starting.`);
       careerLiveTimer = setTimeout(onDone, simDelay(1300));
     }
@@ -16291,10 +16351,12 @@
     function careerShowVerdict(ctx) {
       document.getElementById('career-match-status').textContent = 'Full Time';
       const { teamResult } = ctx;
+      const firstClubId = teamResult.battingFirstIsA ? teamResult.clubAId : teamResult.clubBId;
       const secondClubId = teamResult.battingFirstIsA ? teamResult.clubBId : teamResult.clubAId;
-      const secondScore = teamResult.battingFirstIsA ? teamResult.scoreB : teamResult.scoreA;
-      const secondWkts = Math.min(10, teamResult.battingFirstIsA ? teamResult.wktsB : teamResult.wktsA);
-      careerRenderSituation(careerTeamName(ctx, secondClubId), secondScore, secondWkts, null, null);
+      careerPaintScorecard([
+        { name: careerTeamName(ctx, firstClubId), text: careerFinalRowText(ctx, firstClubId) },
+        { name: careerTeamName(ctx, secondClubId), text: careerFinalRowText(ctx, secondClubId) },
+      ]);
       careerLiveFeedRow('🏆', careerPick(CAREER_MOMENT_TEMPLATES[ctx.won ? 'matchWin' : 'matchLoss'])(ctx.oppName, ctx.myScore, ctx.oppScore));
       careerLiveFeedRow('📣', careerPickVerdict(ctx));
       const summaryEl = document.getElementById('career-match-summary');
