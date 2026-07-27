@@ -15978,8 +15978,12 @@
       // would cascade into NaN runs/balls for the tracked player AND, via
       // generateTeamInnings's remainder logic, every other batter on the
       // card too. Fall back to a sane middle-order slot rather than that.
+      // Position is a hard, fixed fact of your type — no "promoted early"
+      // scenario. If the wickets aren't down for your slot to arrive yet,
+      // you simply didn't bat this match, same as a real #10 who never
+      // gets to the crease because the top order didn't get bowled out.
       const pos = CAREER_BAT_POSITION[careerPosKey(player)] || 6;
-      if (pos - 1 > myTeamWktsLost && Math.random() > 0.3) return null;
+      if (pos - 1 > myTeamWktsLost) return null;
       const r = player.ratings;
       const skill = r.technique * 0.4 + r.power * 0.35 + r.temperament * 0.25;
       // Batting position used to carry its cost two ways: a real chance of
@@ -16007,8 +16011,23 @@
       // what showed up as the rest of the XI all going for first-ball ducks.
       const runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
       const sr = 0.75 + r.power / 100;
+      let balls = Math.max(1, Math.round(runs / sr));
+      const teamBalls = Math.max(1, Math.round(myTeamOvers * 6));
+      if (!out) {
+        // Not out means you were at the crease for the entire rest of the
+        // innings after you came in — for an early position especially,
+        // that's most of the whole innings' balls, not just however many
+        // your own runs needed at an assumed strike rate. This was the gap
+        // that let a not-out opener show 7 balls faced in a 40-over innings
+        // they were at the crease for start to finish: runs/strike-rate
+        // alone has no idea how long you actually occupied the crease, only
+        // how long your own scoring took.
+        const ballsRemainingAtEntry = teamBalls * Math.max(0.05, 1 - (pos - 1) / 10);
+        const presenceFloor = Math.round(ballsRemainingAtEntry * (0.35 + Math.random() * 0.3));
+        balls = Math.max(balls, presenceFloor);
+      }
       // Can't personally face more balls than the whole team's innings had.
-      const balls = Math.max(1, Math.min(myTeamOvers * 6, Math.round(runs / sr)));
+      balls = Math.min(teamBalls, balls);
       return { runs, out, balls, pos };
     }
     // How much you bowl is decided by your actual bowling stats and how
@@ -16384,6 +16403,8 @@
       const bowl = simTrackedPlayerBowling(player, oppWkts, oppScore, oppOvers);
       const field = simTrackedPlayerFielding(player);
 
+      const prevSeasonRuns = CAREER.seasonStats.bat.runs;
+      const prevSeasonWkts = CAREER.seasonStats.bowl.wickets;
       if (bat) {
         const s = CAREER.seasonStats.bat;
         s.innings++; s.runs += bat.runs; s.balls += bat.balls;
@@ -16398,13 +16419,24 @@
       }
       { const s = CAREER.seasonStats.field; s.involvements += field.involvements; s.clean += field.clean; }
 
-      // Progression: crossing the same thresholds already tracked for the
-      // performance bar (fifty / three-for / a clean catch) earns a point in
-      // that discipline, spent immediately after the match via s-career-points
-      // — growth is live, not banked to season-end, so it can genuinely move
-      // the promotion-gate rating band before the season is over.
-      if (bat && bat.runs >= CAREER_BIG_INNINGS_THRESHOLD) CAREER.pendingPoints.push({ category: 'bat', detail: bat.runs });
-      if (bowl && bowl.wickets >= CAREER_BIG_SPELL_WICKETS) CAREER.pendingPoints.push({ category: 'bowl', detail: bowl.wickets });
+      // Progression: cumulative career milestones — every 50 runs and every
+      // 3 wickets banked *across the season*, not gated behind a single
+      // big day. Gating a whole discipline's growth behind a 50-run innings
+      // or a 3-wicket spell in one match made batting/bowling points 5-6x
+      // rarer than fielding's (which fires on every single clean catch,
+      // no threshold at all) — a keeper especially could go entire seasons
+      // without ever crossing either bar and never earn a single batting
+      // point. Comparing cumulative totals before/after the match catches
+      // every 50/3 boundary crossed, including a big innings/spell that
+      // crosses more than one at once.
+      if (bat) {
+        const newBatMilestones = Math.floor(CAREER.seasonStats.bat.runs / 50) - Math.floor(prevSeasonRuns / 50);
+        for (let i = 0; i < newBatMilestones; i++) CAREER.pendingPoints.push({ category: 'bat', detail: bat.runs });
+      }
+      if (bowl) {
+        const newBowlMilestones = Math.floor(CAREER.seasonStats.bowl.wickets / 3) - Math.floor(prevSeasonWkts / 3);
+        for (let i = 0; i < newBowlMilestones; i++) CAREER.pendingPoints.push({ category: 'bowl', detail: bowl.wickets });
+      }
       for (let i = 0; i < field.clean; i++) CAREER.pendingPoints.push({ category: 'field', detail: null });
 
       applyResultToTable(teamResult);
@@ -16742,7 +16774,6 @@
         // moment the live score ticks over.
         if (prevRuns < 100 && runs >= 100) careerShowInboxFlash('💯', 'CENTURY!', 'cif-milestone');
         else if (prevRuns < 50 && runs >= 50) careerShowInboxFlash('⭐', 'FIFTY!', 'cif-milestone');
-        else if (prevRuns < 10 && runs >= 10) careerShowInboxFlash('🔟', 'Double figures', 'cif-milestone');
         const wktBump = (isLast && bat.out) ? 1 : 0;
         // The team's overs can't just be your own balls/6 — your partner is
         // facing deliveries too. Assuming roughly even strike rotation, the
@@ -16837,11 +16868,13 @@
         else if (ball.runs === 4) { valEl.style.color = '#f87171'; careerLiveFeedRow('🏏', careerPick(CAREER_BOWL_BALL_LINES.four)(player.name), '#f87171'); }
         else valEl.style.color = '#fff';
         subEl.textContent = `Econ ${(runs / (oi + (bi + 1) / 6)).toFixed(1)}`;
-        // Only one bowler is ever on at once, so unlike batting this is a
-        // true subset of the team's over count — no doubling needed, just
-        // your own progress added on top of however many overs happened
-        // before your spell started.
-        const teamBallsSoFar = baseline.baselineBalls + (oi * 6 + bi + 1);
+        // A bowler can't bowl two overs in a row — the other end gets
+        // through roughly one over for every one of yours while you're on,
+        // so the team's over count during your spell advances at about
+        // twice your own pace, the same "partner is progressing too"
+        // assumption batting already uses. Capped against the innings'
+        // real known length so it can never run past the actual over count.
+        const teamBallsSoFar = Math.min(baseline.baselineBalls + (oi * 6 + bi + 1) * 2, careerFinalOversBalls(ctx, oppClubId));
         careerPaintScorecard(careerScorecardRows(ctx, oppClubId, careerLiveRowText(baseline.baselineRuns + runs, baseline.baselineWkts + wkts, teamBallsSoFar)));
         if (fieldBallIdxs.has(ballCount) && fieldPtr < fieldEvents.length) {
           const clean = fieldEvents[fieldPtr++];
