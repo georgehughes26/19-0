@@ -14939,14 +14939,11 @@
         <div id="hub-league-name" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">—</div>
         <div id="hub-club-name" style="font-size:20px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
       </div>
-      <div style="text-align:right;flex-shrink:0;display:flex;gap:16px">
-        <div>
-          <div style="font-size:10px;color:#606070;letter-spacing:1px;text-transform:uppercase">OVR</div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:10px;color:#606070;letter-spacing:1px;text-transform:uppercase">OVR</div>
+        <div style="display:flex;align-items:baseline;gap:6px;justify-content:flex-end">
           <div id="hub-player-ovr" style="font-size:22px;font-weight:900;color:#fff">—</div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:#606070;letter-spacing:1px;text-transform:uppercase">Round</div>
-          <div id="hub-round" style="font-size:22px;font-weight:900;color:#fff">—</div>
+          <div id="hub-player-ovr-delta" style="font-size:12px;font-weight:800"></div>
         </div>
       </div>
     </div>
@@ -15519,34 +15516,39 @@
         `"${p.name}'s attitude in the nets sold it as much as the ability did. Excited to see what they can do for us this season."`,
       ]);
       document.getElementById('team-reveal-article').innerHTML = `
-        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">🏏 ${league.name}</div>
-        <div style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px">${club.name} sign promising ${roleLabel.toLowerCase()} ${p.name}</div>
-        <div style="font-size:12px;color:#6060a0;margin-bottom:20px">Trials confirmed ahead of the new season · In for ${CAREER.draft.replacedPlayerName}</div>
+        <div class="ov-reveal" style="transition-delay:0ms">
+          <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">🏏 ${league.name}</div>
+          <div style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px">${club.name} sign promising ${roleLabel.toLowerCase()} ${p.name}</div>
+          <div style="font-size:12px;color:#6060a0;margin-bottom:20px">Trials confirmed ahead of the new season · In for ${CAREER.draft.replacedPlayerName}</div>
+        </div>
 
-        <div style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 16px;margin-bottom:18px">
+        <div class="ov-reveal ov-pop" style="transition-delay:140ms;width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:14px 16px;margin-bottom:18px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
             <div style="flex:1;text-align:center">
               <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</div>
-              <div style="font-size:32px;font-weight:900;color:${ratingColor(p.ovr)};line-height:1;margin-bottom:4px">${p.ovr}</div>
+              <div class="ov-count" data-count="${p.ovr}" style="font-size:32px;font-weight:900;color:${ratingColor(p.ovr)};line-height:1;margin-bottom:4px">0</div>
               <div style="font-size:11px;color:#8080a0">${roleLabel}</div>
             </div>
             <div style="width:1px;background:#252535;margin:4px 0"></div>
             <div style="flex:1;text-align:center">
               <div style="font-size:10px;color:#8080a0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${club.name}</div>
-              <div style="font-size:32px;font-weight:900;color:${ratingColor(club.rating)};line-height:1;margin-bottom:4px">${club.rating}</div>
+              <div class="ov-count" data-count="${club.rating}" style="font-size:32px;font-weight:900;color:${ratingColor(club.rating)};line-height:1;margin-bottom:4px">0</div>
               <div style="font-size:11px;color:#8080a0">squad rating</div>
             </div>
           </div>
         </div>
 
-        <div style="font-size:13px;color:#c0c0d8;line-height:1.7;margin-bottom:18px">${club.name} have moved to add depth ahead of the new ${league.tier} campaign, bringing in ${p.name} on the back of a strong trial period. It's the end of the road at the club for ${CAREER.draft.replacedPlayerName}, who makes way in the squad.</div>
+        <div class="ov-reveal" style="transition-delay:260ms;font-size:13px;color:#c0c0d8;line-height:1.7;margin-bottom:18px">${club.name} have moved to add depth ahead of the new ${league.tier} campaign, bringing in ${p.name} on the back of a strong trial period. It's the end of the road at the club for ${CAREER.draft.replacedPlayerName}, who makes way in the squad.</div>
 
-        ${captain ? `<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:10px">Club Reaction</div>
+        ${captain ? `<div class="ov-reveal" style="transition-delay:380ms">
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:10px">Club Reaction</div>
         <div style="background:#0a0a14;border-left:3px solid #4ade80;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:6px">
           <div style="font-size:12px;color:#c0c0d8;line-height:1.6;font-style:italic">${captainQuote}</div>
           <div style="font-size:10px;color:#4ade80;font-weight:800;margin-top:6px">— ${captain.name}, ${club.name} captain</div>
+        </div>
         </div>` : ''}
       `;
+      requestAnimationFrame(() => wireReveals(document.getElementById('s-career-team-reveal')));
     }
 
     function generateRoundRobin(teamIds) {
@@ -16559,6 +16561,22 @@
       const partnerRuns = Math.round(balls * runRatePerBall);
       return Math.min(ctx.myScore, baseline.baselineRuns + runs + partnerRuns);
     }
+    // Teammates keep falling around you while you're still at the crease —
+    // the mini-scorecard used to only bump the wicket count on your own
+    // dismissal, on the very last ball, which meant a long not-out innings
+    // showed a frozen wicket count the entire time and then jumped straight
+    // to the true final tally ("all out") the instant the innings actually
+    // ended, with no sense of the collapse happening around you. Estimated
+    // progressing evenly across the balls remaining in the innings — same
+    // simplifying assumption the baseline/partner-run estimates already
+    // make elsewhere — landing on the real final total by the last ball.
+    function careerBattingLiveWkts(ctx, baseline, teamBallsSoFar) {
+      const finalBalls = careerFinalOversBalls(ctx, ctx.myClubId);
+      const finalWkts = Math.min(10, ctx.myWkts);
+      if (finalWkts <= baseline.baselineWkts || finalBalls <= baseline.baselineBalls) return baseline.baselineWkts;
+      const progress = Math.min(1, Math.max(0, (teamBallsSoFar - baseline.baselineBalls) / (finalBalls - baseline.baselineBalls)));
+      return Math.min(finalWkts, baseline.baselineWkts + Math.round(progress * (finalWkts - baseline.baselineWkts)));
+    }
     function careerBowlingBaseline(ctx) {
       const { teamResult, myClubId, player, bowl } = ctx;
       const oppClubId = teamResult.clubAId === myClubId ? teamResult.clubBId : teamResult.clubAId;
@@ -16811,7 +16829,6 @@
         // moment the live score ticks over.
         if (prevRuns < 100 && runs >= 100) careerShowInboxFlash('💯', 'CENTURY!', 'cif-milestone');
         else if (prevRuns < 50 && runs >= 50) careerShowInboxFlash('⭐', 'FIFTY!', 'cif-milestone');
-        const wktBump = (isLast && bat.out) ? 1 : 0;
         // The team's overs can't just be your own balls/6 — your partner is
         // facing deliveries too. Assuming roughly even strike rotation, the
         // team gets through about twice as many balls as you personally
@@ -16819,7 +16836,8 @@
         // never run past the actual final over count.
         const teamBallsSoFar = Math.min(baseline.baselineBalls + balls * 2, careerFinalOversBalls(ctx, ctx.myClubId));
         const liveScore = careerBattingLiveScore(ctx, baseline, runs, balls);
-        careerPaintScorecard(careerScorecardRows(ctx, ctx.myClubId, careerLiveRowText(liveScore, baseline.baselineWkts + wktBump, teamBallsSoFar)));
+        const liveWkts = careerBattingLiveWkts(ctx, baseline, teamBallsSoFar);
+        careerPaintScorecard(careerScorecardRows(ctx, ctx.myClubId, careerLiveRowText(liveScore, liveWkts, teamBallsSoFar)));
         if (!(isLast && bat.out)) {
           if (val === 6) careerLiveFeedRow('🎉', careerPick(CAREER_BALL_LINES.six)(player.name), '#4ade80');
           else if (val === 4) careerLiveFeedRow('🏏', careerPick(CAREER_BALL_LINES.four)(player.name), '#4ade80');
@@ -17073,8 +17091,14 @@
     function buildCareerHub() {
       document.getElementById('hub-league-name').textContent = CAREER_LEAGUES[CAREER.leagueId].name;
       document.getElementById('hub-club-name').textContent = CAREER.myClubName;
-      document.getElementById('hub-round').textContent = CAREER.currentRound >= 22 ? '22/22' : `${CAREER.currentRound + 1}/22`;
       document.getElementById('hub-player-ovr').textContent = CAREER.player.ovr;
+      // Same ▲/▼ form-delta convention World Cup mode uses for a player's
+      // in-tournament rating swing — here it's the season's growth so far
+      // (progression points spent since beginCareerSeason set the baseline),
+      // not a single-match blip.
+      const ovrDelta = CAREER.player.ovr - CAREER.seasonStartOvr;
+      const deltaEl = document.getElementById('hub-player-ovr-delta');
+      deltaEl.innerHTML = ovrDelta > 0 ? `<span class="form-up">▲${ovrDelta}</span>` : ovrDelta < 0 ? `<span class="form-down">▼${Math.abs(ovrDelta)}</span>` : '';
 
       const fixtureEl = document.getElementById('hub-next-fixture');
       const playBtn = document.getElementById('hub-play-btn');
