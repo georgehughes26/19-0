@@ -2511,6 +2511,65 @@
       .career-result-card { animation: none !important; opacity: 1 !important }
     }
 
+    /* CAREER MODE — live milestone toast: OUT / double figures / fifty /
+       century need to land harder than just another line lost in the
+       scrolling feed, so this pops as a fixed overlay above everything
+       else rather than competing with the ball-by-ball rows underneath. */
+    .career-milestone-toast {
+      position: fixed;
+      top: 16%;
+      left: 50%;
+      transform: translate(-50%, 0);
+      z-index: 50;
+      padding: 14px 26px;
+      border-radius: 12px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      max-width: 88vw;
+    }
+
+    .career-milestone-toast.show {
+      animation: career-milestone-pop 1.7s var(--ease-out-strong) both
+    }
+
+    .career-milestone-toast.cmt-out {
+      background: linear-gradient(135deg, #160808, #0e0606);
+      border: 1px solid #3a1414;
+      color: #f87171
+    }
+
+    .career-milestone-toast.cmt-milestone {
+      background: linear-gradient(135deg, #0c2006, #081408);
+      border: 1px solid #2a5a14;
+      color: #4ade80
+    }
+
+    .cmt-icon {
+      font-size: 30px;
+      display: block;
+      margin-bottom: 4px
+    }
+
+    .cmt-text {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.2px
+    }
+
+    @keyframes career-milestone-pop {
+      0% { opacity: 0; transform: translate(-50%, -16px) scale(.85) }
+      15% { opacity: 1; transform: translate(-50%, 0) scale(1.06) }
+      25% { opacity: 1; transform: translate(-50%, 0) scale(1) }
+      82% { opacity: 1; transform: translate(-50%, 0) scale(1) }
+      100% { opacity: 0; transform: translate(-50%, -10px) scale(.96) }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .career-milestone-toast.show { animation: none !important; opacity: 1 !important }
+    }
+
     .sc-result-banner {
       width: 100%;
       padding: 20px;
@@ -14929,6 +14988,7 @@
   </div>
 
   <div id="s-career-match" class="screen">
+    <div id="career-milestone-toast" class="career-milestone-toast" style="display:none"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px">
       <div id="career-match-title" style="text-align:left;font-size:13px;font-weight:800;color:#9090a8;letter-spacing:0.5px">—</div>
       <div id="career-match-status" style="font-size:11px;font-weight:800;color:#606070;letter-spacing:1px;text-transform:uppercase">Live</div>
@@ -15995,17 +16055,31 @@
         p => `The top order does the job today, and ${p} doesn't even need to pad up.`,
         p => `Game's done before the innings reaches ${p}. Not every day is your day.`,
       ],
+      // duck/low have separate out/not-out wording — the runs bucket alone
+      // doesn't say whether the innings ended in a dismissal or just ran
+      // out of overs/partners with the player still at the crease, and
+      // narrating a dismissal that didn't happen directly contradicted the
+      // "not out" the summary and scorecard correctly showed underneath it.
       duck: [
         p => `Gone. ${p} is back in the pavilion without troubling the scorers.`,
         p => `A brutal start: ${p} nicks off first ball and has to watch the rest from the boundary.`,
         p => `Not the innings ${p} wanted. Out cheaply, head down, back to the changing room.`,
         p => `${p} misjudges the line early and pays the full price. Duck.`,
       ],
+      duckNotOut: [
+        p => `${p} finishes not out on a duck — no time to get off the mark before the innings closed around them.`,
+        p => `A frustrating one for ${p}: unbeaten on nought as the innings ends.`,
+      ],
       low: [
         (p,r) => `${p} nurdles ${r} before falling. Never really got going out there.`,
         (p,r) => `A scratchy ${r} from ${p}. Some days you just can't find the middle of the bat.`,
         (p,r) => `${p} picks up ${r} in a stop-start knock before the umpire's finger goes up.`,
         (p,r) => `${r} for ${p}, a few good shots in there, but the innings never settled.`,
+      ],
+      lowNotOut: [
+        (p,r) => `${p} finishes unbeaten on ${r} — the innings just ran out of overs around them.`,
+        (p,r) => `${r} not out for ${p}, still there at the close but never got the platform to kick on.`,
+        (p,r) => `${p} ends on ${r} not out, stuck for partners as the innings wound down.`,
       ],
       solid: [
         (p,r) => `${p} works hard for ${r}, rotating the strike and giving nothing away.`,
@@ -16023,6 +16097,9 @@
       hundred: [
         (p,r) => `A century! ${p} reaches three figures on ${r}, a career day.`,
         (p,r) => `${p} raises the bat to ${r}. Every kid on the boundary rope wants to bat like that right now.`,
+      ],
+      hundredNotOut: [
+        (p,r) => `A magnificent ${r} not out for ${p} — still out there when the innings closes. A career day.`,
         (p,r) => `Three figures for ${p}. ${r} not out and still going.`,
       ],
       bowlingNone: [
@@ -16204,6 +16281,22 @@
       feed.insertBefore(row, feed.firstChild);
       while (feed.children.length > 12) feed.removeChild(feed.lastChild);
     }
+    // Fixed-position overlay, separate from the scrolling commentary feed —
+    // OUT/double-figures/fifty/century need to be unmissable even if the
+    // feed has already scrolled several rows past by the time the user
+    // looks up, not just another line that scrolls away with the rest.
+    let careerMilestoneTimer = null;
+    function careerShowMilestoneToast(icon, text, kind) {
+      const el = document.getElementById('career-milestone-toast');
+      clearTimeout(careerMilestoneTimer);
+      el.className = 'career-milestone-toast ' + kind;
+      el.innerHTML = `<span class="cmt-icon">${icon}</span><span class="cmt-text">${text}</span>`;
+      el.style.display = 'block';
+      void el.offsetWidth; // restart the animation if one is already mid-flight
+      el.classList.add('show');
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      careerMilestoneTimer = setTimeout(() => { el.style.display = 'none'; el.classList.remove('show'); }, simDelay(reduceMotion ? 1300 : 1700));
+    }
     function careerShowSpeedBar() {
       const bar = document.getElementById('career-speed-bar');
       const existing = bar.querySelector('.speed-slider');
@@ -16286,6 +16379,9 @@
       document.getElementById('career-mini-scorecard').style.display = 'none';
       document.getElementById('career-match-result').style.display = 'none';
       document.getElementById('career-match-result').innerHTML = '';
+      clearTimeout(careerMilestoneTimer);
+      document.getElementById('career-milestone-toast').style.display = 'none';
+      document.getElementById('career-milestone-toast').className = 'career-milestone-toast';
       document.getElementById('career-match-skip').style.display = 'none';
       document.getElementById('career-match-tap').style.display = 'none';
       careerShowSpeedBar();
@@ -16568,9 +16664,16 @@
       function finish() {
         scoreEl.style.display = 'none';
         skipBtn.style.display = 'none';
-        if (bat.out) careerLiveFeedRow('🏏', careerPick(CAREER_BALL_LINES.dismissal)(player.name, careerPick(CAREER_DISMISSAL_TYPES)), '#f87171');
+        if (bat.out) {
+          careerLiveFeedRow('🏏', careerPick(CAREER_BALL_LINES.dismissal)(player.name, careerPick(CAREER_DISMISSAL_TYPES)), '#f87171');
+          careerShowMilestoneToast('❌', `OUT — ${bat.runs} (${bat.balls})`, 'cmt-out');
+        }
         const rn = bat.runs;
-        const bucket = rn === 0 ? 'duck' : rn < 20 ? 'low' : rn < 50 ? 'solid' : rn < 100 ? 'fifty' : 'hundred';
+        let bucket = rn === 0 ? 'duck' : rn < 20 ? 'low' : rn < 50 ? 'solid' : rn < 100 ? 'fifty' : 'hundred';
+        // duck/low/hundred all have wording that assumes a dismissal — the
+        // not-out variant exists specifically so the summary line doesn't
+        // narrate getting out on an innings that didn't end in one.
+        if (!bat.out && CAREER_MOMENT_TEMPLATES[bucket + 'NotOut']) bucket += 'NotOut';
         careerLiveFeedRow('🏏', careerPick(CAREER_MOMENT_TEMPLATES[bucket])(player.name, rn));
         careerLiveTimer = setTimeout(onDone, simDelay(1300));
       }
@@ -16578,10 +16681,17 @@
       function nextBall() {
         if (idx >= deliveries.length) { finish(); return; }
         const val = deliveries[idx], isLast = idx === deliveries.length - 1;
+        const prevRuns = runs;
         runs += val; balls++;
         valEl.textContent = `${runs} (${balls})`;
         valEl.style.color = val >= 4 ? '#4ade80' : '#fff';
         subEl.textContent = `SR ${((runs / balls) * 100).toFixed(1)}`;
+        // Milestone pop fires the instant the threshold is actually crossed
+        // (not just whenever the final tally happens to land past it), same
+        // moment the live score ticks over.
+        if (prevRuns < 100 && runs >= 100) careerShowMilestoneToast('💯', `${player.name} brings up the century!`, 'cmt-milestone');
+        else if (prevRuns < 50 && runs >= 50) careerShowMilestoneToast('⭐', `${player.name} raises the bat — fifty!`, 'cmt-milestone');
+        else if (prevRuns < 10 && runs >= 10) careerShowMilestoneToast('🔟', `${player.name} into double figures`, 'cmt-milestone');
         const wktBump = (isLast && bat.out) ? 1 : 0;
         // The team's overs can't just be your own balls/6 — your partner is
         // facing deliveries too. Assuming roughly even strike rotation, the
