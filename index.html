@@ -14766,7 +14766,7 @@
     <div style="width:100%;display:flex;flex-direction:column;gap:14px;margin-bottom:28px">
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Create Your Player</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Build a fictional cricketer from scratch: role, type and handedness all shape their <span style="color:#f9c846;font-weight:800">9 core ratings</span>. Every build starts balanced at a 45 overall.</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">Build a fictional cricketer from scratch: role and type shape their <span style="color:#f9c846;font-weight:800">9 core ratings</span>. Every build starts balanced at a 45 overall.</div>
       </div>
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Local Club Season</div>
@@ -14788,7 +14788,7 @@
 
   <div id="s-career-create-name" class="screen">
     <div style="width:100%;text-align:left;margin-bottom:24px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 1 of 4</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 1 of 3</div>
       <div style="font-size:24px;font-weight:900;color:#fff">What's your name?</div>
     </div>
     <div class="auth-field" style="width:100%;margin-bottom:24px">
@@ -14802,7 +14802,7 @@
 
   <div id="s-career-create-role" class="screen">
     <div style="width:100%;text-align:left;margin-bottom:20px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 2 of 4</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 2 of 3</div>
       <div style="font-size:24px;font-weight:900;color:#fff">Pick your role</div>
     </div>
     <div class="mode-selector" id="career-role-selector" style="flex-wrap:wrap;row-gap:10px">
@@ -14812,28 +14812,18 @@
       <button class="mode-btn" data-role="keeper" onclick="careerSelectRole('keeper')" style="flex-basis:calc(50% - 5px)"><span class="mode-icon">🧤</span><span class="mode-label">Keeper</span></button>
     </div>
     <div id="career-role-desc" style="width:100%;font-size:13px;color:#9090a8;line-height:1.6;text-align:left;margin:14px 0 24px;min-height:40px"></div>
-    <button class="btn-start" id="career-role-continue" style="width:100%" onclick="go('s-career-create-type');renderCareerTypeStep()" disabled>Continue</button>
+    <button class="btn-start" id="career-role-continue" style="width:100%" onclick="careerContinueFromRole()" disabled>Continue</button>
     <button class="btn-auth-small" onclick="go('s-career-create-name')" style="margin-top:14px">← Back</button>
   </div>
 
   <div id="s-career-create-type" class="screen">
     <div style="width:100%;text-align:left;margin-bottom:20px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 3 of 4</div>
+      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 3 of 3</div>
       <div style="font-size:24px;font-weight:900;color:#fff">Pick your type</div>
     </div>
     <div id="career-type-groups" style="width:100%"></div>
-    <button class="btn-start" id="career-type-continue" style="width:100%;margin-top:10px" onclick="go('s-career-create-handedness');renderCareerHandednessStep()" disabled>Continue</button>
+    <button class="btn-start" id="career-type-continue" style="width:100%;margin-top:10px" onclick="finishCareerCreation()" disabled>Create Player</button>
     <button class="btn-auth-small" onclick="go('s-career-create-role')" style="margin-top:14px">← Back</button>
-  </div>
-
-  <div id="s-career-create-handedness" class="screen">
-    <div style="width:100%;text-align:left;margin-bottom:20px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode · Step 4 of 4</div>
-      <div style="font-size:24px;font-weight:900;color:#fff">Handedness</div>
-    </div>
-    <div id="career-hand-groups" style="width:100%"></div>
-    <button class="btn-start" id="career-hand-continue" style="width:100%;margin-top:10px" onclick="finishCareerCreation()" disabled>Create Player</button>
-    <button class="btn-auth-small" onclick="go('s-career-create-type')" style="margin-top:14px">← Back</button>
   </div>
 
   <div id="s-career-create-reveal" class="screen">
@@ -15037,11 +15027,6 @@
         off:    { control:41, threat:29, variation:44 },
       },
       keeper: {
-        // specialistFielding trimmed -3/stat from its old 58avg so the
-        // weighted formula (60% weight, still the biggest single term) lands
-        // on 45 rather than 47 — see computeOVR.
-        specialistFielding:    { keeping:65, catching:65, groundFielding:35 },
-        specialistBatting:     { technique:32, power:32, temperament:32 },
         keeperBatsmanFielding: { keeping:60, catching:60, groundFielding:36 },
       },
       // Catching/groundFielding for the three non-keeper roles — none of their
@@ -15078,8 +15063,7 @@
           : {...CAREER_RATING_TABLES.bowlTypePrimary[opts.bowlType], ...CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]},
           CAREER_RATING_TABLES.fielding.allrounder);
       } else if (role === 'keeper') {
-        if (opts.type === 'specialistKeeper') Object.assign(r, CAREER_RATING_TABLES.keeper.specialistFielding, CAREER_RATING_TABLES.keeper.specialistBatting);
-        else Object.assign(r, CAREER_RATING_TABLES.keeper.keeperBatsmanFielding, CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]);
+        Object.assign(r, CAREER_RATING_TABLES.keeper.keeperBatsmanFielding, CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]);
       }
       return r;
     }
@@ -15114,7 +15098,7 @@
     let CAREER = {};
     function resetCareerState() {
       CAREER = {
-        draft: { name:'', role:null, type:null, lean:null, battingType:null, bowlBroadType:null, bowlType:null, batHand:null, bowlHand:null, leagueId:null, assignedClub:null, assignedClubSquad:null, replacedPlayerName:null },
+        draft: { name:'', role:null, type:null, lean:null, battingType:null, bowlBroadType:null, bowlType:null, leagueId:null, assignedClub:null, assignedClubSquad:null, replacedPlayerName:null },
         player: null,
         leagueId: null, myClubId: 0, myClubName: null, myClubRating: null,
         clubs: [],
@@ -15145,8 +15129,7 @@
 
     // ── Creation flow: option data ───────────────────────────────────────
     const CAREER_TYPE_OPTIONS = {
-      batter: [ {v:'opener', label:'Opener', icon:'🏏', desc:'Opens the innings, faces the new ball first.'}, {v:'topOrder', label:'Top Order', icon:'🏏', desc:'Comes in at first-drop or after, once the shine is off.'}, {v:'middleOrder', label:'Middle Order', icon:'🏏', desc:'Arrives with the innings already shaped. Built to finish it.'} ],
-      keeper: [ {v:'keeperBatsman', label:'Keeper-Batsman', icon:'🧤', desc:'Solid gloves, genuine runs in the bank.'}, {v:'specialistKeeper', label:'Specialist Keeper', icon:'🧤', desc:'Elite hands first, the bat is a bonus.'} ],
+      batter: [ {v:'opener', label:'Opener', icon:'🏏', desc:'Opens the innings, faces the new ball first.'}, {v:'topOrder', label:'Top Order', icon:'🏏', desc:'Comes in at first-drop or after, once the shine is off.'} ],
     };
     const CAREER_LEAN_OPTIONS = [
       {v:'battingAR', label:'Batting All-Rounder', icon:'🏏', desc:'A batter first who can also turn their arm over.'},
@@ -15191,6 +15174,21 @@
       };
       document.getElementById('career-role-desc').textContent = descs[role];
       document.getElementById('career-role-continue').disabled = false;
+    }
+    // Keeper has nothing left to configure — role alone fixes them as a
+    // Keeper-Batsman (Specialist Keeper removed: picking Keeper always
+    // means genuine runs in the bank, not gloves-only) and their batting
+    // flavour is already forced to Middle Order (see finishCareerCreation),
+    // so there's no Type screen to show at all. Every other role still has
+    // a real choice, so they go through it as normal.
+    function careerContinueFromRole() {
+      if (CAREER.draft.role === 'keeper') {
+        CAREER.draft.type = 'keeperBatsman';
+        finishCareerCreation();
+      } else {
+        go('s-career-create-type');
+        renderCareerTypeStep();
+      }
     }
 
     // Renders one labeled chip-group into a container; caller supplies the
@@ -15247,11 +15245,19 @@
       const d = CAREER.draft;
       if (role === 'batter') return !!d.type;
       if (role === 'bowler') return !!(d.bowlBroadType && d.bowlType);
-      if (role === 'allrounder') return !!(d.lean && d.battingType && d.bowlBroadType && d.bowlType);
-      if (role === 'keeper') return d.type === 'specialistKeeper' || !!(d.type === 'keeperBatsman' && d.battingType);
+      if (role === 'allrounder') return !!(d.lean && d.bowlBroadType && d.bowlType);
       return false;
     }
 
+    // Only a pure Batter's batting-order slot is actually up to them —
+    // Opener/Top Order maps straight onto where CAREER_BAT_POSITION forces
+    // them in. All-Rounders and Keeper-Batsmen were previously asked the
+    // same Opener/Top Order/Middle Order question even though their forced
+    // position (5/7/6 — see CAREER_BAT_POSITION) never honours it: a
+    // Keeper-Batsman who picked "Opener" would still bat at 6 and never
+    // open. Rather than ask a question the game can't act on, their batting
+    // ratings flavour is fixed to Middle Order — the closest real match to
+    // where they actually bat.
     function renderCareerTypeStep() {
       const role = CAREER.draft.role;
       const container = document.getElementById('career-type-groups');
@@ -15268,78 +15274,49 @@
         const renderRest = () => {
           restWrap.innerHTML = '';
           if (!CAREER.draft.lean) return;
-          careerRenderGroup(restWrap, 'battingtype', 'Batting Type', CAREER_TYPE_OPTIONS.batter, CAREER.draft.battingType, v => { CAREER.draft.battingType = v; checkReady(); });
           renderCareerBowlTypeGroups(restWrap, checkReady);
         };
         careerRenderGroup(container, 'lean', 'Lean', CAREER_LEAN_OPTIONS, CAREER.draft.lean, v => { CAREER.draft.lean = v; renderRest(); checkReady(); });
         container.appendChild(restWrap);
         renderRest();
-      } else if (role === 'keeper') {
-        const restWrap = document.createElement('div');
-        const renderRest = () => {
-          restWrap.innerHTML = '';
-          if (CAREER.draft.type === 'keeperBatsman') {
-            careerRenderGroup(restWrap, 'kbattype', 'Batting Type', CAREER_TYPE_OPTIONS.batter, CAREER.draft.battingType, v => { CAREER.draft.battingType = v; checkReady(); });
-          }
-        };
-        careerRenderGroup(container, 'ktype', 'Keeper Type', CAREER_TYPE_OPTIONS.keeper, CAREER.draft.type, v => {
-          if (v !== CAREER.draft.type) CAREER.draft.battingType = null;
-          CAREER.draft.type = v;
-          renderRest();
-          checkReady();
-        });
-        container.appendChild(restWrap);
-        renderRest();
-      }
-      checkReady();
-    }
-
-    function renderCareerHandednessStep() {
-      const role = CAREER.draft.role;
-      const container = document.getElementById('career-hand-groups');
-      container.innerHTML = '';
-      const continueBtn = document.getElementById('career-hand-continue');
-      const needsBowlArm = role === 'bowler' || role === 'allrounder';
-      const checkReady = () => { continueBtn.disabled = !(CAREER.draft.batHand && (!needsBowlArm || CAREER.draft.bowlHand)); };
-      const batOptions = [ {v:'right', label:'Right-Handed', icon:'🏏', desc:'Bats right-handed.'}, {v:'left', label:'Left-Handed', icon:'🏏', desc:'Bats left-handed.'} ];
-      careerRenderGroup(container, 'bathand', 'Batting Hand', batOptions, CAREER.draft.batHand, v => { CAREER.draft.batHand = v; checkReady(); });
-      if (needsBowlArm) {
-        const bowlOptions = [ {v:'right', label:'Right-Arm', icon:'🎯', desc:'Bowls right-arm.'}, {v:'left', label:'Left-Arm', icon:'🎯', desc:'Bowls left-arm.'} ];
-        careerRenderGroup(container, 'bowlhand', 'Bowling Arm', bowlOptions, CAREER.draft.bowlHand, v => { CAREER.draft.bowlHand = v; checkReady(); });
       }
       checkReady();
     }
 
     function finishCareerCreation() {
       const d = CAREER.draft;
+      // All-Rounders and Keepers never got a real batting-order choice (see
+      // renderCareerTypeStep) — fix the ratings flavour to Middle Order,
+      // the closest match to where CAREER_BAT_POSITION actually bats them
+      // (5/7/6).
+      if (d.role === 'allrounder' || d.role === 'keeper') d.battingType = 'middleOrder';
       const ratings = buildPlayerRatings(d.role, d);
       const ovr = computeOVR(ratings, d.role);
       CAREER.player = {
         name: d.name, role: d.role, type: d.type, lean: d.lean,
         battingType: d.battingType, bowlBroadType: d.bowlBroadType, bowlType: d.bowlType,
-        batHand: d.batHand, bowlHand: d.bowlHand, ratings, ovr,
+        ratings, ovr,
       };
       renderCareerReveal();
       go('s-career-create-reveal');
     }
 
     const CAREER_ROLE_LABEL = { batter:'Batter', bowler:'Bowler', allrounder:'All-Rounder', keeper:'Keeper' };
-    const CAREER_TYPE_LABEL = { opener:'Opener', topOrder:'Top Order', middleOrder:'Middle Order', fast:'Fast', medium:'Medium', leg:'Leg Spin', off:'Off Spin', keeperBatsman:'Keeper-Batsman', specialistKeeper:'Specialist Keeper' };
+    const CAREER_TYPE_LABEL = { opener:'Opener', topOrder:'Top Order', middleOrder:'Middle Order', fast:'Fast', medium:'Medium', leg:'Leg Spin', off:'Off Spin', keeperBatsman:'Keeper-Batsman' };
 
     function careerPlayerSubtitle(p) {
       const bits = [CAREER_ROLE_LABEL[p.role]];
       if (p.role === 'allrounder') {
         bits.push(p.lean === 'battingAR' ? 'Batting Lean' : 'Bowling Lean');
-        bits.push(`${CAREER_TYPE_LABEL[p.battingType]} / ${CAREER_TYPE_LABEL[p.bowlType]}`);
+        bits.push(CAREER_TYPE_LABEL[p.bowlType]);
       } else if (p.role === 'bowler') {
         bits.push(CAREER_TYPE_LABEL[p.bowlType]);
         bits.push(CAREER_BOWL_SLOT_LABEL[careerBowlSlot(p)]);
-      } else if (p.role === 'keeper') {
-        bits.push(CAREER_TYPE_LABEL[p.type]);
-        if (p.type === 'keeperBatsman') bits.push(CAREER_TYPE_LABEL[p.battingType]);
-      } else {
+      } else if (p.role === 'batter') {
         bits.push(CAREER_TYPE_LABEL[p.type]);
       }
+      // Keeper: role label alone is enough — every Keeper is a
+      // Keeper-Batsman now, so there's nothing further to disclose.
       return bits.join(' · ');
     }
 
@@ -15755,14 +15732,34 @@
           else if (oversDiff < 0 && overs[i] > 2) { overs[i]--; oversDiff++; }
         }
       }
-      let wktsLeft = remainingWkts;
-      const wktsByBowler = bowlers.map((p, i) => {
-        const w = i < bowlers.length - 1
-          ? Math.min(wktsLeft, Math.random() < (weights[i] / totalW) * 2.5 ? Math.floor(Math.random() * 3) + 1 : 0)
-          : wktsLeft;
-        wktsLeft = Math.max(0, wktsLeft - w);
-        return w;
-      });
+      // Weighted-random shares with per-bowler noise, then reconciled to the
+      // innings' real wicket count by redistributing one at a time across
+      // whoever still has headroom — capped at a realistic 6-wicket ceiling
+      // per bowler first, only relaxed if a short attack genuinely can't fit
+      // the total any other way. The previous approach gave every bowler but
+      // the last a small 0-3 share and then dumped the ENTIRE remainder on
+      // whichever bowler happened to be listed last, regardless of how many
+      // wickets that was — a real 5-for is a good day, but this made a
+      // single bowler take 7+ wickets in ~18% of innings, roughly 50x too
+      // often for what should be a rare "great day" event.
+      const wktsByBowler = bowlers.map((p, i) => Math.max(0, Math.min(Math.min(6, overs[i]), Math.round((weights[i] / totalW) * remainingWkts * (0.6 + Math.random())))));
+      const reconcileWkts = (capFn) => {
+        let diff = remainingWkts - wktsByBowler.reduce((s, v) => s + v, 0);
+        for (let guard = 0; diff !== 0 && guard < 200; guard++) {
+          for (let i = 0; i < wktsByBowler.length && diff !== 0; i++) {
+            if (diff > 0 && wktsByBowler[i] < capFn(i)) { wktsByBowler[i]++; diff--; }
+            else if (diff < 0 && wktsByBowler[i] > 0) { wktsByBowler[i]--; diff++; }
+          }
+        }
+        return diff;
+      };
+      // Realistic per-bowler cap first; if a short attack (e.g. the tracked
+      // player bowled most of a small innings, leaving only 2-over slots for
+      // everyone else) genuinely can't fit the total wickets under that cap,
+      // fall back to an unbounded pass — conservation with the real total is
+      // a hard invariant, "no more than ~1 wicket/over" is only ever a soft
+      // realism preference on top of it.
+      if (reconcileWkts(i => Math.min(6, overs[i])) !== 0) reconcileWkts(() => 10);
       // Economy used to be a flat 5-11 regardless of who was bowling — rating
       // now pulls it down (a 60-rated bowler runs ~4/over cheaper than a
       // 30-rated one before noise), so a club's better bowlers visibly go for
@@ -15840,7 +15837,7 @@
     const CAREER_BAT_POSITION = {
       'batter.opener': 1, 'batter.topOrder': 4, 'batter.middleOrder': 6,
       'allrounder.battingAR': 5, 'allrounder.bowlingAR': 7,
-      'keeper.keeperBatsman': 6, 'keeper.specialistKeeper': 8,
+      'keeper.keeperBatsman': 6,
       'bowler': 10,
     };
     function careerPosKey(p) {
@@ -15892,32 +15889,26 @@
       const balls = Math.max(1, Math.min(myTeamOvers * 6, Math.round(runs / sr)));
       return { runs, out, balls, pos };
     }
+    // How much you bowl is decided by your actual bowling stats and how
+    // today's spell is going — never by your nominal role. A "Bowling
+    // All-Rounder" whose control/threat/variation have genuinely been
+    // upgraded to a specialist's level (the rating cap is the same 80 for
+    // everyone, role isn't a ceiling on it) gets trusted with overs exactly
+    // like a specialist would; a weak part-timer stays a weak part-timer
+    // even if they're nominally filed as a "Bowler". careerBowlSlot still
+    // decides *when* you come on (seamers open, spinners/all-rounders come
+    // on first change) — that's timing, not workload, and stays type-based.
     function simTrackedPlayerBowling(player, oppWktsAvailable, oppScoreAvailable, oppOvers) {
       const r = player.ratings;
       if (r.control <= 15 && r.threat <= 15) return null;
-      // All-Rounders previously got the same 3-7 overs regardless of lean —
-      // meaning a Batting-AR's "secondary" bowling was handed the exact same
-      // workload as a Bowling-AR's actual primary job, so the rating discount
-      // alone (which is a much weaker lever than overs bowled) barely dented
-      // their bowling output. Bowling-AR keeps the old range since that's
-      // genuinely their main discipline; Batting-AR drops to a real part-timer's
-      // workload, matching how far short its output should fall of a specialist's.
-      // Club cricket allows a bowler up to 15 overs (not the ODI 10-over cap) —
-      // a trusted frontline bowler regularly gets well into double figures.
-      // Can't bowl more overs personally than the whole innings lasted
-      // (matters for a short, collapsed innings).
-      const overShare = Math.min(Math.round(oppOvers), player.role === 'bowler' ? 8 + Math.floor(Math.random() * 8)
-        : player.role === 'allrounder' ? (player.lean === 'battingAR' ? 2 + Math.floor(Math.random() * 3) : 5 + Math.floor(Math.random() * 6))
-        : Math.random() < 0.3 ? 1 + Math.floor(Math.random() * 3) : 0);
-      if (!overShare) return null;
+      const skill = (r.control + r.threat + r.variation) / 3;
+      // A genuinely weak part-timer (skill down near the unprogressed
+      // all-rounder-secondary floor, ~38) sometimes just doesn't get turned
+      // to at all — real captains don't always give the part-timer an over.
+      // Real bowling stats (skill 45+, roughly an unprogressed specialist's
+      // baseline) always earn a chance.
+      if (skill < 45 && Math.random() < (45 - skill) / 45) return null;
       const economy = Math.max(2.5, 7.5 - r.control / 20);
-      // Capped against the opponent's actual final total, same as wickets
-      // already are below — found via the new mini-scorecard's own
-      // consistency check: an uncapped figure could occasionally exceed the
-      // whole team's score (e.g. "14-65-2" bowled at a team that only ever
-      // scored 60), which generateTeamBowling's downstream conservation step
-      // then had to silently zero out every other bowler to compensate for.
-      const runsConceded = Math.min(oppScoreAvailable, Math.max(0, Math.round(overShare * (economy + (Math.random() - 0.5) * 2))));
       // /175 (audited): a starting specialist Bowler (threat~53) landed a
       // 15.4 bowling average and took a wicket in 96.6% of matches (league-
       // wide generated bowlers, same 30-60 rating band, averaged 23.3) — an
@@ -15927,10 +15918,47 @@
       // (cap 80 threat) to earn a genuinely elite ~15 average rather than
       // start there for free.
       const wicketChancePerOver = r.threat / 350;
-      let wickets = 0;
-      for (let i = 0; i < overShare; i++) if (Math.random() < wicketChancePerOver) wickets++;
+      // The captain's ceiling for how long today's spell CAN run, scaled
+      // from skill: a borderline part-timer (~38) tops out around a brief
+      // 5-over look, an unprogressed specialist (~47-52) around 8-9, a fully
+      // progressed elite bowler (~80) reaches club cricket's real 15-over
+      // cap. Whether the spell actually reaches that ceiling is down to the
+      // over-by-over performance loop below, not guaranteed by the ceiling
+      // itself. Can't bowl more overs personally than the innings lasted.
+      const skillCeiling = Math.round(Math.max(2, (skill - 20) * 0.28));
+      const maxOvers = Math.min(15, Math.round(oppOvers), skillCeiling);
+      if (maxOvers <= 0) return null;
+      let overs = 0, runsConceded = 0, wickets = 0, spellRuns = 0;
+      for (let i = 0; i < maxOvers; i++) {
+        if (wickets >= oppWktsAvailable || runsConceded >= oppScoreAvailable) break;
+        const overRuns = Math.max(0, Math.round(economy + (Math.random() - 0.5) * 6));
+        const overWicket = Math.random() < wicketChancePerOver;
+        overs++; runsConceded += overRuns; spellRuns += overRuns;
+        if (overWicket) wickets++;
+        // A fair look (3 overs) before the captain starts making a call each
+        // over after: keep bowling if this spell's economy is holding up —
+        // a wicket this over buys real extra rope even in an expensive
+        // spell — and get pulled early otherwise, regardless of rating.
+        if (overs >= 3 && overs < maxOvers) {
+          const spellEcon = spellRuns / overs;
+          let keepGoing = spellEcon <= economy + 1.5 ? 0.88 : spellEcon <= economy + 3.5 ? 0.55 : 0.2;
+          if (overWicket) keepGoing = Math.min(0.95, keepGoing + 0.25);
+          if (Math.random() > keepGoing) break;
+        }
+      }
+      // A short/weak opposition innings (already 0 wickets or runs of
+      // headroom left the moment this is called — rare, but real) can break
+      // out of the loop before a single over is bowled. Match every other
+      // caller's contract: bowl is either null or a genuine spell of at
+      // least 1 over, never a zero-over stub.
+      if (overs === 0) return null;
+      // Capped against the opponent's actual final total — an uncapped
+      // figure could occasionally exceed the whole team's score, which
+      // generateTeamBowling's downstream conservation step then had to
+      // silently zero out every other bowler to compensate for.
+      runsConceded = Math.min(oppScoreAvailable, runsConceded);
       wickets = Math.min(wickets, oppWktsAvailable);
-      return { overs: overShare, runsConceded, wickets };
+      return { overs, runsConceded, wickets };
     }
     function simTrackedPlayerFielding(player) {
       const r = player.ratings;
