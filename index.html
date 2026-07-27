@@ -15735,7 +15735,14 @@
       // innings use a lower mean since they're typically cut short (innings/
       // overs ran out around them), keeping runs/outs realistic.
       const meanRuns = skill * posFactor * 0.55 * (out ? 1 : 0.5);
-      const runs = Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns));
+      // Capped against the team's actual final score — this was generated
+      // completely independently of it, so it could (and did) come out
+      // higher than the whole team's total. generateTeamInnings computes
+      // every other batter's share as whatever's left after subtracting this
+      // value, so an uncapped overshoot didn't just look wrong here — it
+      // forced every other contributor's remaining share to zero, which is
+      // what showed up as the rest of the XI all going for first-ball ducks.
+      const runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
       const sr = 0.75 + r.power / 100;
       // Can't personally face more balls than the whole team's innings had.
       const balls = Math.max(1, Math.min(myTeamOvers * 6, Math.round(runs / sr)));
@@ -16723,15 +16730,24 @@
       document.getElementById('scorecard-title').textContent = `${clubA.name} vs ${clubB.name}`;
       document.getElementById('scorecard-result').textContent = entry.won ? `You won · ${entry.myScore}-${entry.oppScore}` : `You lost · ${entry.oppScore}-${entry.myScore}`;
       document.getElementById('scorecard-meta').innerHTML = careerScorecardMetaHTML(entry, sc, clubA, clubB);
+      // Sections in the order things actually happened — whoever batted
+      // first, first. This used to always show club A batting first
+      // regardless of the real toss/order, which could show your own side
+      // as having batted first when you'd actually batted second.
+      const battingFirstIsA = entry.teamResult ? entry.teamResult.battingFirstIsA : true; // older saved matches predate teamResult
+      const firstClub = battingFirstIsA ? clubA : clubB, secondClub = battingFirstIsA ? clubB : clubA;
+      const firstBatting = battingFirstIsA ? sc.battingA : sc.battingB, secondBatting = battingFirstIsA ? sc.battingB : sc.battingA;
+      const firstBowling = battingFirstIsA ? sc.bowlingB : sc.bowlingA; // whoever bowled at the side batting first
+      const secondBowling = battingFirstIsA ? sc.bowlingA : sc.bowlingB;
       document.getElementById('scorecard-content').innerHTML = `
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${clubA.name} Batting</div>
-        ${careerBattingCardHTML(sc.battingA)}
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${clubB.name} Bowling</div>
-        ${careerBowlingCardHTML(sc.bowlingB)}
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:20px 0 8px;text-align:left">${clubB.name} Batting</div>
-        ${careerBattingCardHTML(sc.battingB)}
-        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${clubA.name} Bowling</div>
-        ${careerBowlingCardHTML(sc.bowlingA)}
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${firstClub.name} Batting</div>
+        ${careerBattingCardHTML(firstBatting)}
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${secondClub.name} Bowling</div>
+        ${careerBowlingCardHTML(firstBowling)}
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:20px 0 8px;text-align:left">${secondClub.name} Batting</div>
+        ${careerBattingCardHTML(secondBatting)}
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin:16px 0 8px;text-align:left">${firstClub.name} Bowling</div>
+        ${careerBowlingCardHTML(secondBowling)}
       `;
     }
 
