@@ -15386,48 +15386,98 @@
     // timeline this build doesn't simulate) — final wickets-lost stands in for it.
     function chaseBattingBonus(wktsLost) { return wktsLost <= 1 ? 4 : wktsLost <= 3 ? 3 : wktsLost <= 6 ? 2 : 1; }
 
-    // A flat 0-10 uniform roll gave every wicket count the same ~9% chance
-    // regardless of the score — so a team scoring 250 had the same odds of
-    // finishing 2 down as 9 down. In a real 50-over innings most of the order
-    // gets through by the end whether you're chasing or defending, so this
-    // skews toward the top of the range; a winning team gets a real chance at
-    // a genuinely low-wicket finish (a comfortable chase, wickets in hand),
-    // a losing team essentially never does. This is what was driving the
-    // "nearly everyone shows not out" scorecard bug — the generated batting
-    // card marks (wicketsLost) dismissals across ~10 contributors, so a low
-    // wicket count left most of the XI marked not-out purely by roll, which
-    // also quietly inflated every non-tracked player's batting average league-wide.
-    function careerRandomWickets(won) {
-      if (won && Math.random() < 0.25) return 2 + Math.floor(Math.random() * 4); // 2-5: comfortable chase
-      return 6 + Math.floor(Math.random() * 5); // 6-10: the common case, win or lose
+    // Score, wickets and overs used to be rolled independently (a flat score
+    // range, a flat wickets range, a flat "overs bowled" range elsewhere) —
+    // three unrelated numbers that could combine into nonsense no real match
+    // would ever produce: a team "63 off 48 overs" (a run rate no side bats
+    // at for that long without also losing all 10), a team stopping at 46
+    // overs without being all out (the innings can only end early by being
+    // bowled out — otherwise it runs the full quota), or a chasing team
+    // sailing past their target to some unrelated final score instead of the
+    // innings ending the moment they win. Below generates one coherent,
+    // rule-valid result per innings — a genuine run rate driving score and
+    // overs together, "not all out" always means the full 50, and a
+    // successful chase always ends at (target + a small margin), never
+    // independently of what it was chasing — and the live match screen only
+    // ever reveals what this already decided, ball by ball.
+    const CAREER_MAX_OVERS = 50;
+    function careerInningsRunRate(battingRating, bowlingRating) {
+      const strengthDiff = battingRating - bowlingRating; // roughly -30..+30
+      return Math.max(2.8, Math.min(6.5, 4.3 + strengthDiff * 0.03 + (Math.random() - 0.5) * 1.4));
+    }
+    function careerGenerateFirstInnings(battingRating, bowlingRating) {
+      const runRate = careerInningsRunRate(battingRating, bowlingRating);
+      // Weaker batting / stronger bowling raises the chance of a genuine
+      // collapse; otherwise the side simply bats out its full 50.
+      const collapseChance = Math.max(0.15, Math.min(0.6, 0.38 - (battingRating - bowlingRating) * 0.008));
+      // Whole overs only — the bowling card that ultimately renders this
+      // only ever allocates whole overs per bowler (real club scorecards
+      // don't show a bowler on "3.4"), so a fractional innings-level figure
+      // here would just be silently rounded away downstream anyway. Keeping
+      // it a plain integer avoids the exact "decimal vs. ball-notation"
+      // confusion that caused the earlier invalid-overs display bug.
+      if (Math.random() < collapseChance) {
+        const overs = 15 + Math.random() * (CAREER_MAX_OVERS - 20); // bowled out anywhere from over 15 to 45
+        return { score: Math.max(40, Math.round(overs * runRate)), wickets: 10, overs: Math.round(overs) };
+      }
+      return { score: Math.round(CAREER_MAX_OVERS * runRate), wickets: 2 + Math.floor(Math.random() * 8), overs: CAREER_MAX_OVERS };
+    }
+    function careerGenerateChase(battingRating, bowlingRating, target, chaserWins) {
+      if (chaserWins) {
+        // Wins the moment the target is reached — a small margin's worth of
+        // extra runs, not an independently-rolled final score.
+        const runRate = careerInningsRunRate(battingRating, bowlingRating);
+        const score = target + 1 + Math.floor(Math.random() * 7);
+        const impliedOvers = score / runRate;
+        const overs = Math.max(10, Math.min(CAREER_MAX_OVERS - 1, Math.round(impliedOvers * (0.85 + Math.random() * 0.3))));
+        return { score, wickets: Math.floor(Math.random() * 9), overs }; // 0-8 down — can't be 10 and have won
+      }
+      // Falls short — the run rate itself is constrained to genuinely
+      // undershoot what the chase required, rather than generating an
+      // unrelated score and clamping it down to target-1 at the end (that
+      // clamp used to be the only thing enforcing the target, which decoupled
+      // the final score from the overs/run-rate that supposedly produced it —
+      // e.g. a target of 65 could clamp an 89-off-50-overs innings down to
+      // 64, leaving a nonsense implied run rate of 1.3/over on the scorecard).
+      const requiredRate = target / CAREER_MAX_OVERS;
+      const shortfallRate = Math.max(2.2, requiredRate - (0.4 + Math.random() * 2.0));
+      // Against a low target, "survives all 50 overs but still falls short"
+      // is the unrealistic case — that's a sub-2.2 run rate for a whole
+      // innings against a target that low, something real batting sides
+      // essentially never do (they'd either get there or get bowled out
+      // trying). Force the collapse branch instead once the target itself
+      // can't sustain 50 overs at a believable rate.
+      const canSurvive50 = target - 1 >= CAREER_MAX_OVERS * 2.2;
+      if (!canSurvive50 || Math.random() < 0.55) {
+        const overs = 15 + Math.random() * (CAREER_MAX_OVERS - 20);
+        return { score: Math.max(30, Math.min(target - 1, Math.round(overs * shortfallRate))), wickets: 10, overs: Math.round(overs) };
+      }
+      return { score: Math.max(30, Math.min(target - 1, Math.round(CAREER_MAX_OVERS * shortfallRate))), wickets: 2 + Math.floor(Math.random() * 8), overs: CAREER_MAX_OVERS };
     }
     function simCheapClubMatch(clubAId, clubBId) {
       const rA = CAREER.clubs[clubAId].rating, rB = CAREER.clubs[clubBId].rating;
       const pA = 1 / (1 + Math.exp(-0.08 * (rA - rB)));
       const aWins = Math.random() < pA;
-      const winnerScore = 140 + Math.floor(Math.random() * 140);
-      const loserScore = Math.max(60, winnerScore - (15 + Math.floor(Math.random() * 110)));
-      const scoreA = aWins ? winnerScore : loserScore;
-      const scoreB = aWins ? loserScore : winnerScore;
-      let wktsA = careerRandomWickets(aWins);
-      let wktsB = careerRandomWickets(!aWins);
+      const winnerId = aWins ? clubAId : clubBId;
       // The toss now actually decides who bats first, rather than that being an
       // unrelated coin flip — same 50/50-ish spread either way, but it's a real
       // toss result the live match screen can announce and act on.
       const tossWinnerIsA = Math.random() < 0.5;
       const tossChoiceBat = Math.random() < 0.5;
       const battingFirstIsA = tossWinnerIsA ? tossChoiceBat : !tossChoiceBat;
-      const winnerId = aWins ? clubAId : clubBId;
-      // A side batting second can't be all out (10 wkts) and still have won
-      // the chase — the innings ends the instant the 10th wicket falls, so if
-      // the target had already been reached the match would already be over.
-      // Only matters once a match's "won by N wickets" margin is actually
-      // surfaced (the scorecard screen now does), but fix the source number
-      // rather than patching it at display time — everything else (the
-      // bowling card, league stats) reads wktsA/wktsB too.
-      if (battingFirstIsA && !aWins && wktsB >= 10) wktsB = 9;
-      if (!battingFirstIsA && aWins && wktsA >= 10) wktsA = 9;
-      return { clubAId, clubBId, scoreA, wktsA, scoreB, wktsB, winnerId, battingFirstIsA, tossWinnerIsA, tossChoiceBat };
+
+      const firstClubId = battingFirstIsA ? clubAId : clubBId;
+      const secondClubId = battingFirstIsA ? clubBId : clubAId;
+      const firstInnings = careerGenerateFirstInnings(CAREER.clubs[firstClubId].rating, CAREER.clubs[secondClubId].rating);
+      const secondInnings = careerGenerateChase(CAREER.clubs[secondClubId].rating, CAREER.clubs[firstClubId].rating, firstInnings.score + 1, winnerId === secondClubId);
+
+      const scoreA = battingFirstIsA ? firstInnings.score : secondInnings.score;
+      const wktsA = battingFirstIsA ? firstInnings.wickets : secondInnings.wickets;
+      const oversA = battingFirstIsA ? firstInnings.overs : secondInnings.overs;
+      const scoreB = battingFirstIsA ? secondInnings.score : firstInnings.score;
+      const wktsB = battingFirstIsA ? secondInnings.wickets : firstInnings.wickets;
+      const oversB = battingFirstIsA ? secondInnings.overs : firstInnings.overs;
+      return { clubAId, clubBId, scoreA, wktsA, oversA, scoreB, wktsB, oversB, winnerId, battingFirstIsA, tossWinnerIsA, tossChoiceBat };
     }
 
     function applyResultToTable(result) {
@@ -15519,7 +15569,7 @@
       });
       return card;
     }
-    function generateTeamBowling(club, oppWktsLost, oppScore, myBowl) {
+    function generateTeamBowling(club, oppWktsLost, oppScore, teamOvers, myBowl) {
       const card = [];
       let remainingWkts = oppWktsLost, remainingRuns = oppScore;
       if (myBowl) {
@@ -15527,25 +15577,40 @@
         remainingWkts = Math.max(0, oppWktsLost - myBowl.wickets);
         remainingRuns = Math.max(0, oppScore - myBowl.runsConceded);
       }
-      const bowlers = club.squad.filter(p => p.id !== 'me').sort((a, b) => b.rating - a.rating).slice(0, 6);
+      // teamOvers is now the innings' real, already-decided length (see
+      // simCheapClubMatch) — not a separately-rolled guess — so "team batted
+      // 46 overs" and "bowlers combined for 46 overs" can never disagree.
+      // The tracked player's own overs come out of this same total, not on
+      // top of it — a floor of 6 here used to inject phantom overs whenever
+      // that left less than 6 (e.g. a specialist bowling almost an entire
+      // short, collapsed innings alone), overshooting the real total.
+      const oversTarget = Math.max(0, Math.round(teamOvers) - (myBowl ? myBowl.overs : 0));
+      // Six bowlers each need at least 2 overs to appear at all — for a
+      // small oversTarget (a short innings the tracked player already
+      // covered most of), that's more slots than there's room for, so shrink
+      // the attack to however many can genuinely get a 2-over minimum.
+      const bowlerCount = Math.min(6, Math.floor(oversTarget / 2));
+      const bowlers = club.squad.filter(p => p.id !== 'me').sort((a, b) => b.rating - a.rating).slice(0, bowlerCount);
       const weights = bowlers.map(p => careerRatingWeight(p.rating));
       const totalW = weights.reduce((s, w) => s + w, 0) || 1;
       // Overs are allocated by the same rating weights as runs/wickets — a
       // captain trusts their best bowler with more overs, not a flat random
       // share — capped at 15 (club cricket's real per-bowler limit, not the
-      // ODI-style 10 this used to assume). 1-4 overs/bowler was a leftover T20
-      // cap (4 max); 6 bowlers at ~3 overs only covered ~18 of the ~50 overs
-      // actually bowled, which forced the runs-conservation step below to
-      // inflate everyone's per-over rate to compensate — that's what was
-      // swamping the rating signal in economy.
-      // The tracked player's own overs (already fixed, up to 15 for a
-      // specialist) come out of this same innings, not on top of it — without
-      // subtracting them here, a match where the tracked player bowled deep
-      // into their spell plus 6 more bowlers each getting a near-full share
-      // could add up to 60+ overs in a 50-over match. Verified this was
-      // producing exactly that (up to 64 overs) before this fix.
-      const oversTarget = Math.max(6, 44 + Math.floor(Math.random() * 6) - (myBowl ? myBowl.overs : 0)); // 44-49 total across the whole innings, allowing for one bowled out early
+      // ODI-style 10 this used to assume).
+      // Each bowler's share was independently rounded with no correction —
+      // six small roundings (plus the [2,15] clamp) reliably left the total
+      // off by 1-2 overs from oversTarget, which is exactly what showed up
+      // as the bowling card's overs not matching the innings' real length.
+      // Distribute the shortfall/excess one over at a time across whichever
+      // bowlers still have headroom until the total lands exactly right.
       const overs = bowlers.map((p, i) => Math.min(15, Math.max(2, Math.round((weights[i] / totalW) * oversTarget))));
+      let oversDiff = oversTarget - overs.reduce((s, v) => s + v, 0);
+      for (let guard = 0; oversDiff !== 0 && guard < 200; guard++) {
+        for (let i = 0; i < overs.length && oversDiff !== 0; i++) {
+          if (oversDiff > 0 && overs[i] < 15) { overs[i]++; oversDiff--; }
+          else if (oversDiff < 0 && overs[i] > 2) { overs[i]--; oversDiff++; }
+        }
+      }
       let wktsLeft = remainingWkts;
       const wktsByBowler = bowlers.map((p, i) => {
         const w = i < bowlers.length - 1
@@ -15578,8 +15643,8 @@
         clubAId: clubA.id, clubBId: clubB.id,
         battingA: generateTeamInnings(clubA, teamResult.scoreA, teamResult.wktsA, clubA.isMine ? myBat : null),
         battingB: generateTeamInnings(clubB, teamResult.scoreB, teamResult.wktsB, clubB.isMine ? myBat : null),
-        bowlingA: generateTeamBowling(clubA, teamResult.wktsB, teamResult.scoreB, clubA.isMine ? myBowl : null),
-        bowlingB: generateTeamBowling(clubB, teamResult.wktsA, teamResult.scoreA, clubB.isMine ? myBowl : null),
+        bowlingA: generateTeamBowling(clubA, teamResult.wktsB, teamResult.scoreB, teamResult.oversB, clubA.isMine ? myBowl : null),
+        bowlingB: generateTeamBowling(clubB, teamResult.wktsA, teamResult.scoreA, teamResult.oversA, clubB.isMine ? myBowl : null),
       };
     }
     function careerNewPlayerStatLine(line) {
@@ -15649,7 +15714,7 @@
       return null;
     }
     const CAREER_BOWL_SLOT_LABEL = { opening: 'Opening Bowler', firstChange: 'First Change' };
-    function simTrackedPlayerInnings(player, myTeamScore, myTeamWktsLost) {
+    function simTrackedPlayerInnings(player, myTeamScore, myTeamWktsLost, myTeamOvers) {
       const pos = CAREER_BAT_POSITION[careerPosKey(player)];
       if (pos - 1 > myTeamWktsLost && Math.random() > 0.3) return null;
       const r = player.ratings;
@@ -15672,10 +15737,11 @@
       const meanRuns = skill * posFactor * 0.55 * (out ? 1 : 0.5);
       const runs = Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns));
       const sr = 0.75 + r.power / 100;
-      const balls = Math.max(1, Math.round(runs / sr));
+      // Can't personally face more balls than the whole team's innings had.
+      const balls = Math.max(1, Math.min(myTeamOvers * 6, Math.round(runs / sr)));
       return { runs, out, balls, pos };
     }
-    function simTrackedPlayerBowling(player, oppWktsAvailable, oppScoreAvailable) {
+    function simTrackedPlayerBowling(player, oppWktsAvailable, oppScoreAvailable, oppOvers) {
       const r = player.ratings;
       if (r.control <= 15 && r.threat <= 15) return null;
       // All-Rounders previously got the same 3-7 overs regardless of lean —
@@ -15687,9 +15753,11 @@
       // workload, matching how far short its output should fall of a specialist's.
       // Club cricket allows a bowler up to 15 overs (not the ODI 10-over cap) —
       // a trusted frontline bowler regularly gets well into double figures.
-      const overShare = player.role === 'bowler' ? 8 + Math.floor(Math.random() * 8)
+      // Can't bowl more overs personally than the whole innings lasted
+      // (matters for a short, collapsed innings).
+      const overShare = Math.min(Math.round(oppOvers), player.role === 'bowler' ? 8 + Math.floor(Math.random() * 8)
         : player.role === 'allrounder' ? (player.lean === 'battingAR' ? 2 + Math.floor(Math.random() * 3) : 5 + Math.floor(Math.random() * 6))
-        : Math.random() < 0.3 ? 1 + Math.floor(Math.random() * 3) : 0;
+        : Math.random() < 0.3 ? 1 + Math.floor(Math.random() * 3) : 0);
       if (!overShare) return null;
       const economy = Math.max(2.5, 7.5 - r.control / 20);
       // Capped against the opponent's actual final total, same as wickets
@@ -15972,12 +16040,14 @@
       const mine = teamResult.clubAId === myClubId ? 'A' : 'B';
       const myScore = mine === 'A' ? teamResult.scoreA : teamResult.scoreB;
       const myWkts = mine === 'A' ? teamResult.wktsA : teamResult.wktsB;
+      const myOvers = mine === 'A' ? teamResult.oversA : teamResult.oversB;
       const oppScore = mine === 'A' ? teamResult.scoreB : teamResult.scoreA;
       const oppWkts = mine === 'A' ? teamResult.wktsB : teamResult.wktsA;
+      const oppOvers = mine === 'A' ? teamResult.oversB : teamResult.oversA;
       const won = teamResult.winnerId === myClubId;
 
-      const bat = simTrackedPlayerInnings(player, myScore, myWkts);
-      const bowl = simTrackedPlayerBowling(player, oppWkts, oppScore);
+      const bat = simTrackedPlayerInnings(player, myScore, myWkts, myOvers);
+      const bowl = simTrackedPlayerBowling(player, oppWkts, oppScore, oppOvers);
       const field = simTrackedPlayerFielding(player);
 
       if (bat) {
@@ -16069,6 +16139,19 @@
         baselineBalls: before.reduce((s, p) => s + p.balls, 0),
         baselineWkts: before.filter(p => p.out).length,
       };
+    }
+    // The team total isn't just your own runs — your partner is scoring too.
+    // There's no ball-by-ball data for them (only your own decomposed
+    // innings), so estimate their contribution at the innings' own average
+    // run rate for however many balls they've faced (assumed roughly equal
+    // to your own, matching the "even strike rotation" assumption the overs
+    // pacing already uses) — capped so it can never exceed the real final
+    // total for your innings.
+    function careerBattingLiveScore(ctx, baseline, runs, balls) {
+      const finalBalls = careerFinalOversBalls(ctx, ctx.myClubId);
+      const runRatePerBall = finalBalls > 0 ? ctx.myScore / finalBalls : 0;
+      const partnerRuns = Math.round(balls * runRatePerBall);
+      return Math.min(ctx.myScore, baseline.baselineRuns + runs + partnerRuns);
     }
     function careerBowlingBaseline(ctx) {
       const { teamResult, myClubId, player, bowl } = ctx;
@@ -16238,7 +16321,8 @@
         // face; capped against the innings' real known length so it can
         // never run past the actual final over count.
         const teamBallsSoFar = Math.min(baseline.baselineBalls + balls * 2, careerFinalOversBalls(ctx, ctx.myClubId));
-        careerPaintScorecard(careerScorecardRows(ctx, ctx.myClubId, careerLiveRowText(baseline.baselineRuns + runs, baseline.baselineWkts + wktBump, teamBallsSoFar)));
+        const liveScore = careerBattingLiveScore(ctx, baseline, runs, balls);
+        careerPaintScorecard(careerScorecardRows(ctx, ctx.myClubId, careerLiveRowText(liveScore, baseline.baselineWkts + wktBump, teamBallsSoFar)));
         if (!(isLast && bat.out)) {
           if (val === 6) careerLiveFeedRow('🎉', careerPick(CAREER_BALL_LINES.six)(player.name), '#4ade80');
           else if (val === 4) careerLiveFeedRow('🏏', careerPick(CAREER_BALL_LINES.four)(player.name), '#4ade80');
