@@ -2367,26 +2367,16 @@
       .wm-score-pop, .wm-wicket-flash, .wm-milestone-glow::before, .wm-milestone-glow .sc-batter-runs, .wm-milestone-badge, .wm-live-dot { animation: none !important }
     }
 
-    /* CAREER MODE — full-time verdict: the summary card grows and settles
-       in, the result banner below it lands a beat after so the eye is
-       drawn score-first, then down to win/loss. */
-    #career-match-summary.career-summary-grand {
-      animation: career-summary-in .5s var(--ease-out-strong) both
-    }
-
-    @keyframes career-summary-in {
-      from { opacity: 0; transform: translateY(10px) scale(.97) }
-      to { opacity: 1; transform: translateY(0) scale(1) }
-    }
-
+    /* CAREER MODE — full-time verdict: one consolidated result card (score,
+       MOTM, your own stats) that scales/settles in as a single grand beat
+       rather than a stack of separate boxes. */
     .career-result-card {
       width: 100%;
       border-radius: 14px;
-      padding: 28px 20px;
-      text-align: center;
+      padding: 26px 22px;
       margin-bottom: 14px;
       opacity: 0;
-      animation: career-result-in .55s .15s var(--ease-out-strong) both
+      animation: career-result-in .55s var(--ease-out-strong) both
     }
 
     .career-result-card.crc-win {
@@ -2397,6 +2387,10 @@
     .career-result-card.crc-loss {
       background: linear-gradient(135deg, #160808, #0e0606);
       border: 1px solid #3a1414
+    }
+
+    .career-result-hero {
+      text-align: center
     }
 
     .career-result-icon {
@@ -2425,23 +2419,96 @@
       margin-top: 6px
     }
 
-    .career-result-score {
-      font-size: 17px;
+    .career-result-divider {
+      height: 1px;
+      background: rgba(255,255,255,.08);
+      margin: 18px 0
+    }
+
+    .career-result-scores {
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .career-result-score-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px
+    }
+
+    .career-result-score-row .crs-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .career-result-score-row .crs-val {
+      flex-shrink: 0
+    }
+
+    .crs-winner {
+      font-size: 16px;
+      font-weight: 900;
+      color: #fff
+    }
+
+    .crs-loser {
+      font-size: 14px;
+      font-weight: 700;
+      color: #8a8a9c
+    }
+
+    .career-result-motm-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8080c0;
       font-weight: 800;
-      color: #e8e8f2;
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(255,255,255,.08)
+      text-align: left
+    }
+
+    .career-result-motm-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #fff;
+      margin-top: 5px;
+      text-align: left
+    }
+
+    .career-result-motm-sub {
+      font-size: 12px;
+      color: #9090a8;
+      margin-top: 2px;
+      text-align: left
+    }
+
+    .career-result-stats-title {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8080c0;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-align: left
+    }
+
+    .career-result-stats-body {
+      font-size: 14px;
+      color: #e0e0f0;
+      line-height: 2;
+      text-align: left
     }
 
     @keyframes career-result-in {
-      0% { opacity: 0; transform: scale(.9) translateY(14px) }
-      60% { opacity: 1; transform: scale(1.03) translateY(-2px) }
+      0% { opacity: 0; transform: scale(.92) translateY(16px) }
+      60% { opacity: 1; transform: scale(1.02) translateY(-2px) }
       100% { opacity: 1; transform: scale(1) translateY(0) }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      #career-match-summary.career-summary-grand, .career-result-card { animation: none !important; opacity: 1 !important }
+      .career-result-card { animation: none !important; opacity: 1 !important }
     }
 
     .sc-result-banner {
@@ -14884,7 +14951,6 @@
       <div id="career-live-score-sub" style="font-size:12px;color:#9090a8;margin-top:2px">—</div>
     </div>
     <div id="career-match-feed" style="width:100%;display:flex;flex-direction:column;gap:8px;min-height:160px;margin-bottom:18px"></div>
-    <div id="career-match-summary" style="display:none;width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:14px 16px;margin-bottom:14px"></div>
     <div id="career-match-result" style="display:none;width:100%"></div>
     <button class="btn-start" id="career-match-tap" style="width:100%;display:none">Tap to continue</button>
     <button class="btn-auth-small" id="career-match-skip" style="width:100%;margin-top:10px;display:none;background:#0d0d12">⏩ Skip Ahead</button>
@@ -16174,7 +16240,8 @@
       document.getElementById('career-match-feed').innerHTML = '';
       document.getElementById('career-live-score').style.display = 'none';
       document.getElementById('career-mini-scorecard').style.display = 'none';
-      document.getElementById('career-match-summary').style.display = 'none';
+      document.getElementById('career-match-result').style.display = 'none';
+      document.getElementById('career-match-result').innerHTML = '';
       document.getElementById('career-match-skip').style.display = 'none';
       document.getElementById('career-match-tap').style.display = 'none';
       careerShowSpeedBar();
@@ -16317,36 +16384,45 @@
       for (let i = 0; i < count; i++) { const t = careerPick(CAREER_DISMISSAL_TYPES); counts[t] = (counts[t] || 0) + 1; }
       return Object.entries(counts).map(([t, n]) => `${n} ${n > 1 ? CAREER_DISMISSAL_SUMMARY_LABEL[t].many : CAREER_DISMISSAL_SUMMARY_LABEL[t].one}`).join(', ');
     }
-    function careerMatchSummaryHTML(ctx) {
-      const rows = [];
-      if (ctx.bat) {
-        const sr = ctx.bat.balls ? ((ctx.bat.runs / ctx.bat.balls) * 100).toFixed(1) : '0.0';
-        rows.push(`<div><span style="color:#8080a0">Batting</span> — ${ctx.bat.runs} (${ctx.bat.balls})${ctx.bat.out ? '' : ' *'} · SR ${sr}</div>`);
-      } else {
-        rows.push(`<div><span style="color:#8080a0">Batting</span> — did not bat</div>`);
-      }
-      if (ctx.bowl) {
-        const econ = ctx.bowl.overs ? (ctx.bowl.runsConceded / ctx.bowl.overs).toFixed(1) : '0.0';
-        rows.push(`<div><span style="color:#8080a0">Bowling</span> — ${ctx.bowl.overs}-${ctx.bowl.runsConceded}-${ctx.bowl.wickets} · Econ ${econ}</div>`);
-        if (ctx.bowl.wickets > 0) rows.push(`<div><span style="color:#8080a0">Wickets</span> — ${careerTallyDismissals(ctx.bowl.wickets)}</div>`);
-      } else {
-        rows.push(`<div><span style="color:#8080a0">Bowling</span> — did not bowl</div>`);
-      }
-      if (ctx.field.involvements > 0) {
-        const dropped = ctx.field.involvements - ctx.field.clean;
-        const parts = [];
-        if (ctx.field.clean) parts.push(`${ctx.field.clean} catch${ctx.field.clean === 1 ? '' : 'es'} held`);
-        if (dropped) parts.push(`${dropped} dropped`);
-        rows.push(`<div><span style="color:#8080a0">Fielding</span> — ${parts.join(', ')}</div>`);
-      }
-      return `<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8080c0;font-weight:800;margin-bottom:10px;text-align:left">Your Match</div>
-        <div style="font-size:15px;color:#e0e0f0;line-height:2.1;text-align:left">${rows.join('')}</div>`;
+    function careerScoreWkts(score, wkts) {
+      const w = Math.min(10, wkts);
+      return `${score}${w >= 10 ? '' : '/' + w}`;
     }
-    // Below the "Your Match" card once full time is reached: the same
-    // margin logic buildCareerScorecard/careerScorecardMetaHTML use, so this
-    // can never disagree with the reviewable scorecard shown later.
-    function careerResultBannerHTML(ctx) {
-      const { teamResult, oppName, won, myScore, oppScore } = ctx;
+    // Player of the Match, picked from the same full scorecard the
+    // reviewable scorecard screen renders — every batter/bowler in both
+    // XIs, not just the tracked player — so it can genuinely go to an
+    // opponent or a teammate, not always "you". A lightweight impact score
+    // (runs + milestone bonus; wickets weighted against runs conceded), not
+    // a claimed-authoritative formula — good enough to pick a standout.
+    function careerPickMOTM(ctx) {
+      const sc = ctx.scorecard;
+      const entries = {};
+      const touch = (row, clubId) => {
+        const key = clubId + ':' + row.id;
+        return entries[key] || (entries[key] = { name: row.name, clubName: row.clubName, isTrackedPlayer: !!row.isTrackedPlayer, bat: null, bowl: null, impact: 0 });
+      };
+      sc.battingA.forEach(r => { const e = touch(r, sc.clubAId); e.bat = { runs: r.runs, balls: r.balls, out: r.out }; e.impact += r.runs + (r.runs >= 100 ? 25 : r.runs >= 50 ? 10 : 0); });
+      sc.battingB.forEach(r => { const e = touch(r, sc.clubBId); e.bat = { runs: r.runs, balls: r.balls, out: r.out }; e.impact += r.runs + (r.runs >= 100 ? 25 : r.runs >= 50 ? 10 : 0); });
+      sc.bowlingA.forEach(r => { const e = touch(r, sc.clubAId); e.bowl = { overs: r.overs, runsConceded: r.runsConceded, wickets: r.wickets }; e.impact += r.wickets * 22 - r.runsConceded * 0.4 + (r.wickets >= 3 ? 8 : 0); });
+      sc.bowlingB.forEach(r => { const e = touch(r, sc.clubBId); e.bowl = { overs: r.overs, runsConceded: r.runsConceded, wickets: r.wickets }; e.impact += r.wickets * 22 - r.runsConceded * 0.4 + (r.wickets >= 3 ? 8 : 0); });
+      let best = null;
+      Object.values(entries).forEach(e => { if (!best || e.impact > best.impact) best = e; });
+      return best;
+    }
+    function careerMOTMLine(motm) {
+      const parts = [];
+      if (motm.bat && (motm.bat.runs > 0 || motm.bat.balls > 0)) parts.push(`${motm.bat.runs} (${motm.bat.balls})${motm.bat.out ? '' : '*'}`);
+      if (motm.bowl && (motm.bowl.wickets > 0 || motm.bowl.overs > 0)) parts.push(`${motm.bowl.wickets}/${motm.bowl.runsConceded}`);
+      return parts.join(' & ');
+    }
+    // One consolidated full-time card: headline, the winning/losing score
+    // made explicit (not just "yours vs theirs"), Player of the Match, and
+    // your own game underneath — replaces what used to be two separate
+    // boxes stacked on the screen. Margin logic matches
+    // careerScorecardMetaHTML exactly so this can never disagree with the
+    // reviewable scorecard shown later.
+    function careerResultCardHTML(ctx) {
+      const { teamResult, myClubId, oppName, won, myScore, oppScore } = ctx;
       const secondBattingId = teamResult.battingFirstIsA ? teamResult.clubBId : teamResult.clubAId;
       const firstScore = teamResult.battingFirstIsA ? teamResult.scoreA : teamResult.scoreB;
       const secondScore = teamResult.battingFirstIsA ? teamResult.scoreB : teamResult.scoreA;
@@ -16354,11 +16430,55 @@
       const margin = teamResult.winnerId === secondBattingId
         ? (w => `by ${w} wicket${w === 1 ? '' : 's'}`)(Math.max(1, 10 - secondWkts))
         : (r => `by ${r} run${r === 1 ? '' : 's'}`)(Math.abs(firstScore - secondScore));
+
+      const myClubName = CAREER.myClubName;
+      const myWkts = teamResult.clubAId === myClubId ? teamResult.wktsA : teamResult.wktsB;
+      const oppWkts = teamResult.clubAId === myClubId ? teamResult.wktsB : teamResult.wktsA;
+      const myRow = { name: myClubName, text: careerScoreWkts(myScore, myWkts) };
+      const oppRow = { name: oppName, text: careerScoreWkts(oppScore, oppWkts) };
+      const scoreRows = won ? [myRow, oppRow] : [oppRow, myRow];
+
+      const motm = careerPickMOTM(ctx);
+
+      const statRows = [];
+      if (ctx.bat) {
+        const sr = ctx.bat.balls ? ((ctx.bat.runs / ctx.bat.balls) * 100).toFixed(1) : '0.0';
+        statRows.push(`<div><span style="color:#8080a0">Batting</span> — ${ctx.bat.runs} (${ctx.bat.balls})${ctx.bat.out ? '' : ' *'} · SR ${sr}</div>`);
+      } else {
+        statRows.push(`<div><span style="color:#8080a0">Batting</span> — did not bat</div>`);
+      }
+      if (ctx.bowl) {
+        const econ = ctx.bowl.overs ? (ctx.bowl.runsConceded / ctx.bowl.overs).toFixed(1) : '0.0';
+        statRows.push(`<div><span style="color:#8080a0">Bowling</span> — ${ctx.bowl.overs}-${ctx.bowl.runsConceded}-${ctx.bowl.wickets} · Econ ${econ}</div>`);
+        if (ctx.bowl.wickets > 0) statRows.push(`<div><span style="color:#8080a0">Wickets</span> — ${careerTallyDismissals(ctx.bowl.wickets)}</div>`);
+      } else {
+        statRows.push(`<div><span style="color:#8080a0">Bowling</span> — did not bowl</div>`);
+      }
+      if (ctx.field.involvements > 0) {
+        const dropped = ctx.field.involvements - ctx.field.clean;
+        const parts = [];
+        if (ctx.field.clean) parts.push(`${ctx.field.clean} catch${ctx.field.clean === 1 ? '' : 'es'} held`);
+        if (dropped) parts.push(`${dropped} dropped`);
+        statRows.push(`<div><span style="color:#8080a0">Fielding</span> — ${parts.join(', ')}</div>`);
+      }
+
       return `<div class="career-result-card ${won ? 'crc-win' : 'crc-loss'}">
-        <span class="career-result-icon">${won ? '🏆' : '🫤'}</span>
-        <div class="career-result-title">${won ? 'YOU WON' : 'YOU LOST'}</div>
-        <div class="career-result-margin">${won ? CAREER.myClubName : oppName} won ${margin}</div>
-        <div class="career-result-score">${CAREER.myClubName} ${myScore} — ${oppName} ${oppScore}</div>
+        <div class="career-result-hero">
+          <span class="career-result-icon">${won ? '🏆' : '🫤'}</span>
+          <div class="career-result-title">${won ? 'YOU WON' : 'YOU LOST'}</div>
+          <div class="career-result-margin">${won ? myClubName : oppName} won ${margin}</div>
+        </div>
+        <div class="career-result-divider"></div>
+        <div class="career-result-scores">
+          ${scoreRows.map((r, i) => `<div class="career-result-score-row ${i === 0 ? 'crs-winner' : 'crs-loser'}"><span class="crs-name">${r.name}</span><span class="crs-val">${r.text}</span></div>`).join('')}
+        </div>
+        ${motm ? `<div class="career-result-divider"></div>
+        <div class="career-result-motm-label">⭐ Player of the Match</div>
+        <div class="career-result-motm-name">${motm.name}${motm.isTrackedPlayer ? ' (you)' : ''}</div>
+        <div class="career-result-motm-sub">${motm.clubName} · ${careerMOTMLine(motm)}</div>` : ''}
+        <div class="career-result-divider"></div>
+        <div class="career-result-stats-title">Your Game</div>
+        <div class="career-result-stats-body">${statRows.join('')}</div>
       </div>`;
     }
     function careerShowToss(ctx, onDone) {
@@ -16547,16 +16667,9 @@
       ]);
       careerLiveFeedRow('🏆', careerPick(CAREER_MOMENT_TEMPLATES[ctx.won ? 'matchWin' : 'matchLoss'])(ctx.oppName, ctx.myScore, ctx.oppScore));
       careerLiveFeedRow('📣', careerPickVerdict(ctx));
-      const summaryEl = document.getElementById('career-match-summary');
-      summaryEl.style.display = 'block';
-      summaryEl.style.padding = '20px 18px';
-      summaryEl.classList.remove('career-summary-grand');
-      void summaryEl.offsetWidth; // restart the entrance animation if a card is somehow reused
-      summaryEl.classList.add('career-summary-grand');
-      summaryEl.innerHTML = careerMatchSummaryHTML(ctx);
       const resultEl = document.getElementById('career-match-result');
       resultEl.style.display = 'block';
-      resultEl.innerHTML = careerResultBannerHTML(ctx);
+      resultEl.innerHTML = careerResultCardHTML(ctx);
       const tapBtn = document.getElementById('career-match-tap');
       tapBtn.style.display = 'block';
       tapBtn.textContent = 'Continue';
