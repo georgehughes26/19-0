@@ -15633,7 +15633,26 @@
       // Widening the noise band (not just the cap) is what actually lets
       // the tail reach further, while the mean/median barely move since
       // most matches still land nowhere near either end.
-      return Math.max(2.8, Math.min(9.5, 4.3 + strengthDiff * 0.03 + (Math.random() - 0.5) * 4.0));
+      // Base rate of 4.3 put the mean first-innings score at ~180 with 50
+      // overs available — plausible for a weak side, but low as a Local
+      // Club AVERAGE once compared side-by-side with World Cup mode's own
+      // engine (simODIInnings), which lands a solid-but-unremarkable
+      // international side at a ~266 mean. 4.8 brings Local Club's mean to
+      // ~199 — a proper step down from full international quality, but no
+      // longer reading as an unusually weak standard of cricket.
+      return Math.max(2.8, Math.min(9.5, 4.8 + strengthDiff * 0.03 + (Math.random() - 0.5) * 4.0));
+    }
+    // A bowled-out innings' finishing point used to be a flat 15-45 uniform
+    // draw — every over in that range equally likely, including a genuine
+    // capitulation inside 20 overs just as often as a side that fights to
+    // over 40 before folding. Real all-out finishes cluster much later
+    // (most sides that get bowled out still survive well past over 30); a
+    // truly early collapse is the rare, dramatic exception, not one outcome
+    // among equals. The cube skews the draw toward the 45-over end while
+    // keeping the exact same [15,45] range, so a real early capitulation
+    // still happens, just far less often.
+    function careerCollapseOvers() {
+      return (CAREER_MAX_OVERS - 5) - Math.pow(Math.random(), 3) * (CAREER_MAX_OVERS - 20);
     }
     function careerGenerateFirstInnings(battingRating, bowlingRating) {
       const runRate = careerInningsRunRate(battingRating, bowlingRating);
@@ -15647,7 +15666,7 @@
       // it a plain integer avoids the exact "decimal vs. ball-notation"
       // confusion that caused the earlier invalid-overs display bug.
       if (Math.random() < collapseChance) {
-        const overs = 15 + Math.random() * (CAREER_MAX_OVERS - 20); // bowled out anywhere from over 15 to 45
+        const overs = careerCollapseOvers();
         return { score: Math.max(40, Math.round(overs * runRate)), wickets: 10, overs: Math.round(overs) };
       }
       return { score: Math.round(CAREER_MAX_OVERS * runRate), wickets: 2 + Math.floor(Math.random() * 8), overs: CAREER_MAX_OVERS };
@@ -15656,11 +15675,38 @@
       if (chaserWins) {
         // Wins the moment the target is reached — a small margin's worth of
         // extra runs, not an independently-rolled final score.
-        const runRate = careerInningsRunRate(battingRating, bowlingRating);
         const score = target + 1 + Math.floor(Math.random() * 7);
-        const impliedOvers = score / runRate;
-        const overs = Math.max(10, Math.min(CAREER_MAX_OVERS - 1, Math.round(impliedOvers * (0.85 + Math.random() * 0.3))));
-        return { score, wickets: Math.floor(Math.random() * 9), overs }; // 0-8 down — can't be 10 and have won
+        // This used to draw a run rate independently of the target (the same
+        // careerInningsRunRate used for a first innings) and only clamp the
+        // resulting overs down to 49 at the very end. Whenever that
+        // independent run rate happened to be on the slow side relative to
+        // the target — common, since it has no idea a chase even needs to
+        // finish by over 50 — the implied overs blew past 49 and got
+        // clipped there. That clip-at-the-boundary is exactly the same
+        // artifact fixed for individual batting shares earlier: 30%+ of ALL
+        // successful chases were piling up in the last over or two, rather
+        // than the broad spread real chases actually show. Instead, work
+        // backward from the minimum rate that could possibly win within the
+        // 49-over limit, then roll how much faster than that bare minimum
+        // this particular chase actually went — comfortable wins (a big
+        // multiple of the minimum) are more common than nail-biters (barely
+        // above it), which a uniform roll on the multiplier naturally gives.
+        const minViableRate = target / (CAREER_MAX_OVERS - 1);
+        const comfort = 1.02 + Math.random() * 0.88;
+        const overs = Math.max(10, Math.min(CAREER_MAX_OVERS - 1, Math.round(score / (minViableRate * comfort))));
+        // Wickets lost used to be a flat 0-8 roll totally independent of how
+        // the chase actually went — a side could "win by 1 wicket" in the
+        // 20th over (which isn't really a nail-biter at all, that's a
+        // stroll) just as easily as scraping over the line in over 49 with
+        // 9 down. Tying it to the same comfort roll that decided the overs
+        // means a genuine last-over finish now tends to have wickets in
+        // hand to match, and an early finish tends to have most of the side
+        // still unused — while keeping real variety (a fast side can still
+        // lose quick wickets and get there anyway).
+        const comfortNorm = (comfort - 1.02) / 0.88;
+        const wicketsLostMean = 8 - comfortNorm * 6;
+        const wicketsLost = Math.max(0, Math.min(8, Math.round(wicketsLostMean + (Math.random() - 0.5) * 4)));
+        return { score, wickets: wicketsLost, overs }; // 0-8 down — can't be 10 and have won
       }
       // Falls short — the run rate itself is constrained to genuinely
       // undershoot what the chase required, rather than generating an
@@ -15679,7 +15725,7 @@
       // can't sustain 50 overs at a believable rate.
       const canSurvive50 = target - 1 >= CAREER_MAX_OVERS * 2.2;
       if (!canSurvive50 || Math.random() < 0.55) {
-        const overs = 15 + Math.random() * (CAREER_MAX_OVERS - 20);
+        const overs = careerCollapseOvers();
         return { score: Math.max(30, Math.min(target - 1, Math.round(overs * shortfallRate))), wickets: 10, overs: Math.round(overs) };
       }
       return { score: Math.max(30, Math.min(target - 1, Math.round(CAREER_MAX_OVERS * shortfallRate))), wickets: 2 + Math.floor(Math.random() * 8), overs: CAREER_MAX_OVERS };
@@ -15861,8 +15907,13 @@
       const totalW = weights.reduce((s, w) => s + w, 0) || 1;
       // Overs are allocated by the same rating weights as runs/wickets — a
       // captain trusts their best bowler with more overs, not a flat random
-      // share — capped at 15 (club cricket's real per-bowler limit, not the
-      // ODI-style 10 this used to assume).
+      // share — capped at 15. The ODI-standard "max 1/5 of the innings"
+      // (10 overs of 50) is a regulated professional/international limit;
+      // it isn't universal to the format itself, and local club leagues
+      // commonly do let a bowler go past it, partly out of necessity (a
+      // village side often doesn't have five recognized bowlers to share
+      // the overs with). World Cup mode is right to cap at 10 since it's
+      // playing full international rules — Local Club genuinely isn't.
       // Each bowler's share was independently rounded with no correction —
       // six small roundings (plus the [2,15] clamp) reliably left the total
       // off by 1-2 overs from oversTarget, which is exactly what showed up
@@ -16032,7 +16083,24 @@
       // the discount to compensate, since that's the only lever left doing
       // real work for a middle-order/all-rounder batting slot.
       const posFactor = Math.max(0.3, 1 - (pos - 1) * 0.09);
-      const out = Math.random() < (0.75 - r.temperament / 400);
+      // Not out is a fact about how the INNINGS ended, not primarily a roll
+      // about the individual batter — skill alone (the old formula) doesn't
+      // know or care whether the team was bowled out or not, so it produced
+      // the same not-out odds either way. Two real-cricket facts drive this
+      // instead: whether the side was actually bowled out (if it was, only
+      // one of the eleven finishes not out — being that one is rare, and
+      // rarer still the earlier your position, since an opener has to
+      // survive the whole rest of the innings around them to be it), and,
+      // if the side wasn't bowled out, how late your position is (the pair
+      // still at the crease when the overs run out or the chase is won
+      // skews toward the middle/lower order, who've faced fewer balls and
+      // so had fewer chances to already be out by then). Skill still nudges
+      // it a little — a better player is a little harder to dismiss — but
+      // it's no longer the primary driver.
+      const teamAllOut = myTeamWktsLost >= 10;
+      const notOutBase = teamAllOut ? (0.03 + (pos - 1) * 0.012) : (0.20 + (pos - 1) * 0.03);
+      const notOutChance = Math.max(0.02, Math.min(0.9, notOutBase + (r.temperament - 45) / 900));
+      const out = Math.random() < (1 - notOutChance);
       // Exponential rather than uniform: real innings have a long right tail
       // (most are modest, occasionally one runs away from you) — a uniform
       // 0..ceiling draw can never meaningfully exceed its own mean, which made
@@ -16043,14 +16111,21 @@
       // plus a near-fixed not-out tempo below made every not-out innings
       // play at an unmistakably slower rate than every dismissed one, which
       // read as a "tell" you could predict the not-out from a few balls in.
-      const meanRuns = skill * posFactor * 0.55 * (out ? 1 : 0.5);
-      // Capped against the team's actual final score — this was generated
-      // completely independently of it, so it could (and did) come out
-      // higher than the whole team's total. generateTeamInnings computes
-      // every other batter's share as whatever's left after subtracting this
-      // value, so an uncapped overshoot didn't just look wrong here — it
-      // forced every other contributor's remaining share to zero, which is
-      // what showed up as the rest of the XI all going for first-ball ducks.
+      const rawMeanRuns = skill * posFactor * 0.55 * (out ? 1 : 0.5);
+      // The mean itself used to be computed purely from skill/position, with
+      // zero awareness of what the team actually totalled — only clamped
+      // against it at the very end. On a modest scoring day, the exponential
+      // draw's own tail could land at or near the WHOLE team total before
+      // that final clamp cut it off, which is exactly how "I got 140, team
+      // got 160" happens: 0.9% of sampled innings were landing fully clipped
+      // at the team score, and 2% exceeded an 80% share of it — proportions
+      // no real innings anywhere near that skill level produces outside of a
+      // genuine once-in-a-career carried-the-bat epic. Bounding the mean
+      // itself to a believable share of today's total (an opener's ceiling
+      // share is roughly double a tail-ender's, via posFactor) fixes this at
+      // the source rather than papering over it with a harder clip.
+      const shareCeiling = Math.min(0.5, 0.18 + posFactor * 0.17);
+      const meanRuns = Math.min(rawMeanRuns, myTeamScore * shareCeiling * (out ? 1 : 1.15));
       let runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
       // Match-to-match tempo noise: without this, strike rate was almost
       // pure function of the `power` rating, so every dismissed innings for
@@ -16095,9 +16170,14 @@
           // tell being reported, so this rolls a wide tempo range instead
           // of always defaulting to slow.
           const notOutSr = 0.35 + Math.random() * 0.95;
-          runs = Math.max(runs, Math.min(myTeamScore, Math.round(balls * notOutSr)));
+          runs = Math.max(runs, Math.round(balls * notOutSr));
         }
       }
+      // Absolute safety net on top of the mean-level share cap above: even
+      // a rare exceptional draw, or the not-out presence floor stretching
+      // runs back up, still can't push past a generous but bounded ceiling
+      // on how much of the team's total one player can walk away with.
+      runs = Math.min(runs, myTeamScore, Math.round(myTeamScore * shareCeiling * 1.5));
       // Can't personally face more balls than the whole team's innings had.
       balls = Math.min(teamBalls, balls);
       return { runs, out, balls, pos };
@@ -16134,10 +16214,16 @@
       // The captain's ceiling for how long today's spell CAN run, scaled
       // from skill: a borderline part-timer (~38) tops out around a brief
       // 5-over look, an unprogressed specialist (~47-52) around 8-9, a fully
-      // progressed elite bowler (~80) reaches club cricket's real 15-over
-      // cap. Whether the spell actually reaches that ceiling is down to the
-      // over-by-over performance loop below, not guaranteed by the ceiling
-      // itself. Can't bowl more overs personally than the innings lasted.
+      // progressed elite bowler (~80+) reaches Local Club's real 15-over
+      // cap. The ODI "max 1/5 of the innings" (10 overs) is a regulated
+      // international/professional limit, not a rule of the format itself —
+      // local club leagues routinely let a bowler go well past it, often
+      // out of necessity with a thin bowling attack. World Cup mode caps at
+      // 10 correctly since it plays full international rules; Local Club
+      // isn't playing those rules. Whether the spell actually reaches that
+      // ceiling is down to the over-by-over performance loop below, not
+      // guaranteed by the ceiling itself. Can't bowl more overs personally
+      // than the innings lasted.
       const skillCeiling = Math.round(Math.max(2, (skill - 20) * 0.28));
       // This is the captain's DEFAULT plan for the spell, not a hard limit —
       // see the extension check below the loop body. Without that, a spell
