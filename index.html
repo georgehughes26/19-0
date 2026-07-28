@@ -15625,7 +15625,15 @@
     const CAREER_MAX_OVERS = 50;
     function careerInningsRunRate(battingRating, bowlingRating) {
       const strengthDiff = battingRating - bowlingRating; // roughly -30..+30
-      return Math.max(2.8, Math.min(6.5, 4.3 + strengthDiff * 0.03 + (Math.random() - 0.5) * 1.4));
+      // The 6.5 cap here used to be decorative: at Local Club tier (clubs
+      // rated 40-50, so strengthDiff never exceeds ±10) the formula's own
+      // ceiling — 4.3 + 10*0.03 + 0.7 noise ≈ 5.9 — never actually reached
+      // 6.5, so real totals topped out at ~265 and genuinely big (300+)
+      // scores were structurally impossible no matter how the match went.
+      // Widening the noise band (not just the cap) is what actually lets
+      // the tail reach further, while the mean/median barely move since
+      // most matches still land nowhere near either end.
+      return Math.max(2.8, Math.min(9.5, 4.3 + strengthDiff * 0.03 + (Math.random() - 0.5) * 4.0));
     }
     function careerGenerateFirstInnings(battingRating, bowlingRating) {
       const runRate = careerInningsRunRate(battingRating, bowlingRating);
@@ -16029,8 +16037,12 @@
       // (most are modest, occasionally one runs away from you) — a uniform
       // 0..ceiling draw can never meaningfully exceed its own mean, which made
       // a genuine "big innings" all but statistically impossible. Not-out
-      // innings use a lower mean since they're typically cut short (innings/
-      // overs ran out around them), keeping runs/outs realistic.
+      // innings use a slightly lower mean since they're often (not always)
+      // cut short (innings/overs ran out around them) — kept close to the
+      // dismissed mean rather than half of it, since the old 0.5 multiplier
+      // plus a near-fixed not-out tempo below made every not-out innings
+      // play at an unmistakably slower rate than every dismissed one, which
+      // read as a "tell" you could predict the not-out from a few balls in.
       const meanRuns = skill * posFactor * 0.55 * (out ? 1 : 0.5);
       // Capped against the team's actual final score — this was generated
       // completely independently of it, so it could (and did) come out
@@ -16040,7 +16052,13 @@
       // forced every other contributor's remaining share to zero, which is
       // what showed up as the rest of the XI all going for first-ball ducks.
       let runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
-      const sr = 0.75 + r.power / 100;
+      // Match-to-match tempo noise: without this, strike rate was almost
+      // pure function of the `power` rating, so every dismissed innings for
+      // a given player clustered inside a narrow ~30pt SR band — another
+      // part of what made outcomes feel deterministic rather than variable
+      // match to match.
+      const srNoise = 0.65 + Math.random() * 0.7;
+      const sr = (0.75 + r.power / 100) * srNoise;
       let balls = Math.max(1, Math.round(runs / sr));
       const teamBalls = Math.max(1, Math.round(myTeamOvers * 6));
       if (!out) {
@@ -16052,17 +16070,32 @@
         // they were at the crease for start to finish: runs/strike-rate
         // alone has no idea how long you actually occupied the crease, only
         // how long your own scoring took.
-        const ballsRemainingAtEntry = teamBalls * Math.max(0.05, 1 - (pos - 1) / 10);
-        const presenceFloor = Math.round(ballsRemainingAtEntry * (0.35 + Math.random() * 0.3));
+        // The 0.4 scale-down below is deliberate, not just "however long you
+        // were actually there": crediting a not-out opener with the full
+        // 65%-of-the-innings ball count this originally computed, at a wide
+        // realistic strike rate, was enough on its own to produce absurd
+        // season batting averages (500+ observed, median over 100 for a
+        // well-progressed opener across 1000 simulated seasons) — because a
+        // not-out innings' runs still count in the average's numerator
+        // without ever adding to its denominator, exactly like real
+        // cricket, so a handful of huge uncapped not-outs a season is enough
+        // to blow the whole average out on its own. Scaling down how much of
+        // the remaining innings a not-out stretch claims keeps the strike
+        // rate variety that fixed the "obviously not out" tell without
+        // reopening this second, worse believability problem.
+        const ballsRemainingAtEntry = teamBalls * Math.max(0.05, 1 - (pos - 1) / 10) * 0.4;
+        const presenceFloor = Math.round(ballsRemainingAtEntry * (0.25 + Math.random() * 0.2));
         if (presenceFloor > balls) {
           balls = presenceFloor;
           // Stretching balls out to match how long you were actually there
-          // must not leave runs behind — nobody's not out for 134 balls on
-          // 2 runs, that's a run every 67 deliveries. A long, quiet not-out
-          // innings is still a genuine if unhurried return (a floor around
-          // a run every 3 balls), not the near-zero rate the original
-          // short-innings runs figure implied on its own.
-          runs = Math.max(runs, Math.min(myTeamScore, Math.round(balls * (0.3 + Math.random() * 0.2))));
+          // must not leave runs behind. A not-out innings can be a brisk
+          // finish just as easily as a slow rebuild in real cricket — a
+          // fixed low floor here (previously ~30-50% SR every time) was
+          // exactly the "you know you'll be not out from the strike rate"
+          // tell being reported, so this rolls a wide tempo range instead
+          // of always defaulting to slow.
+          const notOutSr = 0.35 + Math.random() * 0.95;
+          runs = Math.max(runs, Math.min(myTeamScore, Math.round(balls * notOutSr)));
         }
       }
       // Can't personally face more balls than the whole team's innings had.
@@ -16106,10 +16139,20 @@
       // over-by-over performance loop below, not guaranteed by the ceiling
       // itself. Can't bowl more overs personally than the innings lasted.
       const skillCeiling = Math.round(Math.max(2, (skill - 20) * 0.28));
-      const maxOvers = Math.min(15, Math.round(oppOvers), skillCeiling);
-      if (maxOvers <= 0) return null;
+      // This is the captain's DEFAULT plan for the spell, not a hard limit —
+      // see the extension check below the loop body. Without that, a spell
+      // could only ever end early (the keepGoing check pulls a struggling
+      // bowler off before this) and never late: a bowler who reached this
+      // ceiling still bowling brilliantly (5/25 off 5, say) got taken off
+      // for hitting a number computed before a ball was bowled, which read
+      // exactly like being pulled for no reason — the "bowling well and
+      // taking wickets keeps you on" logic only ever protected overs
+      // *within* the ceiling, never let a hot spell push past it.
+      const hardMaxOvers = Math.min(15, Math.round(oppOvers));
+      let spellCap = Math.min(hardMaxOvers, skillCeiling);
+      if (spellCap <= 0) return null;
       let overs = 0, runsConceded = 0, wickets = 0, spellRuns = 0;
-      for (let i = 0; i < maxOvers; i++) {
+      for (let i = 0; i < spellCap; i++) {
         if (wickets >= oppWktsAvailable || runsConceded >= oppScoreAvailable) break;
         const overRuns = Math.max(0, Math.round(economy + (Math.random() - 0.5) * 6));
         const overWicket = Math.random() < wicketChancePerOver;
@@ -16119,11 +16162,22 @@
         // over after: keep bowling if this spell's economy is holding up —
         // a wicket this over buys real extra rope even in an expensive
         // spell — and get pulled early otherwise, regardless of rating.
-        if (overs >= 3 && overs < maxOvers) {
+        if (overs >= 3 && overs < spellCap) {
           const spellEcon = spellRuns / overs;
           let keepGoing = spellEcon <= economy + 1.5 ? 0.88 : spellEcon <= economy + 3.5 ? 0.55 : 0.2;
           if (overWicket) keepGoing = Math.min(0.95, keepGoing + 0.25);
           if (Math.random() > keepGoing) break;
+        }
+        // Reached the planned end of the spell still on song: a captain
+        // doesn't take a bowler off mid-spell-of-their-life just because
+        // that's the number the plan said. Wicket-taking form buys another
+        // over more readily than just a tight economy does.
+        if (overs === spellCap && spellCap < hardMaxOvers) {
+          const spellEcon = spellRuns / overs;
+          const excellent = wickets >= 3 && spellEcon <= economy + 1;
+          const tight = spellEcon <= economy - 1.5;
+          const extendChance = excellent ? 0.7 : tight ? 0.35 : 0;
+          if (extendChance && Math.random() < extendChance) spellCap = Math.min(spellCap + 1, hardMaxOvers);
         }
       }
       // A short/weak opposition innings (already 0 wickets or runs of
@@ -16142,9 +16196,15 @@
     }
     function simTrackedPlayerFielding(player) {
       const r = player.ratings;
-      const chances = Math.random() < 0.4 ? 1 + (Math.random() < 0.15 ? 1 : 0) : 0;
+      // A keeper has a hand in far more deliveries than an outfielder in
+      // real cricket (every ball that beats the bat, every run out, every
+      // stumping), not just a better success rate on the same number of
+      // chances — so keepers roll for involvement more often, on top of
+      // their existing skill-based conversion edge.
+      const isKeeper = player.role === 'keeper';
+      const chances = Math.random() < (isKeeper ? 0.72 : 0.4) ? 1 + (Math.random() < (isKeeper ? 0.35 : 0.15) ? 1 : 0) : 0;
       if (!chances) return { involvements: 0, clean: 0 };
-      const skill = player.role === 'keeper' ? r.keeping : (r.catching + r.groundFielding) / 2;
+      const skill = isKeeper ? r.keeping : (r.catching + r.groundFielding) / 2;
       let clean = 0;
       for (let i = 0; i < chances; i++) if (Math.random() < 0.4 + skill / 150) clean++;
       return { involvements: chances, clean };
@@ -16292,10 +16352,42 @@
     // live ticker ends on always matches the scorecard exactly.
     const CAREER_DISMISSAL_TYPES = ['bowled', 'caught', 'lbw', 'caught behind', 'run out', 'stumped'];
     function careerDecomposeBatting(runs, balls) {
-      const deliveries = [];
-      let runsLeft = runs, ballsLeft = balls;
+      // Boundaries are decided up front as a target share of the innings'
+      // runs (scaled by its own strike rate) and placed at random ball
+      // positions, rather than only ever being offered to the sequential
+      // pace-matching picker below. That picker's hard cap — never go
+      // further above the pace still needed than the next whole run — is
+      // what stopped long freezes of dot balls, but it also meant a 4 or 6
+      // could basically never be picked unless the required rate had
+      // already climbed above 3-4 runs/ball, which for a normal ~100-130
+      // strike rate innings is close to never. Pre-placing boundaries here
+      // fixes that without reopening the freeze problem, since the
+      // sequential picker below only ever has to cover the (usually much
+      // smaller) residual runs left after boundaries are removed.
+      const sr = balls ? runs / balls : 0;
+      const boundaryShare = Math.max(0.05, Math.min(0.7, sr / 100 * 0.5 + Math.random() * 0.25));
+      let boundaryBudget = Math.min(runs, Math.round(runs * boundaryShare));
+      const maxBoundaryBalls = Math.max(0, Math.min(balls - 1, Math.floor(balls * 0.4)));
+      const boundaryVals = [];
+      while (boundaryBudget >= 4 && boundaryVals.length < maxBoundaryBalls) {
+        const six = boundaryBudget >= 6 && Math.random() < 0.22;
+        const val = six ? 6 : 4;
+        if (boundaryBudget - val < 0) break;
+        boundaryVals.push(val);
+        boundaryBudget -= val;
+      }
+      const boundaryRunsTotal = boundaryVals.reduce((s, v) => s + v, 0);
+      const idxPool = Array.from({ length: balls }, (_, i) => i);
+      const boundaryIdx = new Set();
+      while (boundaryIdx.size < boundaryVals.length && idxPool.length) {
+        boundaryIdx.add(idxPool.splice(Math.floor(Math.random() * idxPool.length), 1)[0]);
+      }
+      const deliveries = new Array(balls);
+      let runsLeft = runs - boundaryRunsTotal, ballsLeft = balls - boundaryVals.length;
       const base = [0, 0, 0, 1, 1, 1, 2, 3, 4, 4, 6];
-      while (ballsLeft > 0) {
+      let bi = 0;
+      for (let i = 0; i < balls; i++) {
+        if (boundaryIdx.has(i)) { deliveries[i] = boundaryVals[bi++]; continue; }
         // Bound every pick from both ends, not just the max: without a floor
         // too, a run of small picks early on could leave more runs outstanding
         // than the remaining balls can physically carry (max 6 each), so the
@@ -16304,9 +16396,8 @@
         // has to match.
         const maxPossible = Math.max(0, Math.min(6, runsLeft));
         const minRequired = Math.max(0, runsLeft - (ballsLeft - 1) * 6);
-        if (ballsLeft === 1) { deliveries.push(maxPossible); break; }
-        const val = careerPacedPick(base, minRequired, maxPossible, runsLeft / ballsLeft);
-        deliveries.push(val);
+        const val = ballsLeft === 1 ? maxPossible : careerPacedPick(base, minRequired, maxPossible, runsLeft / ballsLeft);
+        deliveries[i] = val;
         runsLeft -= val; ballsLeft--;
       }
       return deliveries;
@@ -16998,7 +17089,7 @@
     // while an average season still only nudges OVR a little — growth should
     // feel real without making a single season a guaranteed ticket up.
     const CAREER_POINT_VALUE = 3;
-    const CAREER_RATING_CAP = 80;
+    const CAREER_RATING_CAP = 99;
     const CAREER_POINT_CATEGORY_LABEL = { bat: 'Batting Point', bowl: 'Bowling Point', field: 'Fielding Point' };
     function careerPointStatOptions(category, role) {
       if (category === 'bat') return ['technique', 'power', 'temperament'];
