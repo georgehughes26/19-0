@@ -7116,8 +7116,12 @@
       if (wcDevBtn) wcDevBtn.style.display = isDev ? '' : 'none';
       const t20DevBtn = document.getElementById('t20-dev-autodraft-btn');
       if (t20DevBtn) t20DevBtn.style.display = isDev ? '' : 'none';
+      // Career Mode access is its own, slightly wider allowlist — 'E4U
+      // Cricket' gets Career Mode without also picking up the WC/T20
+      // auto-draft dev tools above, which stay 'ghughesy'-only.
+      const hasCareerAccess = AUTH_USER && (AUTH_USER.username === 'ghughesy' || AUTH_USER.username === 'E4U Cricket');
       const careerDevBtn = document.getElementById('career-dev-entry-btn');
-      if (careerDevBtn) careerDevBtn.style.display = isDev ? 'block' : 'none';
+      if (careerDevBtn) careerDevBtn.style.display = hasCareerAccess ? 'block' : 'none';
     }
 
     function renderAuthBar() {
@@ -16359,7 +16363,7 @@
         html += `<div class="ov-reveal ov-pop" style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-top:10px;text-align:left">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800">Today's Ratings</div>
-            <div class="rating-badge ${ratingBadgeClass(effOvr)}" style="width:34px;height:34px;font-size:14px;border-radius:6px">${effOvr}</div>
+            <div class="rating-badge ${ratingBadgeClass(effOvr)}" style="width:34px;height:34px;font-size:14px;border-radius:6px;justify-content:flex-end;padding-right:3px;box-sizing:border-box">${effOvr}</div>
           </div>
           ${rows}
         </div>`;
