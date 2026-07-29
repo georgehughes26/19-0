@@ -14963,6 +14963,9 @@
     <div id="save-career-nudge" style="display:none;margin-top:8px;padding:10px 14px;background:#1a1010;border:1px solid #4a2020;border-radius:8px;font-size:12px;color:#f87171;text-align:center">Sign in to save your game and continue later</div>
     <button class="btn-auth-small" onclick="go('s-home')" style="margin-top:14px">← Home</button>
 
+    <!-- Adsterra test placement (dev-only, Career hub) — see careerInjectAdsterraAd() -->
+    <div id="career-hub-ad-wrap" style="width:100%;display:flex;justify-content:center;margin:20px 0 0;overflow:hidden"></div>
+
     <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin:24px 0 8px;text-align:left">Match History</div>
     <div id="hub-match-history" style="width:100%"></div>
   </div>
@@ -17447,6 +17450,40 @@
     function careerMoraleLabel(value) {
       return CAREER_MORALE_TIERS.find(t => value < t.max) || CAREER_MORALE_TIERS[CAREER_MORALE_TIERS.length - 1];
     }
+    // Adsterra test placement — dev-only, Career hub screen only (see
+    // careerInjectAdsterraAd's call site in buildCareerHub). Injected as
+    // real DOM script elements via createElement/appendChild rather than
+    // the raw <script> tags Adsterra's snippet ships as: every .screen in
+    // this app lives in the DOM simultaneously (shown/hidden via CSS), so a
+    // literal inline <script> here would fire on every single page load for
+    // every visitor, not just the ones who actually reach Career mode — and
+    // innerHTML-string insertion wouldn't execute a <script> tag at all.
+    // Guarded to inject once per page load rather than reloading the ad
+    // (and re-requesting an impression) every time the hub re-renders,
+    // which happens after every match this season.
+    let careerAdInjected = false;
+    function careerInjectAdsterraAd() {
+      if (careerAdInjected) return;
+      const wrap = document.getElementById('career-hub-ad-wrap');
+      if (!wrap || !wrap.clientWidth) return; // screen not actually visible/laid out yet
+      careerAdInjected = true;
+      const AD_W = 728, AD_H = 90;
+      // The unit is a fixed 728×90 desktop leaderboard — wider than this
+      // app's entire .screen column (max 480px, narrower still on an actual
+      // phone). Scale the whole thing down to fit rather than letting it
+      // overflow or force horizontal scroll on a mobile-first layout.
+      const scale = Math.min(1, wrap.clientWidth / AD_W);
+      wrap.style.height = Math.round(AD_H * scale) + 'px';
+      const inner = document.createElement('div');
+      inner.style.cssText = `width:${AD_W}px;height:${AD_H}px;transform:scale(${scale});transform-origin:top left`;
+      wrap.appendChild(inner);
+      const optsScript = document.createElement('script');
+      optsScript.text = "atOptions = { 'key':'6a0695920c49337a2d4089790b62056d', 'format':'iframe', 'height':90, 'width':728, 'params':{} };";
+      inner.appendChild(optsScript);
+      const invokeScript = document.createElement('script');
+      invokeScript.src = 'https://www.highperformanceformat.com/6a0695920c49337a2d4089790b62056d/invoke.js';
+      inner.appendChild(invokeScript);
+    }
     function buildCareerHub() {
       document.getElementById('hub-league-name').textContent = CAREER_LEAGUES[CAREER.leagueId].name;
       document.getElementById('hub-club-name').textContent = CAREER.myClubName;
@@ -17502,6 +17539,10 @@
 
       buildCareerMatchHistory();
       checkForSavedCareerGame();
+      // Deferred a frame: some call sites run buildCareerHub() before the
+      // go('s-career-hub') that actually makes the screen visible, and the
+      // ad container needs a real laid-out width to size against.
+      requestAnimationFrame(() => requestAnimationFrame(careerInjectAdsterraAd));
     }
 
     function buildCareerMatchHistory() {
