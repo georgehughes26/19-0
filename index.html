@@ -15052,6 +15052,25 @@
     <div id="points-continue" style="width:100%"></div>
   </div>
 
+  <!-- CAREER MAN OF THE MATCH SCREEN -->
+  <div id="s-career-motm" class="screen">
+    <div class="ov-reveal" style="width:100%;text-align:left;margin-bottom:16px">
+      <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">🏆 Breaking News</div>
+      <div id="motm-headline" style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px">—</div>
+      <div id="motm-dateline" style="font-size:12px;color:#6060a0">—</div>
+    </div>
+
+    <div id="motm-article" class="ov-reveal ov-pop" style="width:100%;font-size:13px;color:#c0c0d8;line-height:1.7;text-align:left;margin-bottom:16px"></div>
+
+    <div id="motm-quote" class="ov-reveal ov-pop" style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:16px;margin-bottom:24px;text-align:left"></div>
+
+    <div style="width:100%;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Man of the Match Reward — Pick One</div>
+    <div class="stage-bar" id="motm-bars" style="text-align:left;margin-bottom:12px"></div>
+    <button class="btn-auth-small" id="motm-morale-btn" style="width:100%;background:#0d0d12" onclick="careerMOTMPickMorale()">💪 Take a Confidence Boost — +10 Morale</button>
+    <div id="motm-result" style="width:100%;text-align:center;min-height:24px;margin-top:16px"></div>
+    <div id="motm-continue" style="width:100%"></div>
+  </div>
+
   <!-- CAREER RANDOM EVENT SCREEN -->
   <div id="s-career-event" class="screen">
     <div class="ov-reveal" style="width:100%;text-align:left;margin-bottom:16px">
@@ -15245,7 +15264,9 @@
         promotion: null,
         usedEvents: new Set(),
         pendingEvent: null,
+        pendingEventContinue: null,
         pendingFreeTimeStat: null,
+        pendingMOTM: null,
         resultStreak: 0,
         lastResultWon: null,
       };
@@ -16266,12 +16287,26 @@
           </div>
           ${rows}
         </div>`;
+        // Worth actually reading, not something to blink past — this is
+        // the one reveal that carries real information (every rating for
+        // the next match), unlike the plain morale-only reveal below, so it
+        // waits for a tap instead of auto-advancing into the match.
+        html += `<button class="ov-reveal btn-sim" style="margin-top:10px" onclick="handleCareerEventContinue()">Continue</button>`;
       }
 
       btnArea.innerHTML = html;
       requestAnimationFrame(() => wireReveals(document.getElementById('s-career-event')));
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      setTimeout(onDone, reduceMotion ? 450 : (boost !== 0 ? 2000 : 1200));
+      if (boost !== 0) {
+        CAREER.pendingEventContinue = onDone;
+      } else {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        setTimeout(onDone, reduceMotion ? 450 : 1200);
+      }
+    }
+    function handleCareerEventContinue() {
+      const onDone = CAREER.pendingEventContinue;
+      CAREER.pendingEventContinue = null;
+      onDone();
     }
 
     function playNextCareerFixture() {
@@ -17449,6 +17484,11 @@
       ]);
       careerLiveFeedRow('🏆', careerPick(CAREER_MOMENT_TEMPLATES[ctx.won ? 'matchWin' : 'matchLoss'])(ctx.oppName, ctx.myScore, ctx.oppScore));
       careerLiveFeedRow('📣', careerPickVerdict(ctx));
+      // Man of the Match check: careerPickMOTM is a pure function of
+      // ctx.scorecard, so recomputing it again inside careerResultCardHTML
+      // below is cheap and can't disagree with this result.
+      const motm = careerPickMOTM(ctx);
+      CAREER.pendingMOTM = (motm && motm.isTrackedPlayer) ? ctx : null;
       const resultEl = document.getElementById('career-match-result');
       resultEl.style.display = 'block';
       resultEl.innerHTML = careerResultCardHTML(ctx);
@@ -17466,9 +17506,160 @@
     }
 
     function careerFinishMatch() {
+      // Breaking news comes before the routine progression-point screens —
+      // MOTM is tied directly to the final whistle, points are a quieter
+      // reflection that makes more sense after.
+      if (CAREER.pendingMOTM) { buildCareerMOTM(); go('s-career-motm'); return; }
       if (CAREER.pendingPoints.length) { go('s-career-points'); renderCareerPointsStep(); return; }
       if (CAREER.currentRound >= 22) { CAREER.seasonComplete = true; buildCareerSeasonEnd(); go('s-career-season-end'); }
       else { buildCareerHub(); go('s-career-hub'); }
+    }
+
+    // ── Man of the Match: breaking-news screen + reward choice ──────────
+    const CAREER_MOTM_OPENERS = [
+      (p, ctx) => `${p.name} was named Man of the Match ${ctx.won ? `as ${CAREER.myClubName} saw off ${ctx.oppName}` : `even in defeat to ${ctx.oppName}`}, the standout performer on a night ${ctx.won ? CAREER.myClubName + ' will remember' : 'that still had its bright spots'}.`,
+      (p, ctx) => `It's official — ${p.name} takes the Man of the Match award after a performance that ${ctx.won ? `helped ${CAREER.myClubName} home against ${ctx.oppName}` : `stood out even as ${CAREER.myClubName} came up short against ${ctx.oppName}`}.`,
+      (p, ctx) => `${CAREER_LEAGUES[CAREER.leagueId].name} judges didn't need long to settle on their Man of the Match: ${p.name}, after a night to remember ${ctx.won ? `in a win over ${ctx.oppName}` : `against ${ctx.oppName}`}.`,
+    ];
+    const CAREER_MOTM_CLOSERS = [
+      name => `Not a bad way to spend a weekend.`,
+      name => `The kind of performance that gets a season talked about.`,
+      name => `${name} will sleep well tonight.`,
+    ];
+    // Quote flavour tracks what actually stood out this match, same
+    // discipline-aware approach as careerPointDescription elsewhere.
+    function careerMOTMQuote(ctx) {
+      const battedWell = ctx.bat && ctx.bat.runs >= 30;
+      const bowledWell = ctx.bowl && ctx.bowl.wickets >= 2;
+      let pool;
+      if (battedWell && bowledWell) {
+        pool = [
+          `"Honestly just tried to contribute with both bat and ball tonight — chuffed it came off. Team win is what matters most."`,
+          `"When things click like that it doesn't feel like hard work. Credit to the lads for setting it up."`,
+        ];
+      } else if (bowledWell) {
+        pool = [
+          `"Wicket to wicket, that's all I was trying to do. Pitch offered a bit and I backed myself."`,
+          `"You dream of days like this with the ball. Just glad it counted for something."`,
+        ];
+      } else if (battedWell) {
+        pool = [
+          `"Just tried to bat time and let the shots come. Nice when it pays off in the scorebook."`,
+          `"Wickets were falling around me early on so I just tried to see it through."`,
+        ];
+      } else {
+        pool = [
+          `"Wasn't the biggest day with bat or ball, but glad I could chip in where it mattered."`,
+          `"Cricket's a team game — just happy to have played my part tonight."`,
+        ];
+      }
+      return careerPick(pool);
+    }
+    function buildCareerMOTM() {
+      const ctx = CAREER.pendingMOTM;
+      const p = ctx.player;
+      document.getElementById('motm-headline').textContent = `${p.name} Named Man of the Match`;
+      document.getElementById('motm-dateline').textContent = `${CAREER_LEAGUES[CAREER.leagueId].name} · ${ctx.won ? `${CAREER.myClubName} beat ${ctx.oppName}` : `${ctx.oppName} beat ${CAREER.myClubName}`}`;
+
+      const opener = careerPick(CAREER_MOTM_OPENERS)(p, ctx);
+      const closer = careerPick(CAREER_MOTM_CLOSERS)(p.name);
+      const statParas = [];
+      if (ctx.bat && (ctx.bat.runs > 0 || ctx.bat.balls > 0)) {
+        statParas.push(`With the bat, ${p.name} made ${ctx.bat.runs} from ${ctx.bat.balls} balls${ctx.bat.out ? '' : ', finishing unbeaten'}.`);
+      }
+      if (ctx.bowl && (ctx.bowl.wickets > 0 || ctx.bowl.overs > 0)) {
+        statParas.push(`With the ball, figures of ${ctx.bowl.wickets}/${ctx.bowl.runsConceded} from ${ctx.bowl.overs} overs did the damage.`);
+      }
+      if (ctx.field && ctx.field.involvements > 0) {
+        statParas.push(`${ctx.field.clean} of ${ctx.field.involvements} chance${ctx.field.involvements === 1 ? '' : 's'} taken in the field, too.`);
+      }
+      document.getElementById('motm-article').innerHTML = [opener, ...statParas, closer].map(t => `<p style="margin-bottom:10px">${t}</p>`).join('');
+
+      document.getElementById('motm-quote').innerHTML = `
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Speaking After the Match</div>
+        <div style="font-size:14px;color:#fff;font-style:italic;line-height:1.6">${careerMOTMQuote(ctx)}</div>
+        <div style="font-size:11px;color:#8080a0;margin-top:8px">— ${p.name}</div>`;
+
+      document.getElementById('motm-result').innerHTML = '';
+      document.getElementById('motm-continue').innerHTML = '';
+      const moraleBtn = document.getElementById('motm-morale-btn');
+      moraleBtn.style.opacity = 1;
+      moraleBtn.onclick = careerMOTMPickMorale;
+
+      // Unlike progression points, the MOTM reward isn't gated to
+      // role-relevant stats — any of the 9 is fair game, only a rating
+      // already at cap is excluded.
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const barsEl = document.getElementById('motm-bars');
+      barsEl.innerHTML = CAREER_RATING_ORDER.map(key => {
+        const val = p.ratings[key];
+        const canPick = val < CAREER_RATING_CAP;
+        const color = ratingColor(val);
+        return `<div class="stage-bar-row" data-stat="${key}" style="opacity:${canPick ? 1 : 0.35};cursor:${canPick ? 'pointer' : 'default'}" ${canPick ? `onclick="careerMOTMPickStat('${key}')"` : ''}>
+          <div class="stage-bar-label">${CAREER_RATING_LABELS[key]}</div>
+          <div class="stage-bar-track"><div class="stage-bar-fill" data-pct="${val}" style="width:${reduceMotion ? val : 0}%;background:${color};transition:width .6s var(--ease-out-strong)"></div></div>
+          <div class="stage-bar-pct" id="motm-val-${key}" style="color:${color}">${val}</div>
+        </div>`;
+      }).join('');
+      if (!reduceMotion) {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          barsEl.querySelectorAll('.stage-bar-fill').forEach((bar, i) => {
+            bar.style.transitionDelay = `${Math.min(i * 35, 250)}ms`;
+            bar.style.width = bar.dataset.pct + '%';
+          });
+        }));
+      }
+      requestAnimationFrame(() => wireReveals(document.getElementById('s-career-motm')));
+    }
+    // Locks both reward paths (stat rows + the morale button) once either
+    // is picked, same "can't be chosen twice while the reveal plays"
+    // pattern careerSpendPoint uses for progression points.
+    function careerMOTMLockChoices() {
+      document.querySelectorAll('#motm-bars .stage-bar-row').forEach(row => { row.onclick = null; row.style.cursor = 'default'; });
+      const moraleBtn = document.getElementById('motm-morale-btn');
+      moraleBtn.onclick = null;
+      moraleBtn.style.opacity = 0.35;
+    }
+    function careerMOTMPickStat(stat) {
+      const p = CAREER.player;
+      const before = p.ratings[stat];
+      const after = Math.min(CAREER_RATING_CAP, before + 1);
+      const delta = after - before;
+      p.ratings[stat] = after;
+      p.ovr = computeOVR(p.ratings, p.role);
+      careerMOTMLockChoices();
+
+      const row = document.querySelector(`#motm-bars [data-stat="${stat}"]`);
+      row.style.opacity = 1;
+      const fill = row.querySelector('.stage-bar-fill');
+      const numEl = document.getElementById(`motm-val-${stat}`);
+      const color = ratingColor(after);
+      fill.style.background = color;
+      numEl.style.color = color;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) {
+        fill.style.width = after + '%';
+        numEl.textContent = after;
+      } else {
+        fill.style.width = after + '%';
+        let cur = before;
+        const tick = () => { cur++; numEl.textContent = cur; if (cur < after) setTimeout(tick, 90); };
+        setTimeout(tick, 250);
+      }
+
+      document.getElementById('motm-result').innerHTML = `<div style="font-size:16px;font-weight:900;color:#f9c846">Your ${CAREER_RATING_LABELS[stat]} improved by ${delta}!</div>`;
+      document.getElementById('motm-continue').innerHTML = `<button class="btn-start" style="width:100%;margin-top:14px" onclick="careerFinishMOTM()">Continue</button>`;
+    }
+    function careerMOTMPickMorale() {
+      const p = CAREER.player;
+      p.morale = Math.min(100, p.morale + 10);
+      careerMOTMLockChoices();
+      document.getElementById('motm-result').innerHTML = `<div style="font-size:16px;font-weight:900;color:#4ade80">+10 Morale!</div>`;
+      document.getElementById('motm-continue').innerHTML = `<button class="btn-start" style="width:100%;margin-top:14px" onclick="careerFinishMOTM()">Continue</button>`;
+    }
+    function careerFinishMOTM() {
+      CAREER.pendingMOTM = null;
+      careerFinishMatch();
     }
 
     // ── Progression: spend a point earned this match on a stat ──────────
