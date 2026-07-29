@@ -17467,21 +17467,21 @@
       const wrap = document.getElementById('career-hub-ad-wrap');
       if (!wrap || !wrap.clientWidth) return; // screen not actually visible/laid out yet
       careerAdInjected = true;
-      const AD_W = 728, AD_H = 90;
-      // The unit is a fixed 728×90 desktop leaderboard — wider than this
-      // app's entire .screen column (max 480px, narrower still on an actual
-      // phone). Scale the whole thing down to fit rather than letting it
-      // overflow or force horizontal scroll on a mobile-first layout.
+      // 320×50 — the mobile-banner size, chosen specifically because it fits
+      // this app's narrow single-column layout at or near native resolution
+      // on real phones, unlike the wider 728×90/468×60 leaderboard sizes.
+      // Still scaled defensively for the rare viewport narrower than 320px.
+      const AD_W = 320, AD_H = 50;
       const scale = Math.min(1, wrap.clientWidth / AD_W);
       wrap.style.height = Math.round(AD_H * scale) + 'px';
       const inner = document.createElement('div');
       inner.style.cssText = `width:${AD_W}px;height:${AD_H}px;transform:scale(${scale});transform-origin:top left`;
       wrap.appendChild(inner);
       const optsScript = document.createElement('script');
-      optsScript.text = "atOptions = { 'key':'6a0695920c49337a2d4089790b62056d', 'format':'iframe', 'height':90, 'width':728, 'params':{} };";
+      optsScript.text = "atOptions = { 'key':'9c03898f0880ee706938fa3b6f8cf1f0', 'format':'iframe', 'height':50, 'width':320, 'params':{} };";
       inner.appendChild(optsScript);
       const invokeScript = document.createElement('script');
-      invokeScript.src = 'https://www.highperformanceformat.com/6a0695920c49337a2d4089790b62056d/invoke.js';
+      invokeScript.src = 'https://www.highperformanceformat.com/9c03898f0880ee706938fa3b6f8cf1f0/invoke.js';
       inner.appendChild(invokeScript);
     }
     function buildCareerHub() {
