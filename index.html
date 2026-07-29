@@ -15198,6 +15198,27 @@
     }
     const CAREER_RATING_LABELS = { technique:'Technique', power:'Power', temperament:'Temperament', control:'Control', threat:'Threat', variation:'Variation', keeping:'Keeping', catching:'Catching', groundFielding:'Ground Fielding' };
     const CAREER_RATING_ORDER = ['technique','power','temperament','control','threat','variation','keeping','catching','groundFielding'];
+    // Which of the 9 ratings actually matter for a given role — shared by
+    // the creation reveal, the player profile screen, and the pre-match
+    // "tonight's ratings" preview so all three dim the same stats the same way.
+    const CAREER_RELEVANT_STAT_KEYS = {
+      batter: ['technique','power','temperament'], bowler: ['control','threat','variation'],
+      allrounder: ['technique','power','temperament','control','threat','variation'],
+      keeper: ['keeping','catching','groundFielding','technique','power','temperament'],
+    };
+    // tempBoost is a flat, identical nudge to every one of the player's 9
+    // ratings for the next match only (a hot week in the nets, a niggle) —
+    // not a separate abstract multiplier layered on top of the real stats.
+    // Clamped the same as permanent training (0..cap) so a boosted rating
+    // never reads as a number the player could never otherwise reach.
+    function careerEffectiveRatings(player) {
+      const boost = player.tempBoost ?? 0;
+      const out = {};
+      CAREER_RATING_ORDER.forEach(key => {
+        out[key] = Math.max(0, Math.min(CAREER_RATING_CAP, player.ratings[key] + boost));
+      });
+      return out;
+    }
 
     // ── State ────────────────────────────────────────────────────────
     let CAREER = {};
@@ -15224,6 +15245,7 @@
         promotion: null,
         usedEvents: new Set(),
         pendingEvent: null,
+        pendingFreeTimeStat: null,
         resultStreak: 0,
         lastResultWon: null,
       };
@@ -15437,11 +15459,7 @@
       const ovrEl = document.getElementById('career-reveal-ovr');
       ovrEl.textContent = p.ovr;
       ovrEl.className = 'rating-badge ' + ratingBadgeClass(p.ovr);
-      const relevantKeys = {
-        batter: ['technique','power','temperament'], bowler: ['control','threat','variation'],
-        allrounder: ['technique','power','temperament','control','threat','variation'],
-        keeper: ['keeping','catching','groundFielding','technique','power','temperament'],
-      }[p.role];
+      const relevantKeys = CAREER_RELEVANT_STAT_KEYS[p.role];
       // Direct rAF-driven fill animation rather than wireReveals' IntersectionObserver
       // path: that system is built for long scrolling pages where a section reveals
       // as it scrolls into view, gated by opacity:0 until an .ov-in class lands. This
@@ -16086,11 +16104,14 @@
     // rating nudge — mechanisms Career already has.
     // Local Club flavour, not WC's international-tabloid-scandal register —
     // a village cricketer doesn't make back pages.
-    function careerFreeTimeStatKey(player) {
-      if (player.role === 'bowler') return 'control';
-      if (player.role === 'allrounder') return player.lean === 'bowlingAR' ? 'control' : 'technique';
-      if (player.role === 'keeper') return 'keeping';
-      return 'technique';
+    function careerFreeTimeStatPool(player) {
+      const battingKeys = ['technique', 'power', 'temperament'];
+      const bowlingKeys = ['control', 'threat', 'variation'];
+      if (player.role === 'bowler') return bowlingKeys;
+      if (player.role === 'allrounder') return player.lean === 'bowlingAR' ? bowlingKeys : battingKeys;
+      // batter and keeper both bat but never bowl, so batting stats are the
+      // only pool that makes sense for either.
+      return battingKeys;
     }
     const CAREER_EVENT_TYPES = {
       clubWriteup: () => ({
@@ -16111,8 +16132,8 @@
         shape: 'auto', variant: 'boost', emoji: '🔥', tag: 'Form Boost',
         headline: `${CAREER.player.name} Sharp in the Nets`,
         detail: `Been unplayable at training this week — timing's spot on, the coach has taken notice. Carry that into the next one.`,
-        sub: '+6 Next Match',
-        effect: () => { CAREER.player.tempBoost += 6; },
+        sub: '+5 Next Match',
+        effect: () => { CAREER.player.tempBoost += 5; },
       }),
       workClash: () => ({
         shape: 'auto', variant: 'harm', emoji: '💼', tag: 'Morale Hit',
@@ -16121,28 +16142,40 @@
         sub: '-10 Morale',
         effect: () => { CAREER.player.morale = Math.max(0, CAREER.player.morale - 10); },
       }),
-      freeTime: () => ({
-        shape: 'dilemma', variant: '', emoji: '🌆', tag: '⚠ Free Evening',
-        headline: `${CAREER.player.name} Has a Free Evening Before the Big Game`,
-        detail: `No training scheduled, no plans set — how do you spend it?`,
-        buttons: [
-          { label: 'Relax With the Lads', sub: '+12 Morale', action: 'freeTime_relax', color: '#4ade80',
-            effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 12); } },
-          { label: 'Extra Session at the Gym', sub: `+1 ${CAREER_RATING_LABELS[careerFreeTimeStatKey(CAREER.player)]}`, action: 'freeTime_train', color: '#60a5fa',
-            effect: () => {
-              const key = careerFreeTimeStatKey(CAREER.player);
-              CAREER.player.ratings[key] = Math.min(CAREER_RATING_CAP, CAREER.player.ratings[key] + 1);
-              CAREER.player.ovr = computeOVR(CAREER.player.ratings, CAREER.player.role);
-            } },
-        ],
-      }),
+      freeTime: () => {
+        // The random stat is rolled once and cached on CAREER, not re-rolled
+        // per call — this factory runs twice for the same event instance
+        // (once to render the card's preview text, again when the choice is
+        // resolved), and both need to agree on the same stat or the preview
+        // would promise one thing and the effect would land another.
+        if (!CAREER.pendingFreeTimeStat) {
+          const pool = careerFreeTimeStatPool(CAREER.player);
+          CAREER.pendingFreeTimeStat = pool[Math.floor(Math.random() * pool.length)];
+        }
+        const trainKey = CAREER.pendingFreeTimeStat;
+        return {
+          shape: 'dilemma', variant: '', emoji: '🌆', tag: '⚠ Free Evening',
+          headline: `${CAREER.player.name} Has a Free Evening Before the Big Game`,
+          detail: `No training scheduled, no plans set — how do you spend it?`,
+          buttons: [
+            { label: 'Relax With the Lads', sub: '+10 Morale', action: 'freeTime_relax', color: '#4ade80',
+              effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 10); CAREER.pendingFreeTimeStat = null; } },
+            { label: 'Nets With the Coach', sub: `+1 ${CAREER_RATING_LABELS[trainKey]}`, action: 'freeTime_train', color: '#60a5fa',
+              effect: () => {
+                CAREER.player.ratings[trainKey] = Math.min(CAREER_RATING_CAP, CAREER.player.ratings[trainKey] + 1);
+                CAREER.player.ovr = computeOVR(CAREER.player.ratings, CAREER.player.role);
+                CAREER.pendingFreeTimeStat = null;
+              } },
+          ],
+        };
+      },
       bigWin: () => ({
         shape: 'dilemma', variant: '', emoji: '🍻', tag: '⚠ Decision Required',
         headline: `The Team's Out Celebrating a Big Win`,
         detail: `Everyone's heading to the clubhouse to celebrate — big game coming up though. Join in?`,
         buttons: [
           { label: 'Join In', sub: '+10 Morale, but tired next match', action: 'bigWin_join', color: '#4ade80',
-            effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 10); CAREER.player.tempBoost -= 4; } },
+            effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 10); CAREER.player.tempBoost -= 5; } },
           { label: 'Early Night', sub: 'No change', action: 'bigWin_early', color: '#9090a8', effect: () => {} },
         ],
       }),
@@ -16202,10 +16235,43 @@
       // match (matches the existing career-inbox-flash auto-dismiss pattern
       // rather than adding one more tap the player has to make).
       const btnArea = document.getElementById('career-event-buttons');
-      btnArea.innerHTML = `<div class="ov-reveal ov-pop" style="text-align:center;padding:16px;border-radius:10px;background:#0d0d12;border:1px solid ${color};font-size:17px;font-weight:900;color:${color}">${sub}</div>`;
+      let html = `<div class="ov-reveal ov-pop" style="text-align:center;padding:16px;border-radius:10px;background:#0d0d12;border:1px solid ${color};font-size:17px;font-weight:900;color:${color}">${sub}</div>`;
+
+      // tempBoost is a flat shift to every one of the player's ratings for
+      // the next match only (see careerEffectiveRatings) — show exactly
+      // what that means in real numbers, OVR included, rather than leaving
+      // "+5 Next Match" as an abstract promise. Only relevant events touch
+      // tempBoost (niggle/netSession/bigWin's "Join In"); everything else
+      // leaves it untouched at 0 and this block is skipped.
+      const boost = CAREER.player.tempBoost ?? 0;
+      if (boost !== 0) {
+        const p = CAREER.player;
+        const eff = careerEffectiveRatings(p);
+        const effOvr = computeOVR(eff, p.role);
+        const relevantKeys = CAREER_RELEVANT_STAT_KEYS[p.role];
+        const rows = CAREER_RATING_ORDER.map(key => {
+          const dimmed = !relevantKeys.includes(key);
+          const val = eff[key];
+          const rowColor = ratingColor(val);
+          return `<div class="stage-bar-row" style="opacity:${dimmed ? 0.35 : 1}">
+            <div class="stage-bar-label">${CAREER_RATING_LABELS[key]}</div>
+            <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${val}%;background:${rowColor}"></div></div>
+            <div class="stage-bar-pct" style="color:${rowColor}">${val}</div>
+          </div>`;
+        }).join('');
+        html += `<div class="ov-reveal ov-pop" style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-top:10px;text-align:left">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800">Tonight's Ratings</div>
+            <div class="rating-badge ${ratingBadgeClass(effOvr)}" style="width:34px;height:34px;font-size:14px;border-radius:6px">${effOvr}</div>
+          </div>
+          ${rows}
+        </div>`;
+      }
+
+      btnArea.innerHTML = html;
       requestAnimationFrame(() => wireReveals(document.getElementById('s-career-event')));
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      setTimeout(onDone, reduceMotion ? 450 : 1200);
+      setTimeout(onDone, reduceMotion ? 450 : (boost !== 0 ? 2000 : 1200));
     }
 
     function playNextCareerFixture() {
@@ -16267,16 +16333,18 @@
       // gets to the crease because the top order didn't get bowled out.
       const pos = CAREER_BAT_POSITION[careerPosKey(player)] || 6;
       if (pos - 1 > myTeamWktsLost) return null;
-      const r = player.ratings;
+      // tempBoost (a one-match nudge from a random event) is a flat shift to
+      // every real rating for this game only — see careerEffectiveRatings —
+      // so it flows into `skill`/`sr`/etc. below exactly like a permanent
+      // rating change would, no separate multiplier needed. Morale (a
+      // slow-moving 0-100 drifting with results/streaks) stays its own
+      // multiplier layered on top, since it isn't a rating change at all.
+      // Both are neutral at their defaults (tempBoost 0, morale 50), so an
+      // untouched player — or any save from before this existed — reproduces
+      // today's already-tuned numbers exactly.
+      const r = careerEffectiveRatings(player);
       const skill = r.technique * 0.4 + r.power * 0.35 + r.temperament * 0.25;
-      // Morale (a slow-moving 0-100, drifting with results/streaks) and
-      // tempBoost (a one-match nudge from a random event) are neutral at 0,
-      // so an untouched player — or any save from before this existed —
-      // reproduces today's already-tuned numbers exactly. Applied as
-      // sequential multipliers rather than summed into one factor so
-      // neither one can compound the other into an extreme swing.
       const moraleFactor = ((player.morale ?? 50) - 50) / 50;
-      const tempFactor = Math.max(-1, Math.min(1, (player.tempBoost ?? 0) / 8));
       // Batting position used to carry its cost two ways: a real chance of
       // not batting at all, and this per-position runs discount. Making team
       // wickets realistic (see careerRandomWickets) pushed most matches to
@@ -16327,7 +16395,7 @@
       // share is roughly double a tail-ender's, via posFactor) fixes this at
       // the source rather than papering over it with a harder clip.
       const shareCeiling = Math.min(0.5, 0.18 + posFactor * 0.17);
-      const moraleMeanMult = (1 + moraleFactor * 0.04) * (1 + tempFactor * 0.05);
+      const moraleMeanMult = 1 + moraleFactor * 0.04;
       const meanRuns = Math.min(rawMeanRuns, myTeamScore * shareCeiling * (out ? 1 : 1.15)) * moraleMeanMult;
       let runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
       // Match-to-match tempo noise: without this, strike rate was almost
@@ -16336,7 +16404,7 @@
       // part of what made outcomes feel deterministic rather than variable
       // match to match.
       const srNoise = 0.65 + Math.random() * 0.7;
-      const sr = (0.75 + r.power / 100) * srNoise * (1 + moraleFactor * 0.05) * (1 + tempFactor * 0.06);
+      const sr = (0.75 + r.power / 100) * srNoise * (1 + moraleFactor * 0.05);
       let balls = Math.max(1, Math.round(runs / sr));
       const teamBalls = Math.max(1, Math.round(myTeamOvers * 6));
       if (!out) {
@@ -16395,7 +16463,11 @@
     // decides *when* you come on (seamers open, spinners/all-rounders come
     // on first change) — that's timing, not workload, and stays type-based.
     function simTrackedPlayerBowling(player, oppWktsAvailable, oppScoreAvailable, oppOvers) {
-      const r = player.ratings;
+      // tempBoost is a flat shift to every real rating for this game only —
+      // see careerEffectiveRatings — so it flows straight into control/
+      // threat below like a real rating change. Morale stays a separate
+      // multiplier layered on top.
+      const r = careerEffectiveRatings(player);
       if (r.control <= 15 && r.threat <= 15) return null;
       const skill = (r.control + r.threat + r.variation) / 3;
       // A genuinely weak part-timer (skill down near the unprogressed
@@ -16404,11 +16476,8 @@
       // Real bowling stats (skill 45+, roughly an unprogressed specialist's
       // baseline) always earn a chance.
       if (skill < 45 && Math.random() < (45 - skill) / 45) return null;
-      // Morale/tempBoost — see simTrackedPlayerInnings for why these are
-      // neutral (0) by default and applied as sequential multipliers.
       const moraleFactor = ((player.morale ?? 50) - 50) / 50;
-      const tempFactor = Math.max(-1, Math.min(1, (player.tempBoost ?? 0) / 8));
-      const economy = Math.max(2.5, 7.5 - r.control / 20) * (1 - moraleFactor * 0.04) * (1 - tempFactor * 0.05);
+      const economy = Math.max(2.5, 7.5 - r.control / 20) * (1 - moraleFactor * 0.04);
       // /175 (audited): a starting specialist Bowler (threat~53) landed a
       // 15.4 bowling average and took a wicket in 96.6% of matches (league-
       // wide generated bowlers, same 30-60 rating band, averaged 23.3) — an
@@ -16417,7 +16486,7 @@
       // ~30+ average with real wicketless games, leaving room for progression
       // (cap 80 threat) to earn a genuinely elite ~15 average rather than
       // start there for free.
-      const wicketChancePerOver = (r.threat / 350) * (1 + moraleFactor * 0.06) * (1 + tempFactor * 0.08);
+      const wicketChancePerOver = (r.threat / 350) * (1 + moraleFactor * 0.06);
       // The captain's ceiling for how long today's spell CAN run, scaled
       // from skill: a borderline part-timer (~38) tops out around a brief
       // 5-over look, an unprogressed specialist (~47-52) around 8-9, a fully
@@ -16488,7 +16557,7 @@
       return { overs, runsConceded, wickets };
     }
     function simTrackedPlayerFielding(player) {
-      const r = player.ratings;
+      const r = careerEffectiveRatings(player);
       // A keeper has a hand in far more deliveries than an outfielder in
       // real cricket (every ball that beats the bat, every run out, every
       // stumping), not just a better success rate on the same number of
@@ -17633,11 +17702,7 @@
       // Same relevant-stats dimming as the creation reveal (career-reveal-bars)
       // — every attribute is shown, but only the ones that actually feed this
       // player's role stay at full opacity.
-      const relevantKeys = {
-        batter: ['technique','power','temperament'], bowler: ['control','threat','variation'],
-        allrounder: ['technique','power','temperament','control','threat','variation'],
-        keeper: ['keeping','catching','groundFielding','technique','power','temperament'],
-      }[p.role];
+      const relevantKeys = CAREER_RELEVANT_STAT_KEYS[p.role];
       const barsEl = document.getElementById('profile-bars');
       barsEl.innerHTML = CAREER_RATING_ORDER.map(key => {
         const val = p.ratings[key];
