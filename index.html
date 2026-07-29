@@ -15064,9 +15064,21 @@
 
     <div id="motm-quote" class="ov-reveal ov-pop" style="width:100%;background:#0d0d18;border:1px solid #252535;border-radius:12px;padding:16px;margin-bottom:24px;text-align:left"></div>
 
-    <div style="width:100%;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Man of the Match Reward — Pick One</div>
-    <div class="stage-bar" id="motm-bars" style="text-align:left;margin-bottom:12px"></div>
-    <button class="btn-auth-small" id="motm-morale-btn" style="width:100%;background:#0d0d12" onclick="careerMOTMPickMorale()">💪 Take a Confidence Boost — +10 Morale</button>
+    <div style="width:100%;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Man of the Match Reward</div>
+    <div id="motm-choice-area" style="width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+      <button class="ov-reveal btn-sim" id="motm-morale-choice-btn" style="background:#061a06;border:1px solid #4ade80;color:#4ade80;text-align:left" onclick="careerMOTMPickMorale()">
+        <span style="display:block;font-size:14px;font-weight:800">💪 Take a Confidence Boost</span>
+        <span style="display:block;font-size:11px;font-weight:600;opacity:.75;margin-top:3px">+10 Morale</span>
+      </button>
+      <button class="ov-reveal btn-sim" id="motm-attribute-choice-btn" style="background:#061420;border:1px solid #60a5fa;color:#60a5fa;text-align:left" onclick="careerMOTMShowAttributePicker()">
+        <span style="display:block;font-size:14px;font-weight:800">📈 Take an Attribute Upgrade</span>
+        <span style="display:block;font-size:11px;font-weight:600;opacity:.75;margin-top:3px">+1 to a stat of your choice</span>
+      </button>
+    </div>
+    <div id="motm-bars-wrap" style="display:none;width:100%">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Pick a Stat to Upgrade</div>
+      <div class="stage-bar" id="motm-bars" style="text-align:left;margin-bottom:12px"></div>
+    </div>
     <div id="motm-result" style="width:100%;text-align:center;min-height:24px;margin-top:16px"></div>
     <div id="motm-continue" style="width:100%"></div>
   </div>
@@ -16138,28 +16150,28 @@
       clubWriteup: () => ({
         shape: 'auto', variant: 'boost', emoji: '📰', tag: 'Morale Boost',
         headline: `${CAREER.player.name} Gets a Mention in the Local Paper`,
-        detail: `The club secretary's been singing your praises to the local rag — a nice write-up on your season so far. Good for the confidence.`,
+        detail: `The club secretary's been singing your praises to the local rag, with a nice write-up on your season so far. Good for the confidence.`,
         sub: '+10 Morale',
         effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 10); },
       }),
       niggle: () => ({
         shape: 'auto', variant: 'harm', emoji: '🤕', tag: 'Carrying a Knock',
         headline: `${CAREER.player.name} Picks Up a Niggle`,
-        detail: `Been feeling it all week in the field — nothing serious, but it's not quite right. Expect to feel it a little in the next match.`,
+        detail: `Been feeling it all week in the field. Nothing serious, but it's not quite right. Expect it in the next match too.`,
         sub: '-5 Next Match',
         effect: () => { CAREER.player.tempBoost -= 5; },
       }),
       netSession: () => ({
         shape: 'auto', variant: 'boost', emoji: '🔥', tag: 'Form Boost',
         headline: `${CAREER.player.name} Sharp in the Nets`,
-        detail: `Been unplayable at training this week — timing's spot on, the coach has taken notice. Carry that into the next one.`,
+        detail: `Been unplayable at training this week. Timing's spot on and the coach has noticed. Carry it into the next one.`,
         sub: '+5 Next Match',
         effect: () => { CAREER.player.tempBoost += 5; },
       }),
       workClash: () => ({
         shape: 'auto', variant: 'harm', emoji: '💼', tag: 'Morale Hit',
         headline: `${CAREER.player.name} Snowed Under at Work`,
-        detail: `Been mental at work this week — barely had a minute to think about cricket, let alone prepare properly.`,
+        detail: `Been mental at work this week. Barely had a minute to think about cricket, let alone prepare.`,
         sub: '-10 Morale',
         effect: () => { CAREER.player.morale = Math.max(0, CAREER.player.morale - 10); },
       }),
@@ -16177,7 +16189,7 @@
         return {
           shape: 'dilemma', variant: '', emoji: '🌆', tag: '⚠ Free Evening',
           headline: `${CAREER.player.name} Has a Free Evening Before the Big Game`,
-          detail: `No training scheduled, no plans set — how do you spend it?`,
+          detail: `No training scheduled, no plans set. Time to decide.`,
           buttons: [
             { label: 'Relax With the Lads', sub: '+10 Morale', action: 'freeTime_relax', color: '#4ade80',
               effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 10); CAREER.pendingFreeTimeStat = null; } },
@@ -16193,7 +16205,7 @@
       bigWin: () => ({
         shape: 'dilemma', variant: '', emoji: '🍻', tag: '⚠ Decision Required',
         headline: `The Team's Out Celebrating a Big Win`,
-        detail: `Everyone's heading to the clubhouse to celebrate — big game coming up though. Join in?`,
+        detail: `Everyone's heading to the clubhouse to celebrate, but there's a big game coming up. Join in?`,
         buttons: [
           { label: 'Join In', sub: '+10 Morale, but tired next match', action: 'bigWin_join', color: '#4ade80',
             effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 10); CAREER.player.tempBoost -= 5; } },
@@ -17517,13 +17529,13 @@
 
     // ── Man of the Match: breaking-news screen + reward choice ──────────
     const CAREER_MOTM_OPENERS = [
-      (p, ctx) => `${p.name} was named Man of the Match ${ctx.won ? `as ${CAREER.myClubName} saw off ${ctx.oppName}` : `even in defeat to ${ctx.oppName}`}, the standout performer on a night ${ctx.won ? CAREER.myClubName + ' will remember' : 'that still had its bright spots'}.`,
-      (p, ctx) => `It's official — ${p.name} takes the Man of the Match award after a performance that ${ctx.won ? `helped ${CAREER.myClubName} home against ${ctx.oppName}` : `stood out even as ${CAREER.myClubName} came up short against ${ctx.oppName}`}.`,
-      (p, ctx) => `${CAREER_LEAGUES[CAREER.leagueId].name} judges didn't need long to settle on their Man of the Match: ${p.name}, after a night to remember ${ctx.won ? `in a win over ${ctx.oppName}` : `against ${ctx.oppName}`}.`,
+      (p, ctx) => `${p.name} takes the Man of the Match award ${ctx.won ? `after ${CAREER.myClubName} beat ${ctx.oppName}` : `despite ${CAREER.myClubName}'s loss to ${ctx.oppName}`}.`,
+      (p, ctx) => `${p.name} wins Man of the Match ${ctx.won ? `after driving ${CAREER.myClubName} to victory over ${ctx.oppName}` : `in a losing effort against ${ctx.oppName}`}.`,
+      (p, ctx) => `${CAREER_LEAGUES[CAREER.leagueId].name} names ${p.name} Man of the Match ${ctx.won ? `after the win over ${ctx.oppName}` : `after the game against ${ctx.oppName}`}.`,
     ];
     const CAREER_MOTM_CLOSERS = [
-      name => `Not a bad way to spend a weekend.`,
-      name => `The kind of performance that gets a season talked about.`,
+      name => `The rest of the changing room will hear about this one.`,
+      name => `Teammates will bring this one up for weeks.`,
       name => `${name} will sleep well tonight.`,
     ];
     // Quote flavour tracks what actually stood out this match, same
@@ -17534,23 +17546,23 @@
       let pool;
       if (battedWell && bowledWell) {
         pool = [
-          `"Honestly just tried to contribute with both bat and ball tonight — chuffed it came off. Team win is what matters most."`,
-          `"When things click like that it doesn't feel like hard work. Credit to the lads for setting it up."`,
+          `"Tried to contribute with both bat and ball tonight, and it came off. Team win is what matters most."`,
+          `"Things clicked tonight and it stopped feeling like hard work. Credit to the lads for setting it up."`,
         ];
       } else if (bowledWell) {
         pool = [
           `"Wicket to wicket, that's all I was trying to do. Pitch offered a bit and I backed myself."`,
-          `"You dream of days like this with the ball. Just glad it counted for something."`,
+          `"You dream of days like this with the ball. Glad it counted for something."`,
         ];
       } else if (battedWell) {
         pool = [
-          `"Just tried to bat time and let the shots come. Nice when it pays off in the scorebook."`,
-          `"Wickets were falling around me early on so I just tried to see it through."`,
+          `"Tried to bat time and let the shots come. Nice when it pays off in the scorebook."`,
+          `"Wickets were falling around me early on so I tried to see it through."`,
         ];
       } else {
         pool = [
-          `"Wasn't the biggest day with bat or ball, but glad I could chip in where it mattered."`,
-          `"Cricket's a team game — just happy to have played my part tonight."`,
+          `"Quiet day with the bat and ball, but glad to chip in where it mattered."`,
+          `"Cricket's a team game. Happy to have played my part tonight."`,
         ];
       }
       return careerPick(pool);
@@ -17582,13 +17594,23 @@
 
       document.getElementById('motm-result').innerHTML = '';
       document.getElementById('motm-continue').innerHTML = '';
-      const moraleBtn = document.getElementById('motm-morale-btn');
-      moraleBtn.style.opacity = 1;
-      moraleBtn.onclick = careerMOTMPickMorale;
+
+      // Reset to the initial two-choice state — this screen gets rebuilt
+      // fresh for every MOTM match, but the DOM elements themselves are
+      // reused, not recreated, so a locked/hidden state from a previous
+      // match has to be cleared explicitly.
+      document.getElementById('motm-choice-area').style.display = 'flex';
+      document.getElementById('motm-bars-wrap').style.display = 'none';
+      const moraleBtn = document.getElementById('motm-morale-choice-btn');
+      const attrBtn = document.getElementById('motm-attribute-choice-btn');
+      moraleBtn.style.opacity = 1; moraleBtn.onclick = careerMOTMPickMorale;
+      attrBtn.style.opacity = 1; attrBtn.onclick = careerMOTMShowAttributePicker;
 
       // Unlike progression points, the MOTM reward isn't gated to
       // role-relevant stats — any of the 9 is fair game, only a rating
-      // already at cap is excluded.
+      // already at cap is excluded. Built now but kept hidden until the
+      // player actually picks the attribute-upgrade path, so choosing the
+      // morale box instead never has to look at this list at all.
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const barsEl = document.getElementById('motm-bars');
       barsEl.innerHTML = CAREER_RATING_ORDER.map(key => {
@@ -17601,7 +17623,21 @@
           <div class="stage-bar-pct" id="motm-val-${key}" style="color:${color}">${val}</div>
         </div>`;
       }).join('');
-      if (!reduceMotion) {
+      requestAnimationFrame(() => wireReveals(document.getElementById('s-career-motm')));
+    }
+    // Reveals the attribute picker only once the player has actually
+    // chosen that path — makes the two rewards read as mutually exclusive
+    // (pick a box, then act on it) rather than a stat list sitting next to
+    // an unrelated morale button that could look like a third, separate option.
+    function careerMOTMShowAttributePicker() {
+      document.getElementById('motm-choice-area').style.display = 'none';
+      const wrap = document.getElementById('motm-bars-wrap');
+      wrap.style.display = 'block';
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const barsEl = document.getElementById('motm-bars');
+      if (reduceMotion) {
+        barsEl.querySelectorAll('.stage-bar-fill').forEach(bar => { bar.style.width = bar.dataset.pct + '%'; });
+      } else {
         requestAnimationFrame(() => requestAnimationFrame(() => {
           barsEl.querySelectorAll('.stage-bar-fill').forEach((bar, i) => {
             bar.style.transitionDelay = `${Math.min(i * 35, 250)}ms`;
@@ -17609,16 +17645,18 @@
           });
         }));
       }
-      requestAnimationFrame(() => wireReveals(document.getElementById('s-career-motm')));
+      requestAnimationFrame(() => wireReveals(wrap));
     }
-    // Locks both reward paths (stat rows + the morale button) once either
-    // is picked, same "can't be chosen twice while the reveal plays"
+    // Locks both reward paths (stat rows + the two choice boxes) once a
+    // pick lands, same "can't be chosen twice while the reveal plays"
     // pattern careerSpendPoint uses for progression points.
     function careerMOTMLockChoices() {
       document.querySelectorAll('#motm-bars .stage-bar-row').forEach(row => { row.onclick = null; row.style.cursor = 'default'; });
-      const moraleBtn = document.getElementById('motm-morale-btn');
-      moraleBtn.onclick = null;
-      moraleBtn.style.opacity = 0.35;
+      ['motm-morale-choice-btn', 'motm-attribute-choice-btn'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.onclick = null;
+        btn.style.opacity = 0.35;
+      });
     }
     function careerMOTMPickStat(stat) {
       const p = CAREER.player;
