@@ -15239,22 +15239,29 @@
     const CAREER_RATING_ORDER = ['technique','power','temperament','control','threat','variation','keeping','catching','groundFielding'];
     // Which of the 9 ratings actually matter for a given role — shared by
     // the creation reveal, the player profile screen, and the pre-match
-    // "tonight's ratings" preview so all three dim the same stats the same way.
+    // "today's ratings" preview so all three dim the same stats the same way.
     const CAREER_RELEVANT_STAT_KEYS = {
       batter: ['technique','power','temperament'], bowler: ['control','threat','variation'],
       allrounder: ['technique','power','temperament','control','threat','variation'],
       keeper: ['keeping','catching','groundFielding','technique','power','temperament'],
     };
-    // tempBoost is a flat, identical nudge to every one of the player's 9
-    // ratings for the next match only (a hot week in the nets, a niggle) —
-    // not a separate abstract multiplier layered on top of the real stats.
-    // Clamped the same as permanent training (0..cap) so a boosted rating
-    // never reads as a number the player could never otherwise reach.
+    const CAREER_BATTING_STAT_KEYS = ['technique', 'power', 'temperament'];
+    const CAREER_BOWLING_STAT_KEYS = ['control', 'threat', 'variation'];
+    // tempBoost is a flat, identical nudge to the player's ratings for the
+    // next match only (a hot week in the nets, a niggle) — not a separate
+    // abstract multiplier layered on top of the real stats. Most events hit
+    // every one of the 9, but tempBoostCategory lets one (a borrowed bat,
+    // borrowed bowling boots) scope it to just the batting or bowling trio
+    // instead. Clamped the same as permanent training (0..cap) so a boosted
+    // rating never reads as a number the player could never otherwise reach.
     function careerEffectiveRatings(player) {
       const boost = player.tempBoost ?? 0;
+      const category = player.tempBoostCategory;
+      const scopedKeys = category === 'batting' ? CAREER_BATTING_STAT_KEYS : category === 'bowling' ? CAREER_BOWLING_STAT_KEYS : null;
       const out = {};
       CAREER_RATING_ORDER.forEach(key => {
-        out[key] = Math.max(0, Math.min(CAREER_RATING_CAP, player.ratings[key] + boost));
+        const applies = !scopedKeys || scopedKeys.includes(key);
+        out[key] = applies ? Math.max(0, Math.min(CAREER_RATING_CAP, player.ratings[key] + boost)) : player.ratings[key];
       });
       return out;
     }
@@ -15468,7 +15475,7 @@
         name: d.name, role: d.role, type: d.type, lean: d.lean,
         battingType: d.battingType, bowlBroadType: d.bowlBroadType, bowlType: d.bowlType,
         ratings, ovr,
-        morale: 50, tempBoost: 0,
+        morale: 50, tempBoost: 0, tempBoostCategory: null,
       };
       renderCareerReveal();
       go('s-career-create-reveal');
@@ -16220,10 +16227,59 @@
           { label: 'Early Night', sub: 'No change', action: 'bigWin_early', color: '#9090a8', effect: () => {} },
         ],
       }),
+      stuckInTraffic: () => ({
+        shape: 'auto', variant: 'harm', emoji: '🚗', tag: 'Bad Start',
+        headline: `${CAREER.player.name} Stuck in Traffic Before the Game`,
+        detail: `Missed the warm-up and walked in rattled, no time to settle. Expect it to cost you today.`,
+        sub: '-5 Next Match',
+        effect: () => { CAREER.player.tempBoost -= 5; CAREER.player.tempBoostCategory = null; },
+      }),
+      proBat: () => ({
+        shape: 'auto', variant: 'boost', emoji: '🏏', tag: 'Borrowed Gear',
+        headline: `${CAREER.player.name} Borrows a Mate's Pro Bat`,
+        detail: `A mate who plays professionally lent you his match bat for the day. Feels different in the middle.`,
+        sub: '+10 Batting Next Match',
+        effect: () => { CAREER.player.tempBoost += 10; CAREER.player.tempBoostCategory = 'batting'; },
+      }),
+      proBowlingBoots: () => ({
+        shape: 'auto', variant: 'boost', emoji: '👟', tag: 'Borrowed Gear',
+        headline: `${CAREER.player.name} Borrows a Mate's Pro Bowling Boots`,
+        detail: `A mate who plays professionally lent you his bowling boots for the day. Extra spring in the run-up.`,
+        sub: '+10 Bowling Next Match',
+        effect: () => { CAREER.player.tempBoost += 10; CAREER.player.tempBoostCategory = 'bowling'; },
+      }),
+      noNets: () => ({
+        shape: 'auto', variant: 'harm', emoji: '💔', tag: 'No Training',
+        headline: `${CAREER.player.name}'s Girlfriend Has Other Plans`,
+        detail: `No nets all week, plans elsewhere took priority. Walking into the game undercooked.`,
+        sub: '-5 Next Match',
+        effect: () => { CAREER.player.tempBoost -= 5; CAREER.player.tempBoostCategory = null; },
+      }),
+      netsFight: () => {
+        const p = CAREER.player;
+        const isBowler = p.role === 'bowler' || (p.role === 'allrounder' && p.lean === 'bowlingAR');
+        return {
+          shape: 'auto', variant: 'harm', emoji: '😤', tag: 'Bust-Up at Nets',
+          headline: isBowler ? `${p.name} Bounces a Teammate in the Nets` : `${p.name} Copped a Bouncer in the Nets`,
+          detail: isBowler
+            ? `Dug one in short at a teammate and it didn't go down well. Handbags, nothing serious, but the mood's off.`
+            : `One of the bowlers dug one in short and you didn't take it well. Handbags, nothing serious, but the mood's off.`,
+          sub: '-10 Morale',
+          effect: () => { CAREER.player.morale = Math.max(0, CAREER.player.morale - 10); },
+        };
+      },
+    };
+    // Most events are open to anyone; a couple only make sense for players
+    // who actually field a discipline the gear applies to. Checked at roll
+    // time, not filtered out of the pool permanently — a batting all-rounder
+    // just never sees the bowling-boots event, and vice versa.
+    const CAREER_EVENT_ELIGIBILITY = {
+      proBat: player => player.role === 'keeper' || player.role === 'batter' || (player.role === 'allrounder' && player.lean === 'battingAR'),
+      proBowlingBoots: player => player.role === 'bowler' || (player.role === 'allrounder' && player.lean === 'bowlingAR'),
     };
     function rollCareerRandomEvent() {
       if (Math.random() > 0.15) return null;
-      const types = Object.keys(CAREER_EVENT_TYPES).filter(t => !CAREER.usedEvents.has(t));
+      const types = Object.keys(CAREER_EVENT_TYPES).filter(t => !CAREER.usedEvents.has(t) && (!CAREER_EVENT_ELIGIBILITY[t] || CAREER_EVENT_ELIGIBILITY[t](CAREER.player)));
       if (!types.length) return null;
       const type = types[Math.floor(Math.random() * types.length)];
       CAREER.usedEvents.add(type);
@@ -16302,7 +16358,7 @@
         }).join('');
         html += `<div class="ov-reveal ov-pop" style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-top:10px;text-align:left">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800">Tonight's Ratings</div>
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800">Today's Ratings</div>
             <div class="rating-badge ${ratingBadgeClass(effOvr)}" style="width:34px;height:34px;font-size:14px;border-radius:6px">${effOvr}</div>
           </div>
           ${rows}
@@ -16953,6 +17009,7 @@
       // niggle) is spent the moment the sim calls above have read it —
       // otherwise it'd silently keep nudging every future match too.
       player.tempBoost = 0;
+      player.tempBoostCategory = null;
 
       // Morale: win/loss is the main driver, a big personal day (or a
       // shocker) nudges it further, and three results the same way in a row
@@ -17544,7 +17601,7 @@
     const CAREER_MOTM_CLOSERS = [
       name => `The rest of the changing room will hear about this one.`,
       name => `Teammates will bring this one up for weeks.`,
-      name => `${name} will sleep well tonight.`,
+      name => `${name} won't forget this one.`,
     ];
     // Quote flavour tracks what actually stood out this match, same
     // discipline-aware approach as careerPointDescription elsewhere.
@@ -17554,8 +17611,8 @@
       let pool;
       if (battedWell && bowledWell) {
         pool = [
-          `"Tried to contribute with both bat and ball tonight, and it came off. Team win is what matters most."`,
-          `"Things clicked tonight and it stopped feeling like hard work. Credit to the lads for setting it up."`,
+          `"Tried to contribute with both bat and ball today, and it came off. Team win is what matters most."`,
+          `"Things clicked today and it stopped feeling like hard work. Credit to the lads for setting it up."`,
         ];
       } else if (bowledWell) {
         pool = [
@@ -17570,7 +17627,7 @@
       } else {
         pool = [
           `"Quiet day with the bat and ball, but glad to chip in where it mattered."`,
-          `"Cricket's a team game. Happy to have played my part tonight."`,
+          `"Cricket's a team game. Happy to have played my part today."`,
         ];
       }
       return careerPick(pool);
