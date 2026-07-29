@@ -16067,24 +16067,28 @@
         shape: 'auto', variant: 'boost', emoji: '📰', tag: 'Morale Boost',
         headline: `${CAREER.player.name} Gets a Mention in the Local Paper`,
         detail: `The club secretary's been singing your praises to the local rag — a nice write-up on your season so far. Good for the confidence.`,
+        sub: '+10 Morale',
         effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 10); },
       }),
       niggle: () => ({
         shape: 'auto', variant: 'harm', emoji: '🤕', tag: 'Carrying a Knock',
         headline: `${CAREER.player.name} Picks Up a Niggle`,
         detail: `Been feeling it all week in the field — nothing serious, but it's not quite right. Expect to feel it a little in the next match.`,
+        sub: '-5 Next Match',
         effect: () => { CAREER.player.tempBoost -= 5; },
       }),
       netSession: () => ({
         shape: 'auto', variant: 'boost', emoji: '🔥', tag: 'Form Boost',
         headline: `${CAREER.player.name} Sharp in the Nets`,
         detail: `Been unplayable at training this week — timing's spot on, the coach has taken notice. Carry that into the next one.`,
+        sub: '+6 Next Match',
         effect: () => { CAREER.player.tempBoost += 6; },
       }),
       workClash: () => ({
         shape: 'auto', variant: 'harm', emoji: '💼', tag: 'Morale Hit',
         headline: `${CAREER.player.name} Snowed Under at Work`,
         detail: `Been mental at work this week — barely had a minute to think about cricket, let alone prepare properly.`,
+        sub: '-10 Morale',
         effect: () => { CAREER.player.morale = Math.max(0, CAREER.player.morale - 10); },
       }),
       freeTime: () => ({
@@ -16092,9 +16096,9 @@
         headline: `${CAREER.player.name} Has a Free Evening Before the Big Game`,
         detail: `No training scheduled, no plans set — how do you spend it?`,
         buttons: [
-          { label: 'Relax With the Lads', action: 'freeTime_relax', color: '#4ade80',
+          { label: 'Relax With the Lads', sub: '+12 Morale', action: 'freeTime_relax', color: '#4ade80',
             effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 12); } },
-          { label: 'Extra Session at the Gym', action: 'freeTime_train', color: '#60a5fa',
+          { label: 'Extra Session at the Gym', sub: `+1 ${CAREER_RATING_LABELS[careerFreeTimeStatKey(CAREER.player)]}`, action: 'freeTime_train', color: '#60a5fa',
             effect: () => {
               const key = careerFreeTimeStatKey(CAREER.player);
               CAREER.player.ratings[key] = Math.min(CAREER_RATING_CAP, CAREER.player.ratings[key] + 1);
@@ -16107,9 +16111,9 @@
         headline: `The Team's Out Celebrating a Big Win`,
         detail: `Everyone's heading to the clubhouse to celebrate — big game coming up though. Join in?`,
         buttons: [
-          { label: 'Join In', action: 'bigWin_join', color: '#4ade80',
+          { label: 'Join In', sub: '+10 Morale, but tired next match', action: 'bigWin_join', color: '#4ade80',
             effect: () => { CAREER.player.morale = Math.min(100, CAREER.player.morale + 10); CAREER.player.tempBoost -= 4; } },
-          { label: 'Early Night', action: 'bigWin_early', color: '#9090a8', effect: () => {} },
+          { label: 'Early Night', sub: 'No change', action: 'bigWin_early', color: '#9090a8', effect: () => {} },
         ],
       }),
     };
@@ -16135,23 +16139,43 @@
         </div>`;
       const btnArea = document.getElementById('career-event-buttons');
       btnArea.innerHTML = cfg.buttons
-        ? cfg.buttons.map(b => `<button class="ov-reveal btn-sim" style="background:${b.color==='#4ade80'?'#061a06':b.color==='#60a5fa'?'#061420':'#1a1a24'};border-color:${b.color};color:${b.color}" onclick="handleCareerEventChoice('${b.action}')">${b.label}</button>`).join('')
+        ? cfg.buttons.map(b => `<button class="ov-reveal btn-sim" style="background:${b.color==='#4ade80'?'#061a06':b.color==='#60a5fa'?'#061420':'#1a1a24'};border-color:${b.color};color:${b.color};border-width:1px;border-style:solid;text-align:left"
+            onclick="handleCareerEventChoice('${b.action}')">
+            <span style="display:block;font-size:14px;font-weight:800">${b.label}</span>
+            ${b.sub ? `<span style="display:block;font-size:11px;font-weight:600;opacity:.75;margin-top:3px">${b.sub}</span>` : ''}
+          </button>`).join('')
         : `<button class="ov-reveal btn-sim" onclick="handleCareerEventChoice('auto')">Continue</button>`;
       go('s-career-event');
       requestAnimationFrame(() => wireReveals(document.getElementById('s-career-event')));
     }
     function handleCareerEventChoice(action) {
       const cfg = CAREER_EVENT_TYPES[CAREER.pendingEvent]();
+      let sub, color;
       if (cfg.buttons) {
         const btn = cfg.buttons.find(b => b.action === action) || cfg.buttons[0];
         btn.effect();
+        sub = btn.sub;
+        color = btn.color;
       } else {
         cfg.effect();
+        sub = cfg.sub;
+        color = cfg.variant === 'boost' ? '#4ade80' : '#f87171';
       }
       CAREER.pendingEvent = null;
       const onDone = CAREER.pendingEventDone;
       CAREER.pendingEventDone = null;
-      onDone();
+
+      // Show what actually changed — the whole point of the dilemma buttons
+      // showing a preview is undermined if the player never sees the real
+      // outcome land. Reuses the .ov-reveal/.ov-pop pop-in this app already
+      // uses for every other reveal moment, then auto-advances into the
+      // match (matches the existing career-inbox-flash auto-dismiss pattern
+      // rather than adding one more tap the player has to make).
+      const btnArea = document.getElementById('career-event-buttons');
+      btnArea.innerHTML = `<div class="ov-reveal ov-pop" style="text-align:center;padding:16px;border-radius:10px;background:#0d0d12;border:1px solid ${color};font-size:17px;font-weight:900;color:${color}">${sub}</div>`;
+      requestAnimationFrame(() => wireReveals(document.getElementById('s-career-event')));
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setTimeout(onDone, reduceMotion ? 450 : 1200);
     }
 
     function playNextCareerFixture() {
@@ -17442,10 +17466,10 @@
     // DESIGN.md's Floodlight Rule (gold stays reserved for the CTA/rating).
     const CAREER_MORALE_TIERS = [
       { max: 20, label: 'Rattled', color: '#f87171' },
-      { max: 40, label: 'Unsettled', color: '#9090a8' },
-      { max: 60, label: 'Settled', color: '#9090a8' },
-      { max: 80, label: 'Confident', color: '#c0c0d8' },
-      { max: 101, label: 'In The Zone', color: '#4ade80' },
+      { max: 40, label: 'Unsettled', color: '#c0c0d8' },
+      { max: 60, label: 'Neutral', color: '#9090a8' },
+      { max: 80, label: 'Settled', color: '#c0c0d8' },
+      { max: 101, label: 'Dialed', color: '#4ade80' },
     ];
     function careerMoraleLabel(value) {
       return CAREER_MORALE_TIERS.find(t => value < t.max) || CAREER_MORALE_TIERS[CAREER_MORALE_TIERS.length - 1];
