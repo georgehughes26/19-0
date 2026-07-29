@@ -15799,7 +15799,16 @@
         const overs = careerCollapseOvers();
         return { score: Math.max(40, Math.round(overs * runRate)), wickets: 10, overs: Math.round(overs) };
       }
-      return { score: Math.round(CAREER_MAX_OVERS * runRate), wickets: 2 + Math.floor(Math.random() * 8), overs: CAREER_MAX_OVERS };
+      // Survived all 50 overs with wickets in hand (2-9 down) — kept-wickets
+      // caution is already the explanation for a below-average total; letting
+      // the same wide floor as a genuine collapse ALSO apply here let a side
+      // that never lost the plot still crawl to a sub-150 total (~6% of these
+      // innings), which real club cricket essentially never does. Floored
+      // higher than careerInningsRunRate's own 2.8 minimum specifically for
+      // this "didn't collapse" branch — the collapse branch above keeps the
+      // wider floor since being bowled out is its own real explanation.
+      const safeRunRate = Math.max(3.3, runRate);
+      return { score: Math.round(CAREER_MAX_OVERS * safeRunRate), wickets: 2 + Math.floor(Math.random() * 8), overs: CAREER_MAX_OVERS };
     }
     function careerGenerateChase(battingRating, bowlingRating, target, chaserWins) {
       if (chaserWins) {
@@ -16547,7 +16556,17 @@
       // match to match.
       const srNoise = 0.65 + Math.random() * 0.7;
       const sr = (0.75 + r.power / 100) * srNoise * (1 + moraleFactor * 0.10);
-      let balls = Math.max(1, Math.round(runs / sr));
+      // A second, independent jitter on the runs→balls conversion itself,
+      // not just on `sr` above. Without it, `sr` for a low-power player
+      // centers close enough to 1.0 (SR 100) that round(runs/sr) collapses
+      // to exactly `runs` balls for most small run totals — 1 run in 1 ball,
+      // 2 in 2, 3 in 3 — which happens for real often enough at low-power
+      // ratings to display an exact 100.0 strike rate on ~40% of innings.
+      // Real balls-faced has its own variance beyond what `sr` alone
+      // captures; this keeps the same expected value while breaking the
+      // rounding coincidence that was producing it.
+      const ballsNoise = 0.6 + Math.random() * 0.8;
+      let balls = Math.max(1, Math.round((runs / sr) * ballsNoise) + Math.floor(Math.random() * 5) - 1);
       const teamBalls = Math.max(1, Math.round(myTeamOvers * 6));
       if (!out) {
         // Not out means you were at the crease for the entire rest of the
@@ -16567,12 +16586,20 @@
         // not-out innings' runs still count in the average's numerator
         // without ever adding to its denominator, exactly like real
         // cricket, so a handful of huge uncapped not-outs a season is enough
-        // to blow the whole average out on its own. Scaling down how much of
-        // the remaining innings a not-out stretch claims keeps the strike
-        // rate variety that fixed the "obviously not out" tell without
-        // reopening this second, worse believability problem.
-        const ballsRemainingAtEntry = teamBalls * Math.max(0.05, 1 - (pos - 1) / 10) * 0.4;
-        const presenceFloor = Math.round(ballsRemainingAtEntry * (0.25 + Math.random() * 0.2));
+        // to blow the whole average out on its own. That fix, though,
+        // compounded two separate discounts on top of each other — a 0.4
+        // "share of strike" factor, then ANOTHER 0.25-0.45 roll on top of
+        // that — landing an opener who genuinely batted the full 50 overs
+        // on just 10-18% of the innings' balls (30-54 of 300), which is what
+        // "carried the bat on 40 balls" turned out to be. A single realistic
+        // share of strike (not a doubled-down one) already keeps the season
+        // average sane on its own — the hard cap a few lines below
+        // (myTeamScore * shareCeiling * 1.5) is the actual backstop against
+        // a blown-out average, not this floor, so this only needed to stop
+        // compounding two discounts into one, not to stay this low itself.
+        const inningsShareAtEntry = Math.max(0.05, 1 - (pos - 1) / 10);
+        const strikeShare = 0.35 + Math.random() * 0.25;
+        const presenceFloor = Math.round(teamBalls * inningsShareAtEntry * strikeShare);
         if (presenceFloor > balls) {
           balls = presenceFloor;
           // Stretching balls out to match how long you were actually there
