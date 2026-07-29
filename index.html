@@ -15106,13 +15106,24 @@
   </div>
 
   <div id="s-career-season-end" class="screen">
-    <div style="width:100%;text-align:left;margin-bottom:20px">
-      <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Season Complete</div>
-      <div style="font-size:26px;font-weight:900;color:#fff;line-height:1.1">Local Club · Season Review</div>
+    <div id="career-end-header" style="width:100%"></div>
+    <div id="career-end-quote" class="ov-quote" style="width:100%"></div>
+    <div id="career-end-stats" class="ov-reveal ov-stats" style="width:100%;grid-template-columns:1fr 1fr"></div>
+
+    <div id="career-end-batting" class="ov-reveal" style="width:100%;margin-bottom:10px"></div>
+    <div id="career-end-bowling" class="ov-reveal" style="width:100%;margin-bottom:10px"></div>
+    <div id="career-end-rating" class="ov-reveal" style="width:100%;margin-bottom:24px"></div>
+
+    <div class="ov-reveal" style="width:100%">
+      <div class="section-lbl">Final Standings</div>
+      <div id="career-end-table" style="width:100%;margin-bottom:24px;overflow-x:auto"></div>
     </div>
-    <div id="career-end-summary" style="width:100%;margin-bottom:8px"></div>
-    <div id="career-end-bars" style="width:100%;margin-bottom:8px"></div>
-    <div id="career-end-promotion" style="width:100%;margin-bottom:24px"></div>
+
+    <div style="width:100%">
+      <div class="section-lbl">League Leaders</div>
+      <div id="career-end-leaders" class="ov-stagger" style="width:100%;margin-bottom:24px"></div>
+    </div>
+
     <button class="btn-start" style="width:100%" onclick="go('s-home')">Back to Home</button>
   </div>
 
@@ -15282,7 +15293,7 @@
         table: {},
         currentRound: 0,
         seasonStats: {
-          bat:  { innings:0, runs:0, outs:0, balls:0, fifties:0, hundreds:0, bigInnings:0 },
+          bat:  { innings:0, runs:0, outs:0, balls:0, fifties:0, hundreds:0, bigInnings:0, fours:0, sixes:0 },
           bowl: { innings:0, wickets:0, runsConceded:0, overs:0, bigSpells:0 },
           field:{ involvements:0, clean:0 },
         },
@@ -16435,6 +16446,22 @@
       return null;
     }
     const CAREER_BOWL_SLOT_LABEL = { opening: 'Opening Bowler', firstChange: 'First Change' };
+    // Not a ball-by-ball reconstruction (this sim never generates one) — a
+    // bounded estimate of how an innings' total split into boundaries vs
+    // ones and twos, for season-stat flavour (4s/6s) rather than a literal
+    // replay. Guaranteed never to imply more runs than were actually scored:
+    // sixes are picked first and fours fill only what's left over.
+    function careerGenerateBoundaries(runs, power) {
+      if (runs <= 0) return { fours: 0, sixes: 0 };
+      const boundaryShare = Math.max(0.3, Math.min(0.7, 0.35 + (power - 50) / 200));
+      const boundaryRuns = Math.min(runs, Math.round(runs * boundaryShare));
+      const sixShare = Math.max(0.1, Math.min(0.45, (power - 40) / 150));
+      let sixes = Math.round((boundaryRuns * sixShare) / 6);
+      let sixRuns = sixes * 6;
+      if (sixRuns > boundaryRuns) { sixes = Math.floor(boundaryRuns / 6); sixRuns = sixes * 6; }
+      const fours = Math.floor((boundaryRuns - sixRuns) / 4);
+      return { fours, sixes };
+    }
     function simTrackedPlayerInnings(player, myTeamScore, myTeamWktsLost, myTeamOvers) {
       // A lookup miss (an old save from before Specialist Keeper was
       // removed, still carrying that type) must not silently become NaN
@@ -16566,7 +16593,8 @@
       runs = Math.min(runs, myTeamScore, Math.round(myTeamScore * shareCeiling * 1.5));
       // Can't personally face more balls than the whole team's innings had.
       balls = Math.min(teamBalls, balls);
-      return { runs, out, balls, pos };
+      const { fours, sixes } = careerGenerateBoundaries(runs, r.power);
+      return { runs, out, balls, pos, fours, sixes };
     }
     // How much you bowl is decided by your actual bowling stats and how
     // today's spell is going — never by your nominal role. A "Bowling
@@ -17039,6 +17067,9 @@
       if (bat) {
         const s = CAREER.seasonStats.bat;
         s.innings++; s.runs += bat.runs; s.balls += bat.balls;
+        // ?? 0 guards a save from before boundary tracking existed, same
+        // pattern as morale/tempBoost's old-save fallback elsewhere.
+        s.fours = (s.fours ?? 0) + bat.fours; s.sixes = (s.sixes ?? 0) + bat.sixes;
         if (bat.out) s.outs++;
         if (bat.runs >= 100) s.hundreds++; else if (bat.runs >= 50) s.fifties++;
         if (bat.runs >= CAREER_BIG_INNINGS_THRESHOLD) s.bigInnings++;
@@ -18173,134 +18204,125 @@
       `;
     }
 
-    // ── §9 performance bar + §7 promotion gate ──────────────────────────
-    function checkBattingBar(s) {
-      const avg = s.outs ? s.runs / s.outs : s.runs;
-      const sr = s.balls ? (s.runs / s.balls) * 100 : 0;
-      return avg >= 25 && sr >= 100 && s.bigInnings >= 1;
-    }
-    function checkBowlingBar(s) {
-      const avg = s.wickets ? s.runsConceded / s.wickets : Infinity;
-      const econ = s.overs ? s.runsConceded / s.overs : Infinity;
-      return avg < 25 && econ < 6.5 && s.bigSpells >= 1;
-    }
-    function checkFieldingBar(s) { return s.involvements >= 3 && (s.clean / Math.max(1, s.involvements)) >= 0.6; }
-    function checkPerformanceBar(role, seasonStats) {
-      const field = checkFieldingBar(seasonStats.field);
-      if (role === 'batter') return { pass: checkBattingBar(seasonStats.bat), field };
-      if (role === 'bowler') return { pass: checkBowlingBar(seasonStats.bowl), field };
-      if (role === 'allrounder') {
-        // Either discipline clearing its own bar is enough to carry the
-        // season; both falling short is the only way to miss (§9's 52/38
-        // split describes the ratings, not a points-weighted pass formula —
-        // a weighted-threshold version of this degenerates to "only the
-        // primary discipline ever matters," which isn't the intent).
-        const batPass = checkBattingBar(seasonStats.bat), bowlPass = checkBowlingBar(seasonStats.bowl);
-        return { pass: batPass || bowlPass, field, batPass, bowlPass };
-      }
-      if (role === 'keeper') {
-        // Same either-discipline-clears-it logic as All-Rounder above.
-        const bPass = checkBattingBar(seasonStats.bat);
-        return { pass: field || bPass, field, fPass: field, bPass };
-      }
-    }
-    function resolvePromotionChance(ovr, nextMin, nextMax) {
-      const depth = Math.max(0, Math.min(1, (ovr - nextMin) / (nextMax - nextMin)));
-      return Math.random() < (0.25 + depth * 0.50);
-    }
-    function checkPromotionGate(player, seasonStats) {
-      const ratingInBand = player.ovr >= 50 && player.ovr <= 60;
-      const { pass: barPass } = checkPerformanceBar(player.role, seasonStats);
-      if (!ratingInBand || !barPass) return { promoted: false, chanceRolled: false, barPass, ratingInBand };
-      const won = resolvePromotionChance(player.ovr, 50, 60);
-      return { promoted: won, chanceRolled: true, chanceWon: won, barPass, ratingInBand };
-    }
-
-    function careerBarCard(title, pass, rows) {
-      const cls = pass ? 'perf-met' : 'perf-under';
-      const color = pass ? '#9a9ad4' : '#d99860';
-      const rowsHTML = rows.map(([label, val, target]) => `<div class="perf-row"><span class="perf-label">${label}</span><span class="perf-val" style="color:#e0e0f0">${val} <span style="color:#606070;font-size:11px">(need ${target})</span></span></div>`).join('');
-      return `<div class="perf-card ${cls}">
-        <div class="perf-eyebrow" style="color:${color}">${title}${pass ? ' · Met' : ' · Short'}</div>
-        ${rowsHTML}
+    // Career-flavoured stand-ins for the un-attributed pull-quote World Cup's
+    // end screen uses (wcQuote) — same idea, no MVP to hang it on here since
+    // Career only ever tracks the one player. Purely a season review now —
+    // no promotion/bar language, just what actually happened.
+    const CAREER_SEASON_END_QUOTES = {
+      champion: [
+        `"Topped the table all season. Nothing left to prove at this level."`,
+        `"Every week the target was the top spot. Got there."`,
+      ],
+      complete: [
+        `"A season of learning the level. The foundations are there for next year."`,
+        `"Every match added something. On to the next one."`,
+      ],
+    };
+    function careerLeagueLeaderCardHTML(key) {
+      const cat = CAREER_STAT_CATEGORIES.find(c => c.key === key);
+      const all = Object.values(CAREER.leagueStats).filter(cat.qualify).map(s => ({ ...s, val: cat.value(s) }));
+      all.sort((a, b) => cat.sortDesc ? b.val - a.val : a.val - b.val);
+      const top3 = all.slice(0, 3);
+      const myIdx = all.findIndex(s => s.isTrackedPlayer);
+      const inTop3 = myIdx > -1 && myIdx < 3;
+      const rows = top3.map((s, i) => `<div class="perf-row"><span class="perf-label">${i + 1}. ${s.name}${s.isTrackedPlayer ? ' (you)' : ''}</span><span class="perf-val" style="color:${s.isTrackedPlayer ? '#f9c846' : '#e0e0f0'}">${cat.fmt(s.val)}</span></div>`).join('');
+      const myLine = myIdx === -1
+        ? `<div style="font-size:11px;color:#606070;margin-top:8px">Didn't qualify this season.</div>`
+        : inTop3 ? ''
+        : `<div style="font-size:12px;color:#f9c846;font-weight:700;margin-top:8px;padding-top:8px;border-top:1px solid #1a1a24">You: ${ordinal(myIdx + 1)} of ${all.length} · ${cat.fmt(all[myIdx].val)}</div>`;
+      return `<div class="perf-card perf-met ov-row-reveal" style="margin-bottom:10px">
+        <div class="perf-eyebrow" style="color:#9a9ad4">${cat.label}</div>
+        ${rows}
+        ${myLine}
       </div>`;
     }
-
     function buildCareerSeasonEnd() {
       const player = CAREER.player, stats = CAREER.seasonStats;
-      const wins = CAREER.matchLog.filter(m => m.won).length, losses = CAREER.matchLog.length - wins;
       const finalTable = Object.values(CAREER.table).sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
       const myPos = finalTable.findIndex(r => r.id === CAREER.myClubId) + 1;
+      const leagueName = CAREER_LEAGUES[CAREER.leagueId].name;
+      const isChampion = myPos === 1;
 
-      document.getElementById('career-end-summary').innerHTML = `
-        <div class="perf-card perf-met">
-          <div class="perf-eyebrow" style="color:#9a9ad4">Season Record</div>
-          <div class="perf-verdict" style="font-size:15px;font-weight:800;color:#fff;margin-bottom:10px">${CAREER.myClubName} finished ${ordinal(myPos)} of 12</div>
-          <div class="perf-row"><span class="perf-label">Record</span><span class="perf-val" style="color:#e0e0f0">W${wins} L${losses}</span></div>
-          <div class="perf-row"><span class="perf-label">Runs</span><span class="perf-val" style="color:#e0e0f0">${stats.bat.runs}</span></div>
-          <div class="perf-row"><span class="perf-label">Wickets</span><span class="perf-val" style="color:#e0e0f0">${stats.bowl.wickets}</span></div>
-          <div class="perf-row"><span class="perf-label">Rating</span><span class="perf-val" style="color:#e0e0f0">${CAREER.seasonStartOvr} → ${player.ovr}</span></div>
+      // Header — only distinguishes finishing top of the table (a plain
+      // fact about the season) from everything else. No promotion gate, no
+      // pass/fail bars — this screen just reports what happened.
+      const headerClass = isChampion ? 'ov-header ovh-perfect' : 'ov-header ovh-early';
+      const icon = isChampion ? '👑' : '📋';
+      const headline = isChampion ? 'League Champions' : 'Season Complete';
+      const sub = `Finished ${ordinal(myPos)} of 12 in ${leagueName}.`;
+      document.getElementById('career-end-header').innerHTML = `
+        <div class="${headerClass}">
+          <span class="ov-icon" aria-hidden="true">${icon}</span>
+          <div class="ov-result">${headline}</div>
+          <div class="ov-sub">${sub}</div>
         </div>`;
+      document.getElementById('career-end-quote').textContent = careerPick(CAREER_SEASON_END_QUOTES[isChampion ? 'champion' : 'complete']);
 
-      const barResult = checkPerformanceBar(player.role, stats);
-      const bars = [];
-      if (player.role === 'batter' || player.role === 'allrounder') {
-        const pass = player.role === 'allrounder' ? barResult.batPass : barResult.pass;
-        bars.push(careerBarCard('Batting Bar', pass, [
-          ['Average', stats.bat.outs ? (stats.bat.runs / stats.bat.outs).toFixed(1) : stats.bat.runs.toFixed(1), '25+'],
-          ['Strike Rate', stats.bat.balls ? ((stats.bat.runs / stats.bat.balls) * 100).toFixed(1) : '0.0', '100+'],
-          ['Big Innings', stats.bat.bigInnings, '1+'],
-        ]));
-      }
-      if (player.role === 'bowler' || player.role === 'allrounder') {
-        const pass = player.role === 'allrounder' ? barResult.bowlPass : barResult.pass;
-        bars.push(careerBarCard('Bowling Bar', pass, [
-          ['Average', stats.bowl.wickets ? (stats.bowl.runsConceded / stats.bowl.wickets).toFixed(1) : '—', '<25'],
-          ['Economy', stats.bowl.overs ? (stats.bowl.runsConceded / stats.bowl.overs).toFixed(1) : '—', '<6.5'],
-          ['Big Spells', stats.bowl.bigSpells, '1+'],
-        ]));
-      }
-      if (player.role === 'keeper') {
-        bars.push(careerBarCard('Batting Bar', barResult.bPass, [
-          ['Average', stats.bat.outs ? (stats.bat.runs / stats.bat.outs).toFixed(1) : stats.bat.runs.toFixed(1), '25+'],
-          ['Strike Rate', stats.bat.balls ? ((stats.bat.runs / stats.bat.balls) * 100).toFixed(1) : '0.0', '100+'],
-        ]));
-      }
-      bars.push(careerBarCard('Fielding Bar', barResult.field, [
-        ['Involvements', stats.field.involvements, '3+'],
-        ['Clean Hands', stats.field.involvements ? Math.round((stats.field.clean / stats.field.involvements) * 100) + '%' : '0%', '60%+'],
-      ]));
-      document.getElementById('career-end-bars').innerHTML = bars.join('');
+      // Same animated-count-up treatment World Cup's end screen gives its
+      // headline Wins/Losses — the detailed breakdown cards below repeat
+      // Runs and Wickets, same as WC's own perf-card repeats its Wins/
+      // Losses; the big animated numbers are the payoff, not the whole story.
+      const wins = CAREER.matchLog.filter(m => m.won).length, losses = CAREER.matchLog.length - wins;
+      document.getElementById('career-end-stats').innerHTML = `
+        <div class="ov-box"><div class="ov-n ov-count" data-count="${wins}" style="color:#4ade80">0</div><div class="ov-l">Wins</div></div>
+        <div class="ov-box"><div class="ov-n ov-count" data-count="${losses}" style="color:#f87171">0</div><div class="ov-l">Losses</div></div>
+        <div class="ov-box"><div class="ov-n ov-count" data-count="${stats.bat.runs}" style="color:#f9c846">0</div><div class="ov-l">Runs</div></div>
+        <div class="ov-box"><div class="ov-n ov-count" data-count="${stats.bowl.wickets}" style="color:#f9c846">0</div><div class="ov-l">Wickets</div></div>`;
 
-      const gate = checkPromotionGate(player, stats);
-      CAREER.promotion = gate;
-      let promoHTML;
-      if (gate.promoted) {
-        promoHTML = `<div class="perf-card perf-over">
-          <div class="perf-eyebrow" style="color:#6fae82">Promotion</div>
-          <div class="perf-verdict" style="font-size:15px;font-weight:800;color:#fff">Promoted to County 2nd XI!</div>
-        </div>`;
-      } else if (gate.chanceRolled) {
-        promoHTML = `<div class="perf-card perf-under">
-          <div class="perf-eyebrow" style="color:#d99860">Promotion</div>
-          <div class="perf-verdict" style="font-size:15px;font-weight:800;color:#fff">So close. Not this season.</div>
-          <div style="font-size:12px;color:#9090a8;margin-top:6px">Your rating and your season both put you in the frame, but the panel went the other way this time.</div>
-        </div>`;
-      } else if (gate.barPass) {
-        promoHTML = `<div class="perf-card perf-met">
-          <div class="perf-eyebrow" style="color:#9a9ad4">Promotion</div>
-          <div class="perf-verdict" style="font-size:15px;font-weight:800;color:#fff">Bar cleared</div>
-          <div style="font-size:12px;color:#9090a8;margin-top:6px">You've met the standard for the level above. The rating catches up as future seasons add up.</div>
-        </div>`;
+      const bs = stats.bat, bw = stats.bowl;
+      if (bs.innings > 0) {
+        const avg = bs.outs ? (bs.runs / bs.outs).toFixed(1) : bs.runs.toFixed(1);
+        const sr = bs.balls ? ((bs.runs / bs.balls) * 100).toFixed(1) : '0.0';
+        document.getElementById('career-end-batting').innerHTML = `
+          <div class="perf-card perf-met">
+            <div class="perf-eyebrow" style="color:#9a9ad4">Batting</div>
+            <div class="perf-row"><span class="perf-label">Runs</span><span class="perf-val" style="color:#e0e0f0">${bs.runs}</span></div>
+            <div class="perf-row"><span class="perf-label">Average</span><span class="perf-val" style="color:#e0e0f0">${avg}</span></div>
+            <div class="perf-row"><span class="perf-label">Strike Rate</span><span class="perf-val" style="color:#e0e0f0">${sr}</span></div>
+            <div class="perf-row"><span class="perf-label">4s</span><span class="perf-val" style="color:#e0e0f0">${bs.fours ?? 0}</span></div>
+            <div class="perf-row"><span class="perf-label">6s</span><span class="perf-val" style="color:#e0e0f0">${bs.sixes ?? 0}</span></div>
+          </div>`;
       } else {
-        promoHTML = `<div class="perf-card perf-under">
-          <div class="perf-eyebrow" style="color:#d99860">Promotion</div>
-          <div class="perf-verdict" style="font-size:15px;font-weight:800;color:#fff">Not this season</div>
-          <div style="font-size:12px;color:#9090a8;margin-top:6px">Back for another year at Local Club. Plenty of time to put this right.</div>
-        </div>`;
+        document.getElementById('career-end-batting').innerHTML = '';
       }
-      document.getElementById('career-end-promotion').innerHTML = promoHTML;
-      wireReveals(document.getElementById('s-career-season-end'));
+      if (bw.innings > 0) {
+        const bowlAvg = bw.wickets ? (bw.runsConceded / bw.wickets).toFixed(1) : '—';
+        const econ = bw.overs ? (bw.runsConceded / bw.overs).toFixed(1) : '0.0';
+        document.getElementById('career-end-bowling').innerHTML = `
+          <div class="perf-card perf-met">
+            <div class="perf-eyebrow" style="color:#9a9ad4">Bowling</div>
+            <div class="perf-row"><span class="perf-label">Wickets</span><span class="perf-val" style="color:#e0e0f0">${bw.wickets}</span></div>
+            <div class="perf-row"><span class="perf-label">Average</span><span class="perf-val" style="color:#e0e0f0">${bowlAvg}</span></div>
+            <div class="perf-row"><span class="perf-label">Economy</span><span class="perf-val" style="color:#e0e0f0">${econ}</span></div>
+          </div>`;
+      } else {
+        document.getElementById('career-end-bowling').innerHTML = '';
+      }
+      document.getElementById('career-end-rating').innerHTML = `
+        <div class="perf-card perf-met">
+          <div class="perf-eyebrow" style="color:#9a9ad4">Final Rating</div>
+          <div class="perf-row"><span class="perf-label">Overall</span><span class="perf-val" style="color:#e0e0f0">${CAREER.seasonStartOvr} → ${player.ovr}</span></div>
+        </div>`;
+
+      document.getElementById('career-end-table').innerHTML = `<table class="tbl">
+        <colgroup><col style="width:6%"><col style="width:44%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:10%"><col style="width:16%"></colgroup>
+        <thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead>
+        <tbody>${finalTable.map((row, i) => {
+          const club = CAREER.clubs[row.id];
+          return `<tr class="${club.isMine ? 'myrow' : ''}">
+            <td>${i + 1}</td>
+            <td style="text-align:left">${club.name}</td>
+            <td>${row.p}</td><td>${row.w}</td><td>${row.l}</td>
+            <td style="color:#e0e0f0;font-weight:800">${row.pts}</td>
+            <td>${row.nrr.toFixed(2)}</td>
+          </tr>`;
+        }).join('')}</tbody></table>`;
+
+      document.getElementById('career-end-leaders').innerHTML =
+        ['runs', 'wickets', 'avg', 'bowlAvg'].map(careerLeagueLeaderCardHTML).join('');
+
+      requestAnimationFrame(() => wireReveals(document.getElementById('s-career-season-end')));
+      if (isChampion) { launchConfetti(320, true); setTimeout(() => launchConfetti(200, true), 900); }
     }
 
     // ── Persistence (Supabase, mirrors test_saves exactly) ──────────────
