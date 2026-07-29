@@ -1393,6 +1393,11 @@
       font-weight: 800
     }
 
+    /* Career hub standings — slightly denser than the shared .tbl default so
+       Play Next Match/Your Player stay closer to the top of the screen. */
+    #hub-table-wrap .tbl th { padding: 3px 4px 5px; font-size: 9px }
+    #hub-table-wrap .tbl td { padding: 4px 4px; font-size: 11px }
+
     .result-pill {
       width: 100%;
       padding: 13px 16px;
@@ -14939,9 +14944,8 @@
         <div id="hub-league-name" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">—</div>
         <div id="hub-club-name" style="font-size:20px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
       </div>
-      <div style="text-align:right;flex-shrink:0;cursor:pointer" onclick="buildCareerProfile();go('s-career-profile')">
-        <div style="font-size:10px;color:#606070;letter-spacing:1px;text-transform:uppercase">OVR ›</div>
-        <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:4px">
+      <div style="text-align:right;flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
           <div id="hub-player-ovr-delta" style="font-size:12px;font-weight:800"></div>
           <div id="hub-player-ovr" class="rating-badge rb-bronze" style="width:36px;height:36px;font-size:15px;border-radius:6px">—</div>
         </div>
@@ -14949,15 +14953,16 @@
       </div>
     </div>
 
-    <div id="hub-next-fixture" style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px;margin-bottom:18px;text-align:left"></div>
+    <div id="hub-next-fixture" style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:10px 14px;margin-bottom:12px;text-align:left"></div>
 
-    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Standings</div>
-    <div id="hub-table-wrap" style="width:100%;margin-bottom:16px;overflow-x:auto"></div>
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:5px;text-align:left">Standings</div>
+    <div id="hub-table-wrap" style="width:100%;margin-bottom:12px;overflow-x:auto"></div>
 
     <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Your Season</div>
     <div id="hub-season-stats" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px"></div>
 
     <button class="btn-start" id="hub-play-btn" style="width:100%" onclick="playNextCareerFixture()">Play Next Match</button>
+    <button class="btn-auth-small" id="hub-your-player-btn" onclick="buildCareerProfile();go('s-career-profile')" style="margin-top:10px;width:100%;background:#0d0d12">👤 Your Player</button>
     <button class="btn-auth-small" onclick="buildCareerStats();go('s-career-stats')" style="margin-top:10px;width:100%;background:#0d0d12">🏆 League Leaders</button>
     <button id="save-career-btn" onclick="saveCareerGame()" style="margin-top:10px;width:100%;padding:12px;background:#0a0a18;border:1px solid #2a2a50;border-radius:10px;color:#8080c0;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px">💾 Save Game</button>
     <div id="save-career-nudge" style="display:none;margin-top:8px;padding:10px 14px;background:#1a1010;border:1px solid #4a2020;border-radius:8px;font-size:12px;color:#f87171;text-align:center">Sign in to save your game and continue later</div>
@@ -17563,7 +17568,7 @@
       const fixtureEl = document.getElementById('hub-next-fixture');
       const playBtn = document.getElementById('hub-play-btn');
       if (CAREER.currentRound >= 22) {
-        fixtureEl.innerHTML = `<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Season Complete</div><div style="font-size:14px;color:#c0c0d8">All 22 rounds played.</div>`;
+        fixtureEl.innerHTML = `<div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:3px">Season Complete</div><div style="font-size:13px;color:#c0c0d8">All 22 rounds played.</div>`;
         playBtn.textContent = 'See Season Review';
         playBtn.onclick = () => { buildCareerSeasonEnd(); go('s-career-season-end'); };
       } else {
@@ -17571,7 +17576,7 @@
         const oppId = pair[0] === CAREER.myClubId ? pair[1] : pair[0];
         const isHome = pair[0] === CAREER.myClubId;
         const opp = CAREER.clubs[oppId];
-        fixtureEl.innerHTML = `<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Round ${CAREER.currentRound + 1} of 22</div><div style="font-size:16px;font-weight:900;color:#fff">${isHome ? 'vs' : '@'} ${opp.name}</div>`;
+        fixtureEl.innerHTML = `<div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:3px">Round ${CAREER.currentRound + 1} of 22</div><div style="font-size:14px;font-weight:900;color:#fff">${isHome ? 'vs' : '@'} ${opp.name}</div>`;
         playBtn.textContent = 'Play Next Match';
         playBtn.onclick = playNextCareerFixture;
       }
@@ -17619,7 +17624,7 @@
 
       const morale = p.morale ?? 50;
       const tier = careerMoraleLabel(morale);
-      document.getElementById('profile-morale-label').innerHTML = `<span style="color:${tier.color}">${tier.label}</span> <span style="color:#606070;font-weight:700;font-size:12px">${morale}/100</span>`;
+      document.getElementById('profile-morale-label').innerHTML = `<div style="color:${tier.color}">${tier.label}</div><div style="color:#606070;font-weight:700;font-size:12px;margin-top:3px">${morale}/100</div>`;
       const moraleFill = document.getElementById('profile-morale-fill');
       moraleFill.style.background = tier.color;
       moraleFill.style.width = reduceMotion ? morale + '%' : '0%';
@@ -17658,10 +17663,11 @@
       const sr = bs.balls ? ((bs.runs / bs.balls) * 100).toFixed(1) : '0.0';
       const bowlAvg = bw.wickets ? (bw.runsConceded / bw.wickets).toFixed(1) : '—';
       const econ = bw.overs ? (bw.runsConceded / bw.overs).toFixed(1) : '0.0';
+      const fieldPct = fl.involvements ? Math.round((fl.clean / fl.involvements) * 100) : 0;
       document.getElementById('profile-season-stats').innerHTML = `
-        <div class="stat-card"><div class="stat-card-label">Runs</div><div class="stat-card-val">${bs.runs}</div><div class="stat-card-sub">Avg ${avg} · SR ${sr}</div></div>
-        <div class="stat-card"><div class="stat-card-label">Wickets</div><div class="stat-card-val">${bw.wickets}</div><div class="stat-card-sub">Avg ${bowlAvg} · Econ ${econ}</div></div>
-        <div class="stat-card"><div class="stat-card-label">Fielding</div><div class="stat-card-val">${fl.clean}</div><div class="stat-card-sub">of ${fl.involvements} chances</div></div>`;
+        <div class="stat-card"><div class="stat-card-label">Runs</div><div class="stat-card-val">${bs.runs}</div><div class="stat-card-sub">Avg ${avg}</div><div class="stat-card-sub">SR ${sr}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Wickets</div><div class="stat-card-val">${bw.wickets}</div><div class="stat-card-sub">Avg ${bowlAvg}</div><div class="stat-card-sub">Econ ${econ}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Fielding</div><div class="stat-card-val">${fl.clean}</div><div class="stat-card-sub">${fieldPct}%</div><div class="stat-card-sub">of ${fl.involvements} chances</div></div>`;
       document.getElementById('profile-milestones').textContent =
         `${bs.fifties} fift${bs.fifties === 1 ? 'y' : 'ies'} · ${bs.hundreds} hundred${bs.hundreds === 1 ? '' : 's'} · ${bw.bigSpells} three-wicket haul${bw.bigSpells === 1 ? '' : 's'}`;
     }
