@@ -16450,7 +16450,7 @@
       // share is roughly double a tail-ender's, via posFactor) fixes this at
       // the source rather than papering over it with a harder clip.
       const shareCeiling = Math.min(0.5, 0.18 + posFactor * 0.17);
-      const moraleMeanMult = 1 + moraleFactor * 0.04;
+      const moraleMeanMult = 1 + moraleFactor * 0.10;
       const meanRuns = Math.min(rawMeanRuns, myTeamScore * shareCeiling * (out ? 1 : 1.15)) * moraleMeanMult;
       let runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
       // Match-to-match tempo noise: without this, strike rate was almost
@@ -16459,7 +16459,7 @@
       // part of what made outcomes feel deterministic rather than variable
       // match to match.
       const srNoise = 0.65 + Math.random() * 0.7;
-      const sr = (0.75 + r.power / 100) * srNoise * (1 + moraleFactor * 0.05);
+      const sr = (0.75 + r.power / 100) * srNoise * (1 + moraleFactor * 0.10);
       let balls = Math.max(1, Math.round(runs / sr));
       const teamBalls = Math.max(1, Math.round(myTeamOvers * 6));
       if (!out) {
@@ -16532,7 +16532,7 @@
       // baseline) always earn a chance.
       if (skill < 45 && Math.random() < (45 - skill) / 45) return null;
       const moraleFactor = ((player.morale ?? 50) - 50) / 50;
-      const economy = Math.max(2.5, 7.5 - r.control / 20) * (1 - moraleFactor * 0.04);
+      const economy = Math.max(2.5, 7.5 - r.control / 20) * (1 - moraleFactor * 0.10);
       // /175 (audited): a starting specialist Bowler (threat~53) landed a
       // 15.4 bowling average and took a wicket in 96.6% of matches (league-
       // wide generated bowlers, same 30-60 rating band, averaged 23.3) — an
@@ -16541,7 +16541,7 @@
       // ~30+ average with real wicketless games, leaving room for progression
       // (cap 80 threat) to earn a genuinely elite ~15 average rather than
       // start there for free.
-      const wicketChancePerOver = (r.threat / 350) * (1 + moraleFactor * 0.06);
+      const wicketChancePerOver = (r.threat / 350) * (1 + moraleFactor * 0.10);
       // The captain's ceiling for how long today's spell CAN run, scaled
       // from skill: a borderline part-timer (~38) tops out around a brief
       // 5-over look, an unprogressed specialist (~47-52) around 8-9, a fully
