@@ -63,7 +63,7 @@ const CAREER_LEAGUES = {
       { name: 'Littleborough',            rating: 42 },
       { name: 'Haslingden',               rating: 41 },
       { name: 'Church & Oswaldtwistle',   rating: 40 },
-      { name: 'Enfield, Lancs',           rating: 40 },
+      { name: 'Enfield',           rating: 40 },
     ],
   },
   yorkshire_north: {

@@ -3324,6 +3324,23 @@
       outline: 2px solid #f9c846;
       outline-offset: 2px
     }
+    /* League Leaders board — a flat tint behind each row (a plain data
+       table otherwise reads as identical, undifferentiated rows). Name and
+       club are stacked in their own column so both align cleanly regardless
+       of how long either string is — a fixed-width side-by-side column
+       shifts per row depending on text length, a stacked one can't. */
+    .stat-lb-row { position: relative; border-radius: 8px; overflow: hidden; margin-bottom: 6px }
+    .stat-lb-row:last-child { margin-bottom: 0 }
+    .stat-lb-fill { position: absolute; inset: 0; background: rgba(96, 96, 160, 0.16) }
+    .stat-lb-row.stat-lb-mine .stat-lb-fill { background: rgba(249, 200, 70, 0.12) }
+    .stat-lb-content { position: relative; display: flex; align-items: center; gap: 10px; padding: 9px 12px }
+    .stat-lb-rank { font-size: 11px; font-weight: 800; color: #606070; width: 16px; flex-shrink: 0; text-align: center }
+    .stat-lb-row.stat-lb-mine .stat-lb-rank { color: #f9c846 }
+    .stat-lb-info { flex: 1; min-width: 0 }
+    .stat-lb-name { font-size: 13px; font-weight: 700; color: #e0e0f0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+    .stat-lb-club { font-size: 10px; color: #8080a0; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+    .stat-lb-val { font-size: 13px; font-weight: 800; color: #e0e0f0; flex-shrink: 0; text-align: right; min-width: 46px }
+    .stat-lb-row.stat-lb-mine .stat-lb-val { color: #f9c846 }
 
     /* ── TEST MODE STYLES ─────────────────────────────────────────────────── */
     .mode-selector {
@@ -7141,7 +7158,7 @@
       // Career Mode access is its own, slightly wider allowlist — these
       // usernames get Career Mode without also picking up the WC/T20
       // auto-draft dev tools above, which stay 'ghughesy'-only.
-      const CAREER_ACCESS_USERNAMES = ['ghughesy', 'E4U Cricket', 'YOUBEARS', 'HarishM10233161', 'Icefire297', '15tslevin', 'Coby1235', 'sumanth', 'KarunNair123', 'punka', 'Pavillon', 'OrphanX', 'sajju', "MichaelEnglish22","Thomascurphey","Crawh11","SmailliWmiT","Knightrider92"];
+      const CAREER_ACCESS_USERNAMES = ['ghughesy', 'E4U Cricket', 'YOUBEARS', 'HarishM10233161', 'Icefire297', '15tslevin', 'Coby1235', 'sumanth', 'KarunNair123', 'punka', 'Pavillon', 'OrphanX', 'sajju', "MichaelEnglish22","Thomascurphey","Crawh11","SmailliWmiT","Knightrider92","Dball17"];
       const hasCareerAccess = AUTH_USER && CAREER_ACCESS_USERNAMES.includes(AUTH_USER.username);
       const careerDevBtn = document.getElementById('career-dev-entry-btn');
       if (careerDevBtn) careerDevBtn.style.display = hasCareerAccess ? 'block' : 'none';
@@ -14991,7 +15008,7 @@
   </div>
 
   <div id="s-career-hub" class="screen">
-    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:12px">
       <div style="text-align:left;min-width:0">
         <div id="hub-league-name" style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:2px">—</div>
         <div id="hub-club-name" style="font-size:20px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
@@ -15005,20 +15022,31 @@
       </div>
     </div>
 
-    <div id="hub-next-fixture" style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:10px 14px;margin-bottom:12px;text-align:left"></div>
+    <div id="hub-next-fixture" style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:10px 14px;margin-bottom:10px;text-align:left"></div>
 
     <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:5px;text-align:left">Standings</div>
-    <div id="hub-table-wrap" style="width:100%;margin-bottom:12px;overflow-x:auto"></div>
+    <div id="hub-table-wrap" style="width:100%;margin-bottom:10px;overflow-x:auto"></div>
 
-    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Your Season</div>
-    <div id="hub-season-stats" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px"></div>
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:6px;text-align:left">Your Season</div>
+    <div id="hub-season-stats" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px"></div>
 
     <button class="btn-start" id="hub-play-btn" style="width:100%" onclick="playNextCareerFixture()">Play Next Match</button>
-    <button class="btn-auth-small" id="hub-your-player-btn" onclick="buildCareerProfile();go('s-career-profile')" style="margin-top:10px;width:100%;background:#0d0d12">👤 Your Player</button>
-    <button class="btn-auth-small" onclick="buildCareerStats();go('s-career-stats')" style="margin-top:10px;width:100%;background:#0d0d12">🏆 League Leaders</button>
-    <button id="save-career-btn" onclick="saveCareerGame()" style="margin-top:10px;width:100%;padding:12px;background:#0a0a18;border:1px solid #2a2a50;border-radius:10px;color:#8080c0;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px">💾 Save Game</button>
+    <div style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+      <div class="stat-card" id="hub-your-player-btn" onclick="buildCareerProfile();go('s-career-profile')" style="text-align:center;cursor:pointer;padding:10px 4px">
+        <div style="font-size:19px;margin-bottom:3px">👤</div>
+        <div class="stat-card-label" style="margin-bottom:0">Your Player</div>
+      </div>
+      <div class="stat-card" onclick="buildCareerStats();go('s-career-stats')" style="text-align:center;cursor:pointer;padding:10px 4px">
+        <div style="font-size:19px;margin-bottom:3px">🏆</div>
+        <div class="stat-card-label" style="margin-bottom:0">League Stats</div>
+      </div>
+      <div class="stat-card" id="save-career-btn" onclick="saveCareerGame()" style="text-align:center;cursor:pointer;padding:10px 4px">
+        <div style="font-size:19px;margin-bottom:3px">💾</div>
+        <div class="stat-card-label" style="margin-bottom:0" id="save-career-btn-label">Save Game</div>
+      </div>
+    </div>
     <div id="save-career-nudge" style="display:none;margin-top:8px;padding:10px 14px;background:#1a1010;border:1px solid #4a2020;border-radius:8px;font-size:12px;color:#f87171;text-align:center">Sign in to save your game and continue later</div>
-    <button class="btn-auth-small" onclick="go('s-home')" style="margin-top:14px">← Home</button>
+    <button class="btn-auth-small" onclick="go('s-home')" style="margin-top:10px">← Home</button>
 
     <!-- Adsterra test placement (dev-only, Career hub) — see careerInjectAdsterraAd() -->
     <div id="career-hub-ad-wrap" style="width:100%;display:flex;justify-content:center;margin:20px 0 0;overflow:hidden"></div>
@@ -15038,8 +15066,11 @@
 
     <div style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:14px 16px;margin-bottom:20px;text-align:left">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Morale</div>
-      <div id="profile-morale-label" style="font-size:16px;font-weight:900;margin-bottom:8px">—</div>
-      <div class="stage-bar-track"><div id="profile-morale-fill" class="stage-bar-fill" style="width:0%"></div></div>
+      <div class="stage-bar-row">
+        <div class="stage-bar-label" id="profile-morale-label">—</div>
+        <div class="stage-bar-track"><div id="profile-morale-fill" class="stage-bar-fill" style="width:0%"></div></div>
+        <div class="stage-bar-pct" id="profile-morale-value">—</div>
+      </div>
     </div>
 
     <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Attributes</div>
@@ -15051,6 +15082,12 @@
 
     <div id="profile-goals-title" style="display:none;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Season Target</div>
     <div class="stage-bar" id="profile-goals" style="text-align:left;margin-bottom:20px"></div>
+
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Stats</div>
+    <div id="profile-stats-history" style="width:100%;margin-bottom:20px"></div>
+
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Trophy Cabinet</div>
+    <div id="profile-trophies" style="width:100%;margin-bottom:20px"></div>
 
     <button class="btn-auth-small" onclick="go('s-career-hub')" style="width:100%">← Back to Hub</button>
   </div>
@@ -15090,7 +15127,7 @@
       <div id="career-live-score-sub" style="font-size:12px;color:#9090a8;margin-top:2px">—</div>
       <div id="career-inbox-flash" class="career-inbox-flash"></div>
     </div>
-    <div id="career-match-feed" style="width:100%;display:flex;flex-direction:column;gap:8px;min-height:160px;margin-bottom:18px"></div>
+    <div id="career-match-feed" style="width:100%;display:flex;flex-direction:column;gap:8px;min-height:160px;max-height:300px;overflow:hidden;margin-bottom:18px"></div>
     <div id="career-match-result" style="display:none;width:100%"></div>
     <button class="btn-start" id="career-match-tap" style="width:100%;display:none">Tap to continue</button>
     <button class="btn-auth-small" id="career-match-skip" style="width:100%;margin-top:10px;display:none;background:#0d0d12">⏩ Skip Ahead</button>
@@ -15185,7 +15222,7 @@
       <div id="career-end-leaders" class="ov-stagger" style="width:100%;margin-bottom:24px"></div>
     </div>
 
-    <button class="btn-start" style="width:100%" onclick="go('s-home')">Back to Home</button>
+    <button class="btn-start" id="career-end-continue-btn" style="width:100%">Back to Home</button>
   </div>
 
   <script>
@@ -15334,6 +15371,17 @@
     };
     const CAREER_BATTING_STAT_KEYS = ['technique', 'power', 'temperament'];
     const CAREER_BOWLING_STAT_KEYS = ['control', 'threat', 'variation'];
+    // Whether a role's batting/bowling stat summaries are worth showing at
+    // all — a Bowler still occasionally pads out the tail and picks up the
+    // odd not-out, but that's not their discipline, so showing a "Batting"
+    // block for them (or a "Bowling" one for a pure Batter/Keeper, who
+    // never bowl a ball) reads as a stray, meaningless section rather than
+    // useful info. All-rounders are the only role that genuinely plays
+    // both. Shared by every screen that summarizes career/season stats by
+    // discipline (profile milestones, the year-by-year Stats history,
+    // season review) so they can't disagree with each other.
+    function careerPlaysBatting(role) { return role !== 'bowler'; }
+    function careerPlaysBowling(role) { return role === 'bowler' || role === 'allrounder'; }
     // tempBoost is a flat, identical nudge to the player's ratings for the
     // next match only (a hot week in the nets, a niggle) — not a separate
     // abstract multiplier layered on top of the real stats. Most events hit
@@ -15364,9 +15412,11 @@
         fixtures: [],
         table: {},
         currentRound: 0,
+        year: 2026,
+        seasonHistory: [],
         seasonStats: {
-          bat:  { innings:0, runs:0, outs:0, balls:0, fifties:0, hundreds:0, bigInnings:0, fours:0, sixes:0 },
-          bowl: { innings:0, wickets:0, runsConceded:0, overs:0, bigSpells:0 },
+          bat:  { innings:0, runs:0, outs:0, balls:0, fifties:0, hundreds:0, fours:0, sixes:0 },
+          bowl: { innings:0, wickets:0, runsConceded:0, overs:0, fiveFors:0 },
           field:{ involvements:0, clean:0 },
         },
         matchLog: [],
@@ -16475,7 +16525,7 @@
         html += `<div class="ov-reveal ov-pop" style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:14px 16px;margin-top:10px;text-align:left">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800">Today's Ratings</div>
-            <div class="rating-badge ${ratingBadgeClass(effOvr)}" style="width:34px;height:34px;font-size:14px;border-radius:6px;justify-content:flex-end;padding-right:3px;box-sizing:border-box">${effOvr}</div>
+            <div class="rating-badge ${ratingBadgeClass(effOvr)}" style="width:34px;height:34px;font-size:14px;border-radius:6px">${effOvr}</div>
           </div>
           ${rows}
         </div>`;
@@ -16580,12 +16630,12 @@
         st.awaitingReply = true;
         const wrap = document.createElement('div');
         wrap.className = 'imsg-replies';
-        step.replies.forEach(label => {
+        step.replies.forEach(reply => {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'imsg-reply-chip';
-          btn.textContent = label;
-          btn.onclick = e => { e.stopPropagation(); careerChatPickReply(label, wrap); };
+          btn.textContent = typeof reply === 'string' ? reply : reply.label;
+          btn.onclick = e => { e.stopPropagation(); careerChatPickReply(reply, wrap); };
           wrap.appendChild(btn);
         });
         document.getElementById('career-chat-messages').appendChild(wrap);
@@ -16595,9 +16645,11 @@
         st.timer = setTimeout(careerChatPlayStep, careerChatReduceMotion() ? 150 : 1000);
       }
     }
-    function careerChatPickReply(label, wrap) {
+    function careerChatPickReply(reply, wrap) {
       const st = careerChatState;
       if (!st) return;
+      const label = typeof reply === 'string' ? reply : reply.label;
+      const value = typeof reply === 'string' ? reply : reply.value;
       st.awaitingReply = false;
       wrap.remove();
       const row = document.createElement('div');
@@ -16608,6 +16660,8 @@
       row.appendChild(bubble);
       document.getElementById('career-chat-messages').appendChild(row);
       careerChatScrollBottom();
+      const step = st.steps[st.idx];
+      if (step.onPick) step.onPick(value);
       st.idx++;
       st.timer = setTimeout(careerChatPlayStep, careerChatReduceMotion() ? 150 : 650);
     }
@@ -16635,14 +16689,23 @@
       // Skipping still plays out like a real back-and-forth — auto-picks
       // the first reply option for any step that has one, rather than
       // leaving a one-sided wall of agent messages with no responses.
-      const appendReplyBubble = label => {
+      const appendReplyBubble = reply => {
         const row = document.createElement('div');
         row.className = 'imsg-row out';
         const bubble = document.createElement('div');
         bubble.className = 'imsg-bubble out';
-        bubble.textContent = label;
+        bubble.textContent = typeof reply === 'string' ? reply : reply.label;
         row.appendChild(bubble);
         messages.appendChild(row);
+      };
+      // Some steps' replies aren't just cosmetic flavour (e.g. the winter
+      // nets attribute pick) — onPick still needs to fire with whichever
+      // reply skipping auto-selects, same as a manually tapped chip would.
+      const pickFirstReply = step => {
+        if (!step.replies || !step.replies.length) return;
+        const reply = step.replies[0];
+        appendReplyBubble(reply);
+        if (step.onPick) step.onPick(typeof reply === 'string' ? reply : reply.value);
       };
       let startIdx = st.idx;
       if (st.currentBubble) {
@@ -16650,20 +16713,18 @@
         // finish it in place rather than duplicating it.
         st.currentBubble.textContent = st.steps[st.idx].text;
         st.currentBubble = null;
-        const step = st.steps[st.idx];
-        if (step.replies && step.replies.length) appendReplyBubble(step.replies[0]);
+        pickFirstReply(st.steps[st.idx]);
         startIdx = st.idx + 1;
       } else if (st.awaitingReply) {
         // Current step already fully typed, just sitting on its (now
         // removed) reply chips — auto-pick its first reply too.
-        const step = st.steps[st.idx];
-        if (step.replies && step.replies.length) appendReplyBubble(step.replies[0]);
+        pickFirstReply(st.steps[st.idx]);
         startIdx = st.idx + 1;
       }
       st.awaitingReply = false;
       for (let i = startIdx; i < st.steps.length; i++) {
         appendAgentBubble(st.steps[i].text);
-        if (st.steps[i].replies && st.steps[i].replies.length) appendReplyBubble(st.steps[i].replies[0]);
+        pickFirstReply(st.steps[i]);
       }
       st.idx = st.steps.length;
       careerChatScrollBottom();
@@ -16783,6 +16844,98 @@
           { text: `Good news is you're staying put — he's asked for the same target again next year, ${careerGoalText(info.goals)}. Let's go get it this time.`, replies: null },
         ],
       };
+    }
+
+    // Only fires when the season target was missed (careerFinishMatch's
+    // season-end branch decides that, via the button buildCareerSeasonEnd
+    // wires up) — a real choice, not flavour text like the other two
+    // scripts' replies: whichever chip gets tapped actually adds +5 to that
+    // rating, permanently, via the reply step's onPick. Batting-side roles
+    // (batter/keeper/battingAR) pick from the batting trio, bowling-side
+    // roles (bowler/bowlingAR) from the bowling trio — same discipline
+    // split careerBowlEliteBoost's isPrimaryBowler check already uses.
+    function careerAgentWinterNetsScript() {
+      const player = CAREER.player;
+      const isPrimaryBowler = player.role === 'bowler' || (player.role === 'allrounder' && player.lean === 'bowlingAR');
+      const statKeys = isPrimaryBowler ? CAREER_BOWLING_STAT_KEYS : CAREER_BATTING_STAT_KEYS;
+      const goals = CAREER_SEASON_GOALS[careerPosKey(player)] || {};
+      const applyBoost = key => {
+        player.ratings[key] = Math.min(CAREER_RATING_CAP, player.ratings[key] + 5);
+        player.ovr = computeOVR(player.ratings, player.role);
+      };
+      return {
+        sender: { name: 'Your Agent', avatar: '🕴️' },
+        steps: [
+          { text: `Winter nets are back open. Coach wants to know what you're planning to work on before next season.`, replies: ['Good shout', "Let's do it"] },
+          {
+            text: `What'll it be?`,
+            replies: statKeys.map(key => ({ label: CAREER_RATING_LABELS[key], value: key })),
+            onPick: applyBoost,
+          },
+          { text: `Nice one, that'll go in over the break. Good luck next year — same target as before: ${careerGoalText(goals)}. Go get it.`, replies: null },
+        ],
+      };
+    }
+    function careerStartWinterNets() {
+      const script = careerAgentWinterNetsScript();
+      go('s-career-agent-chat');
+      showCareerAgentChat(script.steps, careerStartNextSeason, script.sender);
+    }
+    // Replays the same club/league construction beginCareerSeason uses for a
+    // brand new career — a fresh AI-generated 12-team field every year (no
+    // persistence for opposition squads, same policy season one already
+    // has), with the tracked player spliced into a freshly generated version
+    // of their own club's XI at their new age/rating. Season-scoped state
+    // resets the same way resetCareerState initializes it fresh, except the
+    // things that must survive a year (player identity, trophies, year
+    // count, seasonHistory) are left untouched.
+    function careerStartNextSeason() {
+      CAREER.year += 1;
+      CAREER.player.age += 1;
+
+      const league = CAREER_LEAGUES[CAREER.leagueId];
+      const assigned = league.clubs.find(c => c.name === CAREER.myClubName) || league.clubs[0];
+      const others = league.clubs.filter(c => c.name !== assigned.name);
+      const mySquad = generateClubXI(assigned.rating);
+      const idx = Math.floor(Math.random() * mySquad.length);
+      mySquad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true, bowlType: CAREER.player.bowlBroadType || 'seam', age: CAREER.player.age };
+      CAREER.myClubRating = careerSquadRating(mySquad);
+      CAREER.clubs = [
+        { id: 0, name: assigned.name, isMine: true, rating: CAREER.myClubRating, squad: assignSquadIds(mySquad, 0) },
+        ...others.map((c, i) => {
+          const squad = assignSquadIds(generateClubXI(c.rating), i + 1);
+          return { id: i + 1, name: c.name, isMine: false, rating: careerSquadRating(squad), squad };
+        }),
+      ];
+      CAREER.fixtures = generateRoundRobin(CAREER.clubs.map(c => c.id));
+      CAREER.table = {};
+      CAREER.clubs.forEach(c => { CAREER.table[c.id] = { id: c.id, p: 0, w: 0, l: 0, pts: 0, nrr: 0 }; });
+      CAREER.currentRound = 0;
+      CAREER.seasonComplete = false;
+      CAREER.seasonStartOvr = CAREER.player.ovr;
+
+      CAREER.seasonStats = {
+        bat: { innings: 0, runs: 0, outs: 0, balls: 0, fifties: 0, hundreds: 0, fours: 0, sixes: 0 },
+        bowl: { innings: 0, wickets: 0, runsConceded: 0, overs: 0, fiveFors: 0 },
+        field: { involvements: 0, clean: 0 },
+      };
+      CAREER.matchLog = [];
+      CAREER.leagueStats = {};
+      CAREER.pendingPoints = [];
+      CAREER.pendingEvent = null;
+      CAREER.pendingEventContinue = null;
+      CAREER.pendingFreeTimeStat = null;
+      CAREER.pendingMOTM = null;
+      CAREER.usedEvents = new Set();
+      CAREER.resultStreak = 0;
+      CAREER.lastResultWon = null;
+      CAREER.halfwayChatShown = false;
+      CAREER.seasonEndChatShown = false;
+      CAREER.seasonTrophiesComputed = false;
+      CAREER.seasonTrophiesWonThisSeason = [];
+
+      go('s-career-hub');
+      buildCareerHub();
     }
 
     function playNextCareerFixtureContinue() {
@@ -17311,7 +17464,10 @@
     }
 
     // ── Commentary + verdict templates (spec §1/§8) ─────────────────────
-    const CAREER_BIG_INNINGS_THRESHOLD = 50;
+    // Still used as the MOTM "cheap wickets" eligibility bar below — the
+    // season-long bigSpells STAT this constant used to also feed has been
+    // replaced by the real five-for count (bat's equivalent, bigInnings,
+    // was dropped outright: 50+ was already exactly what `fifties` means).
     const CAREER_BIG_SPELL_WICKETS = 3;
 
     const CAREER_MOMENT_TEMPLATES = {
@@ -17464,7 +17620,14 @@
       // fixes that without reopening the freeze problem, since the
       // sequential picker below only ever has to cover the (usually much
       // smaller) residual runs left after boundaries are removed.
-      const sr = balls ? runs / balls : 0;
+      // sr is a real strike rate (runs per 100 balls) — runs/balls alone is
+      // a raw ~0.4-1.3 ratio, so dividing THAT by 100 again (the previous
+      // form of this line) starved boundaryShare down to near-zero for
+      // every realistic innings, forcing the paced picker below to carry
+      // almost the entire total as 1s (see its own comment) and leaving
+      // fours/sixes vanishingly rare regardless of how well the innings
+      // actually went.
+      const sr = balls ? (runs / balls) * 100 : 0;
       const boundaryShare = Math.max(0.05, Math.min(0.7, sr / 100 * 0.5 + Math.random() * 0.25));
       let boundaryBudget = Math.min(runs, Math.round(runs * boundaryShare));
       const maxBoundaryBalls = Math.max(0, Math.min(balls - 1, Math.floor(balls * 0.4)));
@@ -17477,17 +17640,36 @@
         boundaryBudget -= val;
       }
       const boundaryRunsTotal = boundaryVals.reduce((s, v) => s + v, 0);
-      const idxPool = Array.from({ length: balls }, (_, i) => i);
-      const boundaryIdx = new Set();
-      while (boundaryIdx.size < boundaryVals.length && idxPool.length) {
-        boundaryIdx.add(idxPool.splice(Math.floor(Math.random() * idxPool.length), 1)[0]);
+      // Same pre-placement trick for a running two (and the occasional
+      // three) — once boundaries take their realistic share above, the pace
+      // still needed on every other ball is usually under 1 run/ball, and
+      // the paced picker below (weighted toward whatever's closest to that)
+      // would otherwise squeeze 2s/3s out almost entirely even though a
+      // real innings still picks up plenty of twos.
+      let twoThreeBudget = Math.round((runs - boundaryRunsTotal) * (0.12 + Math.random() * 0.10));
+      const maxTwoThreeBalls = Math.max(0, Math.min(balls - boundaryVals.length - 1, Math.floor(balls * 0.15)));
+      const twoThreeVals = [];
+      while (twoThreeBudget >= 2 && twoThreeVals.length < maxTwoThreeBalls) {
+        const three = twoThreeBudget >= 3 && Math.random() < 0.15;
+        const val = three ? 3 : 2;
+        if (twoThreeBudget - val < 0) break;
+        twoThreeVals.push(val);
+        twoThreeBudget -= val;
       }
+      const twoThreeRunsTotal = twoThreeVals.reduce((s, v) => s + v, 0);
+      const specialVals = [...boundaryVals, ...twoThreeVals];
+      const idxPool = Array.from({ length: balls }, (_, i) => i);
+      const specialIdx = new Set();
+      while (specialIdx.size < specialVals.length && idxPool.length) {
+        specialIdx.add(idxPool.splice(Math.floor(Math.random() * idxPool.length), 1)[0]);
+      }
+      const specialIdxOrder = Array.from(specialIdx);
+      const specialByIdx = new Map(specialIdxOrder.map((idx, i) => [idx, specialVals[i]]));
       const deliveries = new Array(balls);
-      let runsLeft = runs - boundaryRunsTotal, ballsLeft = balls - boundaryVals.length;
-      const base = [0, 0, 0, 1, 1, 1, 2, 3, 4, 4, 6];
-      let bi = 0;
+      let runsLeft = runs - boundaryRunsTotal - twoThreeRunsTotal, ballsLeft = balls - specialVals.length;
+      const base = [0, 0, 0, 1, 1, 1];
       for (let i = 0; i < balls; i++) {
-        if (boundaryIdx.has(i)) { deliveries[i] = boundaryVals[bi++]; continue; }
+        if (specialByIdx.has(i)) { deliveries[i] = specialByIdx.get(i); continue; }
         // Bound every pick from both ends, not just the max: without a floor
         // too, a run of small picks early on could leave more runs outstanding
         // than the remaining balls can physically carry (max 6 each), so the
@@ -17564,7 +17746,15 @@
       wicket: [p => `${p} strikes! Straight through the gate.`, p => `Got him! ${p} induces the edge and it carries.`, p => `${p} traps him in front — up goes the finger.`, p => `Big shot attempted — but ${p} has him caught in the deep.`],
       four: [p => `Away for four off ${p}.`, p => `Finds the gap — four leaked.`, p => `Cracked away, four more off ${p}'s over.`],
       six: [p => `Full toss, dispatched for six off ${p}.`, p => `Launched miles — that's six conceded.`, p => `${p} drops it short and pays for it — six.`],
+      closeCall: [p => `Beaten all ends up! ${p} gets nothing for it.`, p => `Squared him up — ${p} finds the edge but it falls short.`, p => `Dropped! A regulation chance off ${p}'s bowling goes down.`, p => `Nicked through the slips off ${p} — survives.`, p => `Big shout for lbw from ${p} — turned down.`],
     };
+    // "Almost got him" flavour (edged past the slips, dropped, an lbw shout
+    // turned down, beaten all ends up) reads as a genuine heart-in-mouth
+    // moment in small doses, but a real innings/spell doesn't have one every
+    // dozen balls — a flat per-ball chance alone still let a long knock rack
+    // up a couple of dozen. Hard-capped per phase (not just a lower chance)
+    // so even the longest innings/spell can't produce more than a handful.
+    const CAREER_MAX_CLOSE_CALLS = 4;
 
     let careerLiveTimer = null;
     function careerLiveFeedRow(icon, text, color) {
@@ -17574,7 +17764,14 @@
       row.style.cssText = 'cursor:default;padding:14px 16px;text-align:left;display:block';
       row.innerHTML = `<div style="font-size:13px;color:${color || '#c0c0d8'};line-height:1.6"><span style="margin-right:6px">${icon}</span>${text}</div>`;
       feed.insertBefore(row, feed.firstChild);
-      while (feed.children.length > 12) feed.removeChild(feed.lastChild);
+      // Capped low enough (rather than the old 12) that the feed's own
+      // height can't grow past what a typical mobile viewport shows at
+      // once — otherwise the Skip button below it keeps getting pushed
+      // further down the page as the innings goes on, eventually requiring
+      // a scroll just to tap it. New rows entering at the top and old ones
+      // dropping off the bottom (already the case) now reads as an actual
+      // fixed-size ticker instead of an ever-growing list.
+      while (feed.children.length > 5) feed.removeChild(feed.lastChild);
     }
     // Overlays the live score box itself (the "batter's score" box, also
     // reused for bowling figures) rather than a separate element — that's
@@ -17877,12 +18074,13 @@
         s.fours = (s.fours ?? 0) + bat.fours; s.sixes = (s.sixes ?? 0) + bat.sixes;
         if (bat.out) s.outs++;
         if (bat.runs >= 100) s.hundreds++; else if (bat.runs >= 50) s.fifties++;
-        if (bat.runs >= CAREER_BIG_INNINGS_THRESHOLD) s.bigInnings++;
       }
       if (bowl) {
         const s = CAREER.seasonStats.bowl;
         s.innings++; s.wickets += bowl.wickets; s.runsConceded += bowl.runsConceded; s.overs += bowl.overs;
-        if (bowl.wickets >= CAREER_BIG_SPELL_WICKETS) s.bigSpells++;
+        // ?? 0 guards a save from before five-for tracking existed, same
+        // pattern as fours/sixes' old-save fallback above.
+        if (bowl.wickets >= 5) s.fiveFors = (s.fiveFors ?? 0) + 1;
       }
       { const s = CAREER.seasonStats.field; s.involvements += field.involvements; s.clean += field.clean; }
 
@@ -18267,7 +18465,7 @@
       careerPaintScorecard(careerScorecardRows(ctx, ctx.myClubId, careerLiveRowText(baseline.baselineRuns, baseline.baselineWkts, baseline.baselineBalls)));
 
       const deliveries = careerDecomposeBatting(bat.runs, bat.balls);
-      let idx = 0, runs = 0, balls = 0;
+      let idx = 0, runs = 0, balls = 0, closeCalls = 0;
       function finish() {
         skipBtn.style.display = 'none';
         if (bat.out) {
@@ -18317,7 +18515,7 @@
         if (!(isLast && bat.out)) {
           if (val === 6) careerLiveFeedRow('🎉', careerPick(CAREER_BALL_LINES.six)(player.name), '#4ade80');
           else if (val === 4) careerLiveFeedRow('🏏', careerPick(CAREER_BALL_LINES.four)(player.name), '#4ade80');
-          else if (Math.random() < 0.08) careerLiveFeedRow('😬', careerPick(CAREER_BALL_LINES.closeCall)(player.name));
+          else if (closeCalls < CAREER_MAX_CLOSE_CALLS && Math.random() < 0.05) { closeCalls++; careerLiveFeedRow('😬', careerPick(CAREER_BALL_LINES.closeCall)(player.name)); }
         }
         idx++;
         careerLiveTimer = setTimeout(nextBall, simDelay(420));
@@ -18370,7 +18568,7 @@
       const fieldBallIdxs = new Set();
       while (fieldBallIdxs.size < Math.min(fieldEvents.length, totalBalls)) fieldBallIdxs.add(Math.floor(Math.random() * totalBalls));
 
-      let oi = 0, bi = 0, runs = 0, wkts = 0, ballCount = 0, fieldPtr = 0;
+      let oi = 0, bi = 0, runs = 0, wkts = 0, ballCount = 0, fieldPtr = 0, closeCalls = 0;
       function finish() {
         skipBtn.style.display = 'none';
         const w = bowl.wickets;
@@ -18397,7 +18595,10 @@
         }
         else if (ball.runs === 6) { valEl.style.color = '#f87171'; careerLiveFeedRow('🏏', careerPick(CAREER_BOWL_BALL_LINES.six)(player.name), '#f87171'); }
         else if (ball.runs === 4) { valEl.style.color = '#f87171'; careerLiveFeedRow('🏏', careerPick(CAREER_BOWL_BALL_LINES.four)(player.name), '#f87171'); }
-        else valEl.style.color = '#fff';
+        else {
+          valEl.style.color = '#fff';
+          if (closeCalls < CAREER_MAX_CLOSE_CALLS && Math.random() < 0.05) { closeCalls++; careerLiveFeedRow('😬', careerPick(CAREER_BOWL_BALL_LINES.closeCall)(player.name)); }
+        }
         subEl.textContent = `Econ ${(runs / (oi + (bi + 1) / 6)).toFixed(1)}`;
         // A bowler can't bowl two overs in a row — the other end gets
         // through roughly one over for every one of yours while you're on,
@@ -18824,7 +19025,7 @@
       inner.appendChild(invokeScript);
     }
     function buildCareerHub() {
-      document.getElementById('hub-league-name').textContent = CAREER_LEAGUES[CAREER.leagueId].name;
+      document.getElementById('hub-league-name').textContent = `${CAREER_LEAGUES[CAREER.leagueId].name} · ${CAREER.year}`;
       document.getElementById('hub-club-name').textContent = CAREER.myClubName;
       const hubOvrEl = document.getElementById('hub-player-ovr');
       hubOvrEl.textContent = CAREER.player.ovr;
@@ -18898,7 +19099,8 @@
 
       const morale = p.morale ?? 50;
       const tier = careerMoraleLabel(morale);
-      document.getElementById('profile-morale-label').innerHTML = `<div style="color:${tier.color}">${tier.label}</div><div style="color:#606070;font-weight:700;font-size:12px;margin-top:3px">${morale}/100</div>`;
+      document.getElementById('profile-morale-label').innerHTML = `<span style="color:${tier.color}">${tier.label}</span>`;
+      document.getElementById('profile-morale-value').textContent = morale;
       const moraleFill = document.getElementById('profile-morale-fill');
       moraleFill.style.background = tier.color;
       moraleFill.style.width = reduceMotion ? morale + '%' : '0%';
@@ -18938,8 +19140,10 @@
         <div class="stat-card"><div class="stat-card-label">Runs</div><div class="stat-card-val">${bs.runs}</div><div class="stat-card-sub">Avg ${avg}</div><div class="stat-card-sub">SR ${sr}</div></div>
         <div class="stat-card"><div class="stat-card-label">Wickets</div><div class="stat-card-val">${bw.wickets}</div><div class="stat-card-sub">Avg ${bowlAvg}</div><div class="stat-card-sub">Econ ${econ}</div></div>
         <div class="stat-card"><div class="stat-card-label">Fielding</div><div class="stat-card-val">${fl.clean}</div><div class="stat-card-sub">${fieldPct}%</div><div class="stat-card-sub">of ${fl.involvements} chances</div></div>`;
-      document.getElementById('profile-milestones').textContent =
-        `${bs.fifties} fift${bs.fifties === 1 ? 'y' : 'ies'} · ${bs.hundreds} hundred${bs.hundreds === 1 ? '' : 's'} · ${bw.bigSpells} three-wicket haul${bw.bigSpells === 1 ? '' : 's'}`;
+      const milestoneParts = [];
+      if (careerPlaysBatting(p.role)) milestoneParts.push(`${bs.fifties} fift${bs.fifties === 1 ? 'y' : 'ies'}`, `${bs.hundreds} hundred${bs.hundreds === 1 ? '' : 's'}`);
+      if (careerPlaysBowling(p.role)) milestoneParts.push(`${bw.fiveFors ?? 0} five-for${(bw.fiveFors ?? 0) === 1 ? '' : 's'}`);
+      document.getElementById('profile-milestones').textContent = milestoneParts.join(' · ');
 
       // Season Target — same goals/progress the agent chat screens talk
       // about (careerSeasonGoalProgress), just always visible here rather
@@ -18969,6 +19173,49 @@
           goalsEl.querySelectorAll('.stage-bar-fill').forEach(bar => { bar.style.width = bar.dataset.pct + '%'; });
         }));
       }
+
+      // Stats — completed seasons only (seasonHistory), most recent first.
+      // The current, still-in-progress season is deliberately left out: its
+      // numbers are already live just above in "Season So Far," and a
+      // half-finished year sitting in what reads as a season-by-season
+      // record just looks like an incomplete/wrong entry.
+      const yearLine = stats => {
+        const bsY = stats.bat, bwY = stats.bowl;
+        const lines = [];
+        if (bsY.innings && careerPlaysBatting(p.role)) {
+          const avgY = bsY.outs ? (bsY.runs / bsY.outs).toFixed(1) : bsY.runs.toFixed(1);
+          const srY = bsY.balls ? ((bsY.runs / bsY.balls) * 100).toFixed(1) : '0.0';
+          let batLine = `Runs ${bsY.runs} · Avg ${avgY} · SR ${srY} · 100s ${bsY.hundreds} · 50s ${bsY.fifties}`;
+          // Victims (keeper dismissals) rides on the batting line rather than
+          // getting its own — a Keeper never has a bowling line to pair it
+          // with, and every other role's field.clean is generic outfield
+          // catches, not a "keeper" stat worth surfacing here at all.
+          if (p.role === 'keeper') batLine += ` · Victims ${stats.field.clean}`;
+          lines.push(batLine);
+        }
+        if (bwY.innings && careerPlaysBowling(p.role)) {
+          const bowlAvgY = bwY.wickets ? (bwY.runsConceded / bwY.wickets).toFixed(1) : '—';
+          const econY = bwY.overs ? (bwY.runsConceded / bwY.overs).toFixed(1) : '0.0';
+          lines.push(`Wickets ${bwY.wickets} · Avg ${bowlAvgY} · Econ ${econY} · 5fers ${bwY.fiveFors ?? 0}`);
+        }
+        return lines.join('<br>') || 'No stats yet';
+      };
+      const yearRows = CAREER.seasonHistory.slice().reverse();
+      const statsHistoryEl = document.getElementById('profile-stats-history');
+      if (!yearRows.length) {
+        statsHistoryEl.innerHTML = `<div style="font-size:12px;color:#606070;text-align:center;padding:10px 0">No completed seasons yet.</div>`;
+      } else {
+        statsHistoryEl.innerHTML = yearRows.map(r => `
+          <div class="perf-card perf-met" style="text-align:left;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:13px;font-weight:800;color:#fff">${r.year} · ${r.club} · ${ordinal(r.position)} of ${r.teamCount}</span>
+              ${r.trophies.length ? `<span style="font-size:13px">${r.trophies.map(t => t.icon).join(' ')}</span>` : ''}
+            </div>
+            <div style="font-size:12px;color:#9a9ad4;margin-top:4px;line-height:1.6">${yearLine(r.stats)}</div>
+          </div>`).join('');
+      }
+
+      document.getElementById('profile-trophies').innerHTML = careerTrophiesGridHTML(p.trophies || [], 'No trophies yet.');
     }
 
     function buildCareerMatchHistory() {
@@ -18990,11 +19237,12 @@
     const CAREER_STAT_CATEGORIES = [
       { key: 'runs',    label: 'Most Runs',        qualify: s => true,                value: s => s.bat.runs,                                      fmt: v => v,             sortDesc: true },
       { key: 'avg',     label: 'Best Average',     qualify: s => s.bat.innings >= 11 && s.bat.runs >= 400, value: s => s.bat.outs ? s.bat.runs / s.bat.outs : s.bat.runs, fmt: v => v.toFixed(1),  sortDesc: true },
-      { key: 'sr',      label: 'Best Strike Rate', qualify: s => s.bat.innings >= 5,  value: s => s.bat.balls ? (s.bat.runs / s.bat.balls) * 100 : 0, fmt: v => v.toFixed(1), sortDesc: true },
+      { key: 'sr',      label: 'Best Strike Rate', qualify: s => true,                value: s => s.bat.balls ? (s.bat.runs / s.bat.balls) * 100 : 0, fmt: v => v.toFixed(1), sortDesc: true },
       { key: 'wickets', label: 'Most Wickets',     qualify: s => true,                value: s => s.bowl.wickets,                                   fmt: v => v,             sortDesc: true },
       { key: 'bowlAvg', label: 'Best Bowling Avg', qualify: s => s.bowl.wickets >= 30, value: s => s.bowl.wickets ? s.bowl.runsConceded / s.bowl.wickets : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
-      { key: 'econ',    label: 'Best Economy',     qualify: s => s.bowl.overs >= 15,  value: s => s.bowl.overs ? s.bowl.runsConceded / s.bowl.overs : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
+      { key: 'econ',    label: 'Best Economy',     qualify: s => true,                value: s => s.bowl.overs ? s.bowl.runsConceded / s.bowl.overs : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
     ];
+    const CAREER_STAT_ICONS = { runs: '🏏', avg: '📈', sr: '⚡', wickets: '🎯', bowlAvg: '🛡️', econ: '🔒' };
     // ── Season trophies ──────────────────────────────────────────────────
     // Four of the six reuse CAREER_STAT_CATEGORIES' own qualify/value/sort
     // rules directly (same "who's the league leader" logic the stats screen
@@ -19016,6 +19264,7 @@
     function careerImpactScore(s) {
       return s.bat.runs + s.bowl.wickets * 20;
     }
+    function careerPlayedEnough(s) { return (s.bat.innings + s.bowl.innings) >= 5; }
     function careerComputeSeasonTrophies() {
       const all = Object.values(CAREER.leagueStats);
       const trophies = [];
@@ -19033,12 +19282,62 @@
         awardFromPool(key, trophyLabel[key], trophyIcon[key],
           all.filter(cat.qualify), cat.value, cat.fmt, cat.sortDesc);
       });
-      const playedEnough = s => (s.bat.innings + s.bowl.innings) >= 5;
-      awardFromPool('pots', 'Player of the Season', '⭐', all.filter(playedEnough), careerImpactScore, v => Math.round(v), true);
+      awardFromPool('pots', 'Player of the Season', '⭐', all.filter(careerPlayedEnough), careerImpactScore, v => Math.round(v), true);
       awardFromPool('young', 'Young Player of the Season', '🌟',
-        all.filter(s => playedEnough(s) && careerPlayerAge(s) != null && careerPlayerAge(s) <= CAREER_YOUNG_AGE_CUTOFF),
+        all.filter(s => careerPlayedEnough(s) && careerPlayerAge(s) != null && careerPlayerAge(s) <= CAREER_YOUNG_AGE_CUTOFF),
         careerImpactScore, v => Math.round(v), true);
       return trophies;
+    }
+    // Named regardless of whether the tracked player is the one who won —
+    // used by the season-end screen's no-trophies fallback so missing out
+    // still tells you who actually took Player/Young Player of the Season,
+    // not just that you didn't.
+    function careerLeagueAwardStatLine(s) {
+      const parts = [];
+      if (s.bat.runs) parts.push(`${s.bat.runs} runs`);
+      if (s.bowl.wickets) parts.push(`${s.bowl.wickets} wickets`);
+      return parts.join(', ') || 'no stats recorded';
+    }
+    function careerLeagueAwardWinners() {
+      const all = Object.values(CAREER.leagueStats);
+      const pickWinner = pool => {
+        if (!pool.length) return null;
+        const winner = pool.slice().sort((a, b) => careerImpactScore(b) - careerImpactScore(a))[0];
+        return { name: winner.name, stats: careerLeagueAwardStatLine(winner) };
+      };
+      const potsPool = all.filter(careerPlayedEnough);
+      const youngPool = potsPool.filter(s => careerPlayerAge(s) != null && careerPlayerAge(s) <= CAREER_YOUNG_AGE_CUTOFF);
+      return { pots: pickWinner(potsPool), young: pickWinner(youngPool) };
+    }
+    // Shared by the season-end trophies section and the player profile's
+    // permanent trophy cabinet — same card, different trophy list.
+    function careerTrophiesGridHTML(trophies, emptyText) {
+      if (!trophies.length) return `<div style="font-size:12px;color:#606070;text-align:center;padding:10px 0">${emptyText}</div>`;
+      return `<div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${trophies.map(t => `
+          <div class="perf-card perf-met" style="text-align:center">
+            <div style="font-size:26px;margin-bottom:6px">${t.icon}</div>
+            <div style="font-size:12px;font-weight:800;color:#fff;line-height:1.3">${t.label}</div>
+            <div style="font-size:11px;color:#9a9ad4;margin-top:4px">${t.value}</div>
+          </div>`).join('')}
+      </div>`;
+    }
+    // Snapshots the season that's about to end into permanent history before
+    // careerStartNextSeason resets CAREER.seasonStats/leagueStats for the
+    // next year — called from the same once-per-season guard the trophy
+    // award itself uses, so it can never double-record a season either.
+    function careerArchiveSeason() {
+      const finalTable = Object.values(CAREER.table).sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
+      const position = finalTable.findIndex(r => r.id === CAREER.myClubId) + 1;
+      CAREER.seasonHistory.push({
+        year: CAREER.year,
+        club: CAREER.myClubName,
+        leagueName: CAREER_LEAGUES[CAREER.leagueId].name,
+        position,
+        teamCount: finalTable.length,
+        stats: JSON.parse(JSON.stringify(CAREER.seasonStats)),
+        trophies: CAREER.seasonTrophiesWonThisSeason.slice(),
+      });
     }
     function buildCareerStats() {
       document.getElementById('stats-league-name').textContent = CAREER_LEAGUES[CAREER.leagueId].name + ' · Season Stats';
@@ -19053,30 +19352,63 @@
         btn.className = 'stats-tab ' + (btn.dataset.key === key ? 'stats-tab-active' : 'stats-tab-inactive');
       });
       const cat = CAREER_STAT_CATEGORIES.find(c => c.key === key);
+      const icon = CAREER_STAT_ICONS[key];
       const all = Object.values(CAREER.leagueStats).filter(cat.qualify).map(s => ({ ...s, val: cat.value(s) }));
       all.sort((a, b) => cat.sortDesc ? b.val - a.val : a.val - b.val);
       const top = all.slice(0, 10);
       const myIdx = all.findIndex(s => s.isTrackedPlayer);
+      const leader = top[0];
 
-      const rows = top.map((s, i) => `
-        <tr class="${s.isTrackedPlayer ? 'myrow' : ''}">
-          <td>${i + 1}</td>
-          <td style="text-align:left">${s.name}</td>
-          <td style="text-align:left;color:#8080a0">${s.clubName}</td>
-          <td style="font-weight:800">${cat.fmt(s.val)}</td>
-        </tr>`).join('');
-      document.getElementById('stats-table-wrap').innerHTML = `<table class="tbl">
-        <colgroup><col style="width:8%"><col style="width:36%"><col style="width:36%"><col style="width:20%"></colgroup>
-        <thead><tr><th>#</th><th>Player</th><th>Club</th><th>${cat.label.replace(/^(Most|Best) /, '')}</th></tr></thead>
-        <tbody>${rows}</tbody></table>`;
+      // Leader gets the same gold-bordered "spotlight" treatment MVP cards
+      // get everywhere else in the app (Floodlight Rule — one gold element,
+      // not a flat table where every row looks equally important).
+      const leaderCardHTML = leader ? `
+        <div class="ov-reveal ov-pop stat-card mvp-card mvp-shine chip-boost" style="margin-bottom:10px">
+          <div class="stat-card-label">${icon} ${cat.label}</div>
+          <div class="stat-card-name">${leader.name}${leader.isTrackedPlayer ? ' (you)' : ''}</div>
+          <div class="stat-card-val">${cat.fmt(leader.val)}</div>
+          <div class="stat-card-sub">${leader.clubName}</div>
+        </div>` : `<div style="font-size:12px;color:#606070;text-align:center;padding:16px 0">Nobody's qualified for this one yet.</div>`;
+
+      const rest = top.slice(1);
+      const restHTML = rest.length ? `<div class="ov-stagger" style="width:100%">
+        ${rest.map((s, i) => `
+          <div class="stat-lb-row ov-row-reveal${s.isTrackedPlayer ? ' stat-lb-mine' : ''}">
+            <div class="stat-lb-fill"></div>
+            <div class="stat-lb-content">
+              <span class="stat-lb-rank">${i + 2}</span>
+              <div class="stat-lb-info">
+                <div class="stat-lb-name">${s.name}${s.isTrackedPlayer ? ' (you)' : ''}</div>
+                <div class="stat-lb-club">${s.clubName}</div>
+              </div>
+              <span class="stat-lb-val">${cat.fmt(s.val)}</span>
+            </div>
+          </div>`).join('')}
+      </div>` : '';
+
+      const wrap = document.getElementById('stats-table-wrap');
+      // Same rebuild-safe wiring reset buildCareerSeasonEnd needs — this
+      // container gets rebuilt fresh on every tab switch, not just once, so
+      // clearing the wired markers first is what lets the reveal replay
+      // every time instead of only ever firing on the first tab viewed.
+      document.querySelectorAll('#s-career-stats [data-ov-wired]').forEach(n => delete n.dataset.ovWired);
+      wrap.innerHTML = leaderCardHTML + restHTML;
+      requestAnimationFrame(() => wireReveals(wrap));
 
       const rankEl = document.getElementById('stats-my-rank');
       if (myIdx === -1) {
         rankEl.innerHTML = `<div style="font-size:12px;color:#606070;text-align:center">You haven't qualified for this category yet.</div>`;
       } else if (myIdx < 10) {
-        rankEl.innerHTML = `<div style="font-size:12px;color:#9090a8;text-align:center">You're ${ordinal(myIdx + 1)} in the league.</div>`;
+        rankEl.innerHTML = '';
       } else {
-        rankEl.innerHTML = `<div style="font-size:13px;color:#f9c846;font-weight:800;text-align:center">You: ${ordinal(myIdx + 1)} of ${all.length} · ${cat.fmt(all[myIdx].val)}</div>`;
+        const tenthVal = top[9] ? top[9].val : leader.val;
+        const gapVal = Math.abs(all[myIdx].val - tenthVal);
+        const gapText = gapVal > 0.05 ? ` · ${cat.fmt(gapVal)} off cracking the top 10` : '';
+        rankEl.innerHTML = `<div class="stat-card" style="text-align:center">
+          <div class="stat-card-label">Your Rank</div>
+          <div class="stat-card-name" style="color:#f9c846">${ordinal(myIdx + 1)} of ${all.length}</div>
+          <div class="stat-card-sub">${cat.fmt(all[myIdx].val)}${gapText}</div>
+        </div>`;
       }
     }
 
@@ -19210,6 +19542,17 @@
       </div>`;
     }
     function buildCareerSeasonEnd() {
+      // wireReveals only ever wires a given container once (data-ov-wired),
+      // which is correct for screens that render exactly once — but this
+      // screen can now legitimately rebuild with fresh data (revisiting via
+      // the hub's "See Season Review", or an entirely new season's review
+      // once the multi-season loop repeats). Without clearing the marker,
+      // the second build's #career-end-leaders rows never get their .ov-in
+      // class (the container itself is already "wired" from the first
+      // build) and stay permanently opacity:0 — invisible, not just
+      // unanimated. Clearing every wired marker in this screen before
+      // rebuilding makes every rebuild replay the reveal fresh.
+      document.querySelectorAll('#s-career-season-end [data-ov-wired]').forEach(n => delete n.dataset.ovWired);
       const player = CAREER.player, stats = CAREER.seasonStats;
       const finalTable = Object.values(CAREER.table).sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
       const myPos = finalTable.findIndex(r => r.id === CAREER.myClubId) + 1;
@@ -19243,7 +19586,7 @@
         <div class="ov-box"><div class="ov-n ov-count" data-count="${stats.bowl.wickets}" style="color:#f9c846">0</div><div class="ov-l">Wickets</div></div>`;
 
       const bs = stats.bat, bw = stats.bowl;
-      if (bs.innings > 0) {
+      if (bs.innings > 0 && careerPlaysBatting(player.role)) {
         const avg = bs.outs ? (bs.runs / bs.outs).toFixed(1) : bs.runs.toFixed(1);
         const sr = bs.balls ? ((bs.runs / bs.balls) * 100).toFixed(1) : '0.0';
         document.getElementById('career-end-batting').innerHTML = `
@@ -19258,7 +19601,7 @@
       } else {
         document.getElementById('career-end-batting').innerHTML = '';
       }
-      if (bw.innings > 0) {
+      if (bw.innings > 0 && careerPlaysBowling(player.role)) {
         const bowlAvg = bw.wickets ? (bw.runsConceded / bw.wickets).toFixed(1) : '—';
         const econ = bw.overs ? (bw.runsConceded / bw.overs).toFixed(1) : '0.0';
         document.getElementById('career-end-bowling').innerHTML = `
@@ -19284,21 +19627,44 @@
       if (!CAREER.seasonTrophiesComputed) {
         CAREER.seasonTrophiesComputed = true;
         const won = careerComputeSeasonTrophies();
+        // A team honour, not an individual stat leaderboard one — doesn't
+        // come from careerComputeSeasonTrophies (that only ever looks at
+        // CAREER.leagueStats), so it's added here where isChampion is
+        // already known. Cup competitions don't exist yet; when they do,
+        // their trophy slots in the same way right alongside this one.
+        if (isChampion) won.unshift({ key: 'league', label: 'League Champions', icon: '🏆', value: leagueName });
         CAREER.seasonTrophiesWonThisSeason = won;
         player.trophies = (player.trophies || []).concat(won);
+        careerArchiveSeason();
       }
       const trophiesEl = document.getElementById('career-end-trophies');
       if (CAREER.seasonTrophiesWonThisSeason.length) {
-        trophiesEl.innerHTML = `<div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          ${CAREER.seasonTrophiesWonThisSeason.map(t => `
-            <div class="perf-card perf-met" style="text-align:center">
-              <div style="font-size:26px;margin-bottom:6px">${t.icon}</div>
-              <div style="font-size:12px;font-weight:800;color:#fff;line-height:1.3">${t.label}</div>
-              <div style="font-size:11px;color:#9a9ad4;margin-top:4px">${t.value}</div>
-            </div>`).join('')}
-        </div>`;
+        trophiesEl.innerHTML = careerTrophiesGridHTML(CAREER.seasonTrophiesWonThisSeason, '');
       } else {
-        trophiesEl.innerHTML = `<div style="font-size:12px;color:#606070;text-align:center;padding:10px 0">No trophies this season — come back next year.</div>`;
+        const winners = careerLeagueAwardWinners();
+        const awardRow = (label, icon, w) => w ? `
+          <div class="perf-card perf-met" style="text-align:left">
+            <div style="font-size:11px;color:#9a9ad4;margin-bottom:4px">${icon} ${label}</div>
+            <div style="font-size:13px;font-weight:800;color:#fff">${w.name}</div>
+            <div style="font-size:11px;color:#8080a0;margin-top:2px">${w.stats}</div>
+          </div>` : '';
+        const awardRows = awardRow('Player of the Season', '⭐', winners.pots) + awardRow('Young Player of the Season', '🌟', winners.young);
+        trophiesEl.innerHTML = awardRows ? `
+          <div style="font-size:12px;color:#606070;text-align:center;padding:0 0 10px">No trophies this season — here's who did take them.</div>
+          <div style="display:flex;flex-direction:column;gap:8px">${awardRows}</div>`
+          : `<div style="font-size:12px;color:#606070;text-align:center;padding:10px 0">No trophies this season — come back next year.</div>`;
+      }
+
+      // Quota decides what happens next: hit it and the career stops here
+      // for now (no next-season flow exists past this point); miss it and
+      // the loop continues — winter nets, then straight into next year.
+      const continueBtn = document.getElementById('career-end-continue-btn');
+      if (careerSeasonEndGoalInfo().hit) {
+        continueBtn.textContent = 'Back to Home';
+        continueBtn.onclick = () => go('s-home');
+      } else {
+        continueBtn.textContent = 'Continue';
+        continueBtn.onclick = () => careerStartWinterNets();
       }
 
       document.getElementById('career-end-table').innerHTML = `<table class="tbl">
@@ -19356,14 +19722,21 @@
         if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 4000); }
         return;
       }
-      const btn = document.getElementById('save-career-btn');
-      if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+      // The tile is a div now (matches the other two "Your Player"/"League
+      // Stats" tiles in the 3-up grid, not a lone full-width button), so
+      // there's no native `disabled` to lean on — a dataset flag guards
+      // against a second tap firing another save while one's in flight.
+      const tile = document.getElementById('save-career-btn');
+      const label = document.getElementById('save-career-btn-label');
+      if (tile && tile.dataset.saving === '1') return;
+      if (tile) tile.dataset.saving = '1';
+      if (label) label.textContent = 'Saving…';
       const saveState = JSON.parse(JSON.stringify(CAREER));
       const { error } = await sb.from('career_saves').upsert({ user_id: AUTH_USER.id, state: saveState, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
-      if (btn) {
-        btn.disabled = false;
-        if (error) { btn.textContent = '💾 Save Game'; alert('Save failed. Please try again.'); }
-        else { btn.textContent = '✓ Saved!'; setTimeout(() => btn.textContent = '💾 Save Game', 2000); }
+      if (tile) tile.dataset.saving = '0';
+      if (label) {
+        if (error) { label.textContent = 'Save Game'; alert('Save failed. Please try again.'); }
+        else { label.textContent = 'Saved!'; setTimeout(() => { label.textContent = 'Save Game'; }, 2000); }
       }
     }
   </script>
