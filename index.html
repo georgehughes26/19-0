@@ -7141,7 +7141,7 @@
       // Career Mode access is its own, slightly wider allowlist — these
       // usernames get Career Mode without also picking up the WC/T20
       // auto-draft dev tools above, which stay 'ghughesy'-only.
-      const CAREER_ACCESS_USERNAMES = ['ghughesy', 'E4U Cricket', 'YOUBEARS', 'HarishM10233161', 'Icefire297', '15tslevin', 'Coby1235', 'sumanth', 'KarunNair123', 'punka', 'Pavillon', 'OrphanX', 'sajju', "MichaelEnglish22","Thomascurphey","Crawh11","SmaillWmiT","Knightrider92"];
+      const CAREER_ACCESS_USERNAMES = ['ghughesy', 'E4U Cricket', 'YOUBEARS', 'HarishM10233161', 'Icefire297', '15tslevin', 'Coby1235', 'sumanth', 'KarunNair123', 'punka', 'Pavillon', 'OrphanX', 'sajju', "MichaelEnglish22","Thomascurphey","Crawh11","SmailliWmiT","Knightrider92"];
       const hasCareerAccess = AUTH_USER && CAREER_ACCESS_USERNAMES.includes(AUTH_USER.username);
       const careerDevBtn = document.getElementById('career-dev-entry-btn');
       if (careerDevBtn) careerDevBtn.style.display = hasCareerAccess ? 'block' : 'none';
@@ -15151,9 +15151,9 @@
   <!-- CAREER AGENT CHAT SCREEN -->
   <div id="s-career-agent-chat" class="screen">
     <div style="width:100%;display:flex;align-items:center;gap:10px;padding-bottom:14px;margin-bottom:6px;border-bottom:1px solid #1a1a24">
-      <div style="width:38px;height:38px;border-radius:50%;background:#111118;border:1px solid #252535;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🕴️</div>
+      <div id="career-chat-avatar" style="width:38px;height:38px;border-radius:50%;background:#111118;border:1px solid #252535;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🕴️</div>
       <div style="flex:1;text-align:left;min-width:0">
-        <div style="font-size:14px;font-weight:800;color:#fff">Your Agent</div>
+        <div id="career-chat-sender-name" style="font-size:14px;font-weight:800;color:#fff">Your Agent</div>
         <div style="font-size:10px;color:#4ade80;font-weight:700">online</div>
       </div>
       <button class="btn-auth-small" id="career-chat-skip" style="padding:6px 12px;font-size:11px" onclick="careerChatSkipAll()">Skip</button>
@@ -15379,6 +15379,7 @@
         resultStreak: 0,
         lastResultWon: null,
         halfwayChatShown: false,
+        seasonEndChatShown: false,
       };
     }
     const CAREER_SETTINGS = { autoAdvanceAI: true };
@@ -16492,7 +16493,11 @@
     function careerChatScrollBottom() {
       window.scrollTo({ top: document.body.scrollHeight, behavior: careerChatReduceMotion() ? 'auto' : 'smooth' });
     }
-    function showCareerAgentChat(steps, onDone) {
+    function showCareerAgentChat(steps, onDone, sender) {
+      const nameEl = document.getElementById('career-chat-sender-name');
+      const avatarEl = document.getElementById('career-chat-avatar');
+      if (nameEl) nameEl.textContent = (sender && sender.name) || 'Your Agent';
+      if (avatarEl) avatarEl.textContent = (sender && sender.avatar) || '🕴️';
       const messages = document.getElementById('career-chat-messages');
       messages.innerHTML = '';
       const ts = document.createElement('div');
@@ -16702,6 +16707,62 @@
         { text: `Not gonna lie, he's not blown away. ${currentText} at the halfway mark isn't quite the number he wanted.`, replies: ["I'll turn it around", 'Tough season'] },
         { text: `Still time. ${remainingText} more in the second half and he'll forget all about it.`, replies: null },
       ];
+    }
+    // End-of-season verdict — the coach calls direct if the target was hit
+    // (a different sender to the usual agent, see the sender override on
+    // showCareerAgentChat), otherwise the agent breaks the news themselves.
+    // How close a miss was is graded off whichever targeted stat is
+    // furthest behind (an all-rounder's worse of the two, matching
+    // careerSeasonGoalProgress's own "needs both" onPace logic) rather than
+    // an average, so a big shortfall in one stat can't be masked by a good
+    // one in the other.
+    function careerSeasonEndGoalInfo() {
+      const { goals, current } = careerSeasonGoalProgress();
+      const keys = Object.keys(goals);
+      let hit = keys.length > 0, worstPct = 1;
+      keys.forEach(k => {
+        if (current[k] < goals[k]) hit = false;
+        worstPct = Math.min(worstPct, goals[k] ? current[k] / goals[k] : 1);
+      });
+      return { hit, worstPct, goals, current, keys };
+    }
+    function careerStatSummary(obj, keys) {
+      const parts = [];
+      if (keys.includes('runs')) parts.push(`${obj.runs} runs`);
+      if (keys.includes('wickets')) parts.push(`${obj.wickets} wickets`);
+      return parts.join(' and ');
+    }
+    function careerAgentEndOfSeasonScript() {
+      const info = careerSeasonEndGoalInfo();
+      const league = CAREER_LEAGUES[CAREER.leagueId];
+      const county = (league && league.county) || 'the county';
+      const player = CAREER.player;
+      if (info.hit) {
+        return {
+          sender: { name: `${county} Coach`, avatar: '🏆' },
+          steps: [
+            { text: `Alright, ${player.name}? Your agent passed on your number, hope that's alright.`, replies: ['Course, go on', 'No worries'] },
+            { text: `Been keeping tabs on you all year. ${careerStatSummary(info.current, info.keys)} — that's proper impressive stuff at your level.`, replies: ['Cheers', 'Means a lot'] },
+            { text: `You're firmly in our plans for next year. Wanted to tell you myself.`, replies: ['Buzzing 🙌', "Can't wait"] },
+            { text: `Good stuff. Speak soon.`, replies: null },
+          ],
+        };
+      }
+      const tone = info.worstPct >= 0.85 ? 'close' : info.worstPct >= 0.5 ? 'mid' : 'far';
+      const missLine = tone === 'close'
+        ? `So close, mate. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} — just missed out on that one, properly gutting.`
+        : tone === 'mid'
+        ? `Wasn't quite enough for him. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} he wanted — not a disaster, but not there either.`
+        : `Not gonna sugarcoat it. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} is a way off — needs a real look at your game.`;
+      const missReplies = tone === 'close' ? ['Gutted', 'So close'] : tone === 'mid' ? ['Fair enough', "I'll be better"] : ["I'll turn it around", 'Tough season'];
+      return {
+        sender: { name: 'Your Agent', avatar: '🕴️' },
+        steps: [
+          { text: `Right, had that chat with ${county}'s coach like I said I would.`, replies: ['And?', 'Go on...'] },
+          { text: missLine, replies: missReplies },
+          { text: `Good news is you're staying put — he's asked for the same target again next year, ${careerGoalText(info.goals)}. Let's go get it this time.`, replies: null },
+        ],
+      };
     }
 
     function playNextCareerFixtureContinue() {
@@ -18386,7 +18447,21 @@
       // reflection that makes more sense after.
       if (CAREER.pendingMOTM) { buildCareerMOTM(); go('s-career-motm'); return; }
       if (CAREER.pendingPoints.length) { go('s-career-points'); renderCareerPointsStep(); return; }
-      if (CAREER.currentRound >= 22) { CAREER.seasonComplete = true; buildCareerSeasonEnd(); go('s-career-season-end'); }
+      if (CAREER.currentRound >= 22) {
+        CAREER.seasonComplete = true;
+        // One more agent/coach chat before the review itself — whether you
+        // hit the season target or not. Guarded so revisiting the season
+        // end screen later (hub's "See Season Review", or reloading a save
+        // where the season was already finished) doesn't replay it.
+        if (!CAREER.seasonEndChatShown) {
+          CAREER.seasonEndChatShown = true;
+          const script = careerAgentEndOfSeasonScript();
+          go('s-career-agent-chat');
+          showCareerAgentChat(script.steps, () => { buildCareerSeasonEnd(); go('s-career-season-end'); }, script.sender);
+          return;
+        }
+        buildCareerSeasonEnd(); go('s-career-season-end');
+      }
       else { buildCareerHub(); go('s-career-hub'); }
     }
 
