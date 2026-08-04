@@ -16610,8 +16610,8 @@
         // below the 76-100 band beneath it — a small extra term specifically
         // past three figures keeps a real hundred the outright fastest band,
         // without touching anything below it.
-        const tempoRamp = 0.5 + Math.log(1 + forRuns / 25) * 0.62 + Math.max(0, forRuns - 100) * 0.0025;
-        return (0.71 + 0.058 * Math.sqrt(r.power)) * tempoRamp * srNoise * (1 + moraleFactor * 0.10);
+        const tempoRamp = 0.5 + Math.log(1 + forRuns / 25) * 0.52 + Math.max(0, forRuns - 100) * 0.0025;
+        return (0.88 + 0.042 * Math.sqrt(r.power)) * tempoRamp * srNoise * (1 + moraleFactor * 0.10);
       };
       const sr = srForRuns(runs);
       // A second, independent jitter on the runs→balls conversion itself,
@@ -16673,6 +16673,25 @@
           const stretchedEstimate = Math.max(runs, Math.round(balls * sr));
           const stretchedSr = srForRuns(stretchedEstimate);
           runs = Math.max(runs, Math.round(balls * stretchedSr));
+          // This stretch has no cap of its own (unlike the initial
+          // exponential draw a few lines up, which is bounded by shareCeiling
+          // before it's ever stretched) — without one, a chase in particular
+          // regularly stretched a not-out opener's runs past the ENTIRE team
+          // score, which the hard team-score clamp below then rounded up to
+          // exactly 100%: 42% of not-out chase innings were landing at the
+          // literal full team total, teammates left with zero between them.
+          // A genuine carried-the-bat innings is a real, celebrated thing —
+          // it just isn't ever actually 100%. Capping the SHARE here, not
+          // just the raw number, and scaling balls down with it rather than
+          // clipping runs alone, keeps the strike rate this innings already
+          // earned intact instead of manufacturing the same SR-crushing
+          // artifact the old flat cap did.
+          const notOutShareCap = Math.min(0.8, shareCeiling + 0.4);
+          const shareCappedRuns = Math.round(myTeamScore * notOutShareCap);
+          if (runs > shareCappedRuns) {
+            balls = Math.max(1, Math.round(balls * (shareCappedRuns / runs)));
+            runs = shareCappedRuns;
+          }
         }
       }
       // Hard physical bound only: can't personally outscore the whole team.
