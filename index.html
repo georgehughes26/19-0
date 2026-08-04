@@ -6599,12 +6599,6 @@
   <!-- ── SIGN-UP NUDGE MODAL ─────────────────────────────────── -->
   <div id="signup-nudge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:25000;align-items:flex-end;justify-content:center;padding:0">
     <div style="background:#16161f;border:1px solid #252535;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 20px 32px">
-      <!-- TEMPORARY: swapped for the OddBalls giveaway promo image. Restore the block
-           commented out below (and delete this one) to bring back the real signup nudge. -->
-      <img src="oddballs-giveaway.png" alt="19-0 x OddBalls — win a bundle worth £100+, go 11-0 in World Cup mode" style="width:100%;max-height:65vh;object-fit:contain;border-radius:14px;display:block;margin:0 auto 16px">
-      <div style="text-align:center;font-size:13px;color:#8080a0;line-height:1.7;margin-bottom:16px">Take on the challenge and go 11-0 in World Cup mode to be in with a shout. Signed-in users only.</div>
-      <button onclick="closeSignupNudge()" style="width:100%;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif">Play Now</button>
-      <!--
       <div style="text-align:center;margin-bottom:20px">
         <div style="font-size:32px;margin-bottom:10px">📊</div>
         <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">Save your runs</div>
@@ -6632,7 +6626,6 @@
       </div>
       <button onclick="openAuthModal();closeSignupNudge()" style="width:100%;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;border:none;padding:15px;font-size:15px;font-weight:900;border-radius:10px;cursor:pointer;margin-bottom:10px;font-family:system-ui,-apple-system,sans-serif">Create free account</button>
       <button onclick="closeSignupNudge()" style="width:100%;background:transparent;color:#606080;border:1px solid #252535;padding:13px;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif">Maybe later</button>
-      -->
     </div>
   </div>
 
@@ -7167,7 +7160,7 @@
     // Super Sixes, semi and final) can enter — one entry per signed-in account,
     // enforced both here and by a unique constraint on oddballs_entries.user_id.
     // Flip to true to switch the giveaway back on — everything else stays wired up.
-    const ODDBALLS_GIVEAWAY_LIVE = true;
+    const ODDBALLS_GIVEAWAY_LIVE = false;
     async function maybeShowOddBallsGiveaway() {
       if (!ODDBALLS_GIVEAWAY_LIVE) return; // giveaway is paused for now
       if (!AUTH_USER) return; // must be signed in to enter — no prompt for guests, just skip
