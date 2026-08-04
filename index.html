@@ -15168,23 +15168,34 @@
         topOrder:    { technique:38, power:32, temperament:44 },
         middleOrder: { technique:32, power:44, temperament:38 },
       },
-      bowlType: { // same +2/stat reasoning as battingType above
-        fast:   { control:41, threat:53, variation:47 },
-        medium: { control:53, threat:41, variation:47 },
-        leg:    { control:38, threat:50, variation:53 },
-        off:    { control:50, threat:38, variation:53 },
+      // Flat across all four types within each tier, deliberately — control
+      // and threat feed economy/wicket-rate directly in simTrackedPlayerBowling,
+      // so giving each type a different control/threat split (the old +6/-6
+      // spread around the same average) made fast/leg genuinely better
+      // wicket-takers and medium/off genuinely tighter economically despite
+      // reading as the same "skill level" — bowling type ended up mattering
+      // for real output, not just flavour. Specialist now sits clearly above
+      // Bowling AR (primary), which sits clearly above Batting AR (secondary)
+      // — a specialist who commits fully to bowling should outbowl someone
+      // splitting focus with batting, which the old table's OVR-balancing
+      // (tuned per role in isolation) didn't check for.
+      bowlType: {
+        fast:   { control:54, threat:54, variation:54 },
+        medium: { control:54, threat:54, variation:54 },
+        leg:    { control:54, threat:54, variation:54 },
+        off:    { control:54, threat:54, variation:54 },
       },
       bowlTypePrimary: {
-        fast:   { control:46, threat:58, variation:52 },
-        medium: { control:58, threat:46, variation:52 },
-        leg:    { control:43, threat:55, variation:58 },
-        off:    { control:55, threat:43, variation:58 },
+        fast:   { control:48, threat:48, variation:48 },
+        medium: { control:48, threat:48, variation:48 },
+        leg:    { control:48, threat:48, variation:48 },
+        off:    { control:48, threat:48, variation:48 },
       },
       bowlTypeSecondary: {
-        fast:   { control:32, threat:44, variation:38 },
-        medium: { control:44, threat:32, variation:38 },
-        leg:    { control:29, threat:41, variation:44 },
-        off:    { control:41, threat:29, variation:44 },
+        fast:   { control:36, threat:36, variation:36 },
+        medium: { control:36, threat:36, variation:36 },
+        leg:    { control:36, threat:36, variation:36 },
+        off:    { control:36, threat:36, variation:36 },
       },
       keeper: {
         keeperBatsmanFielding: { keeping:60, catching:60, groundFielding:36 },
@@ -16533,7 +16544,19 @@
       // plus a near-fixed not-out tempo below made every not-out innings
       // play at an unmistakably slower rate than every dismissed one, which
       // read as a "tell" you could predict the not-out from a few balls in.
-      const rawMeanRuns = skill * posFactor * 0.55 * (out ? 1 : 0.5);
+      // Not out is purely a fact about whether the innings ended around you,
+      // not a different scoring tempo — the same mean/rate applies whether
+      // you end up out or not, same as real cricket doesn't have batters
+      // playing at a different pace because they happen not to get out.
+      // Was 0.55 — at rating parity (skill ~47, an unprogressed opener), an
+      // unprogressed specialist Bowler averages ~31 wickets-wise, the normal
+      // range for a real club trundler. The equivalent batter was averaging
+      // 55, a professional-level number for zero investment. Lowered so
+      // parity output lands in the same realism tier as bowling's; relative
+      // scaling against the opposition (via posFactor, skill, and the team
+      // total this is ultimately capped against) is untouched, so a genuinely
+      // progressed batter facing weaker bowling still scores well above this.
+      const rawMeanRuns = skill * posFactor * 0.33;
       // The mean itself used to be computed purely from skill/position, with
       // zero awareness of what the team actually totalled — only clamped
       // against it at the very end. On a modest scoring day, the exponential
@@ -16550,13 +16573,47 @@
       const moraleMeanMult = 1 + moraleFactor * 0.10;
       const meanRuns = Math.min(rawMeanRuns, myTeamScore * shareCeiling * (out ? 1 : 1.15)) * moraleMeanMult;
       let runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
+      // The extra "shareCeiling * 1.5" backstop that used to sit here is
+      // gone — it was clipping runs without touching the balls a stretched
+      // not-out innings had already been credited with, manufacturing an
+      // artificial strike-rate crash for exactly the biggest innings (the
+      // 76-100 run band was landing below the 51-75 band because of it).
+      // The mean-level share cap a few lines up already keeps the
+      // exponential draw's tail from running away with the whole team
+      // score; that's the real backstop, not a second clip layered on top.
       // Match-to-match tempo noise: without this, strike rate was almost
       // pure function of the `power` rating, so every dismissed innings for
       // a given player clustered inside a narrow ~30pt SR band — another
       // part of what made outcomes feel deterministic rather than variable
       // match to match.
       const srNoise = 0.65 + Math.random() * 0.7;
-      const sr = (0.75 + r.power / 100) * srNoise * (1 + moraleFactor * 0.10);
+      // Tempo keeps climbing with how big the innings is turning out to be —
+      // logarithmic, not capped, so there's no plateau for a big score to
+      // fall off of: the highest-scoring band is always the fastest on
+      // average, exactly the way "still finding your feet on a cheap
+      // dismissal, in full flow on a big one" should read. Growth slows
+      // hard past a good-sized innings (going from 50 to 100 runs adds much
+      // less tempo than going from 5 to 50 does) without ever turning over.
+      // Square root, not linear, in power: an unprogressed player should
+      // average just under 100, an elite one should reach 100-120 with
+      // spells at 150+, but that's a narrow band to stretch across the
+      // whole progression range — a linear scale-up flattens the low end
+      // too far below 100 to compensate for the top end landing correctly.
+      // Takes the runs figure as a parameter rather than closing over a
+      // fixed value: the not-out stretch below needs to re-derive this
+      // against how big the innings actually ends up, not just the small
+      // pre-stretch draw it started from.
+      const srForRuns = (forRuns) => {
+        // The log term alone still lets a century-plus innings (increasingly
+        // an even blend of a genuinely fast dismissed knock and a
+        // slower-by-necessity not-out one at higher ratings) average out
+        // below the 76-100 band beneath it — a small extra term specifically
+        // past three figures keeps a real hundred the outright fastest band,
+        // without touching anything below it.
+        const tempoRamp = 0.5 + Math.log(1 + forRuns / 25) * 0.62 + Math.max(0, forRuns - 100) * 0.0025;
+        return (0.71 + 0.058 * Math.sqrt(r.power)) * tempoRamp * srNoise * (1 + moraleFactor * 0.10);
+      };
+      const sr = srForRuns(runs);
       // A second, independent jitter on the runs→balls conversion itself,
       // not just on `sr` above. Without it, `sr` for a low-power player
       // centers close enough to 1.0 (SR 100) that round(runs/sr) collapses
@@ -16594,31 +16651,32 @@
         // on just 10-18% of the innings' balls (30-54 of 300), which is what
         // "carried the bat on 40 balls" turned out to be. A single realistic
         // share of strike (not a doubled-down one) already keeps the season
-        // average sane on its own — the hard cap a few lines below
-        // (myTeamScore * shareCeiling * 1.5) is the actual backstop against
-        // a blown-out average, not this floor, so this only needed to stop
-        // compounding two discounts into one, not to stay this low itself.
+        // average sane on its own — the backstop against a blown-out average
+        // is the share-based cap applied to the initial exponential draw
+        // above, before this stretch ever runs, not this floor.
         const inningsShareAtEntry = Math.max(0.05, 1 - (pos - 1) / 10);
         const strikeShare = 0.35 + Math.random() * 0.25;
         const presenceFloor = Math.round(teamBalls * inningsShareAtEntry * strikeShare);
         if (presenceFloor > balls) {
-          balls = presenceFloor;
           // Stretching balls out to match how long you were actually there
-          // must not leave runs behind. A not-out innings can be a brisk
-          // finish just as easily as a slow rebuild in real cricket — a
-          // fixed low floor here (previously ~30-50% SR every time) was
-          // exactly the "you know you'll be not out from the strike rate"
-          // tell being reported, so this rolls a wide tempo range instead
-          // of always defaulting to slow.
-          const notOutSr = 0.35 + Math.random() * 0.95;
-          runs = Math.max(runs, Math.round(balls * notOutSr));
+          // must not leave runs behind — and must not invent a different
+          // tempo to do it with. Using the ORIGINAL `sr` here would price
+          // this at the tempo the small pre-stretch draw implied, before
+          // anyone knew this innings would run this long — exactly backwards,
+          // since the tempo ramp is supposed to reward a big innings with a
+          // faster rate, and this IS the big innings, it just wasn't sized
+          // yet when `sr` was first rolled. One re-derive against the actual
+          // stretched size (converges in a single extra pass — the estimate
+          // only feeds the ramp, not a fresh random roll, so it settles
+          // immediately rather than oscillating).
+          balls = presenceFloor;
+          const stretchedEstimate = Math.max(runs, Math.round(balls * sr));
+          const stretchedSr = srForRuns(stretchedEstimate);
+          runs = Math.max(runs, Math.round(balls * stretchedSr));
         }
       }
-      // Absolute safety net on top of the mean-level share cap above: even
-      // a rare exceptional draw, or the not-out presence floor stretching
-      // runs back up, still can't push past a generous but bounded ceiling
-      // on how much of the team's total one player can walk away with.
-      runs = Math.min(runs, myTeamScore, Math.round(myTeamScore * shareCeiling * 1.5));
+      // Hard physical bound only: can't personally outscore the whole team.
+      runs = Math.min(runs, myTeamScore);
       // Can't personally face more balls than the whole team's innings had.
       balls = Math.min(teamBalls, balls);
       const { fours, sixes } = careerGenerateBoundaries(runs, r.power);
@@ -17109,22 +17167,27 @@
       }
       { const s = CAREER.seasonStats.field; s.involvements += field.involvements; s.clean += field.clean; }
 
-      // Progression: cumulative career milestones — every 50 runs and every
-      // 3 wickets banked *across the season*, not gated behind a single
-      // big day. Gating a whole discipline's growth behind a 50-run innings
-      // or a 3-wicket spell in one match made batting/bowling points 5-6x
-      // rarer than fielding's (which fires on every single clean catch,
-      // no threshold at all) — a keeper especially could go entire seasons
-      // without ever crossing either bar and never earn a single batting
-      // point. Comparing cumulative totals before/after the match catches
-      // every 50/3 boundary crossed, including a big innings/spell that
-      // crosses more than one at once.
+      // Progression: cumulative career milestones — every 60 runs and every
+      // 2 wickets banked *across the season*, not gated behind a single
+      // big day. Gating a whole discipline's growth behind a big innings
+      // or spell in one match made batting/bowling points 5-6x rarer than
+      // fielding's (which fires on every single clean catch, no threshold
+      // at all) — a keeper especially could go entire seasons without ever
+      // crossing either bar and never earn a single batting point.
+      // Comparing cumulative totals before/after the match catches every
+      // 60/2 boundary crossed, including a big innings/spell that crosses
+      // more than one at once.
+      // Was 50/3 — a specialist opener's season (~780 runs) banked roughly
+      // twice the points of a specialist bowler's (~24 wickets) even after
+      // the batting-average recalibration above, since 780/50=15.6 points
+      // against 24/3=8 points. 60/2 lands both close to parity (~13 each)
+      // without needing to touch the underlying output stats themselves.
       if (bat) {
-        const newBatMilestones = Math.floor(CAREER.seasonStats.bat.runs / 50) - Math.floor(prevSeasonRuns / 50);
+        const newBatMilestones = Math.floor(CAREER.seasonStats.bat.runs / 60) - Math.floor(prevSeasonRuns / 60);
         for (let i = 0; i < newBatMilestones; i++) CAREER.pendingPoints.push({ category: 'bat', detail: bat.runs });
       }
       if (bowl) {
-        const newBowlMilestones = Math.floor(CAREER.seasonStats.bowl.wickets / 3) - Math.floor(prevSeasonWkts / 3);
+        const newBowlMilestones = Math.floor(CAREER.seasonStats.bowl.wickets / 2) - Math.floor(prevSeasonWkts / 2);
         for (let i = 0; i < newBowlMilestones; i++) CAREER.pendingPoints.push({ category: 'bowl', detail: bowl.wickets });
       }
       for (let i = 0; i < field.clean; i++) CAREER.pendingPoints.push({ category: 'field', detail: null });
@@ -17206,6 +17269,24 @@
     // to your own, matching the "even strike rotation" assumption the overs
     // pacing already uses) — capped so it can never exceed the real final
     // total for your innings.
+    // Shared by both live phases: the ×2 "partner faces about as many balls
+    // as you" assumption only holds while your own contribution stays under
+    // roughly half of what's left in the innings. Once your own ball count
+    // alone (doubled) would already reach the final over count before your
+    // OWN delivery animation has finished — a long not-out knock personally
+    // facing the majority of the innings is exactly this case, and a spell
+    // that runs to the very last over can be too — the display hits the cap
+    // early and then sits frozen on the final over while deliveries you
+    // personally faced keep ticking underneath it. Pacing proportionally to
+    // your own animation's progress instead guarantees the two finish
+    // together, however large a share of the innings turns out to be yours.
+    function careerPacedTeamBalls(baselineBalls, personalSoFar, personalTotal, finalBalls) {
+      const remaining = Math.max(1, finalBalls - baselineBalls);
+      if (personalTotal * 2 > remaining) {
+        return baselineBalls + Math.round((personalSoFar / personalTotal) * remaining);
+      }
+      return Math.min(finalBalls, baselineBalls + personalSoFar * 2);
+    }
     function careerBattingLiveScore(ctx, baseline, runs, balls) {
       const finalBalls = careerFinalOversBalls(ctx, ctx.myClubId);
       const runRatePerBall = finalBalls > 0 ? ctx.myScore / finalBalls : 0;
@@ -17489,9 +17570,10 @@
         // The team's overs can't just be your own balls/6 — your partner is
         // facing deliveries too. Assuming roughly even strike rotation, the
         // team gets through about twice as many balls as you personally
-        // face; capped against the innings' real known length so it can
-        // never run past the actual final over count.
-        const teamBallsSoFar = Math.min(baseline.baselineBalls + balls * 2, careerFinalOversBalls(ctx, ctx.myClubId));
+        // face — paced against the innings' real known length so it can
+        // never run past the actual final over count, or hit it early and
+        // freeze while your own deliveries are still animating.
+        const teamBallsSoFar = careerPacedTeamBalls(baseline.baselineBalls, balls, deliveries.length, careerFinalOversBalls(ctx, ctx.myClubId));
         const liveScore = careerBattingLiveScore(ctx, baseline, runs, balls);
         const liveWkts = careerBattingLiveWkts(ctx, baseline, teamBallsSoFar);
         careerPaintScorecard(careerScorecardRows(ctx, ctx.myClubId, careerLiveRowText(liveScore, liveWkts, teamBallsSoFar)));
@@ -17584,9 +17666,10 @@
         // through roughly one over for every one of yours while you're on,
         // so the team's over count during your spell advances at about
         // twice your own pace, the same "partner is progressing too"
-        // assumption batting already uses. Capped against the innings'
-        // real known length so it can never run past the actual over count.
-        const teamBallsSoFar = Math.min(baseline.baselineBalls + (oi * 6 + bi + 1) * 2, careerFinalOversBalls(ctx, oppClubId));
+        // assumption batting already uses — paced against the innings' real
+        // known length so a long spell that runs to the last over can't hit
+        // the cap early and freeze while your own overs are still animating.
+        const teamBallsSoFar = careerPacedTeamBalls(baseline.baselineBalls, oi * 6 + bi + 1, totalBalls, careerFinalOversBalls(ctx, oppClubId));
         careerPaintScorecard(careerScorecardRows(ctx, oppClubId, careerLiveRowText(baseline.baselineRuns + runs, baseline.baselineWkts + wkts, teamBallsSoFar)));
         if (fieldBallIdxs.has(ballCount) && fieldPtr < fieldEvents.length) {
           const clean = fieldEvents[fieldPtr++];
@@ -17836,7 +17919,20 @@
     // (most matches earning a point) within reach of promotion on its own,
     // while an average season still only nudges OVR a little — growth should
     // feel real without making a single season a guaranteed ticket up.
-    const CAREER_POINT_VALUE = 3;
+    // Diminishing, not flat: early on a point should feel like real progress
+    // (a low-40s stat can jump a point's worth in one hit), but the same
+    // point buys less the higher the stat already is — going from 45 to 50
+    // should be noticeably easier than 60 to 65, matching how the rest of
+    // the sim already treats skill (square-root, not linear, in the batting
+    // SR curve above).
+    function careerPointValue(currentRating) {
+      if (currentRating < 40) return 6;
+      if (currentRating < 50) return 5;
+      if (currentRating < 60) return 4;
+      if (currentRating < 70) return 3;
+      if (currentRating < 80) return 2;
+      return 1;
+    }
     const CAREER_RATING_CAP = 99;
     const CAREER_POINT_CATEGORY_LABEL = { bat: 'Batting Point', bowl: 'Bowling Point', field: 'Fielding Point' };
     function careerPointStatOptions(category, role) {
@@ -17890,7 +17986,7 @@
     function careerSpendPoint(stat) {
       const p = CAREER.player;
       const before = p.ratings[stat];
-      const after = Math.min(CAREER_RATING_CAP, before + CAREER_POINT_VALUE);
+      const after = Math.min(CAREER_RATING_CAP, before + careerPointValue(before));
       const delta = after - before;
       p.ratings[stat] = after;
       p.ovr = computeOVR(p.ratings, p.role);
