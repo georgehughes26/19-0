@@ -7083,7 +7083,9 @@
     function loadSession() {
       try { AUTH_USER = JSON.parse(localStorage.getItem('19_0_user') || 'null'); } catch(e) { AUTH_USER = null; }
       renderAuthBar();
-      setTimeout(openSignupNudge, 1200);
+      // Nudges signed-out visitors to create an account — nothing to nudge
+      // someone already signed in toward.
+      if (!AUTH_USER) setTimeout(openSignupNudge, 1200);
     }
 
     function saveSession(user) {
