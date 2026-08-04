@@ -15586,7 +15586,10 @@
       const n = 11, used = new Set();
       const raw = Array.from({ length: n }, () => targetRating + (Math.random() - 0.5) * 16);
       const shift = targetRating - raw.reduce((s, v) => s + v, 0) / n;
-      return raw.map(v => ({ name: careerRandomXIName(used), rating: Math.max(30, Math.min(60, Math.round(v + shift))) }));
+      // bowlType flavours the ball-by-ball engine's bowler-selection scoring
+      // (spinners held back before over 10) — a real club attack, not every
+      // generated player being interchangeable pace.
+      return raw.map(v => ({ name: careerRandomXIName(used), rating: Math.max(30, Math.min(60, Math.round(v + shift))), bowlType: Math.random() < 0.35 ? 'spin' : 'seam' }));
     }
     function careerSquadRating(squad) {
       return Math.round(squad.reduce((s, p) => s + p.rating, 0) / squad.length);
@@ -15637,7 +15640,7 @@
         const squad = generateClubXI(club.rating);
         const idx = Math.floor(Math.random() * squad.length);
         CAREER.draft.replacedPlayerName = squad[idx].name;
-        squad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true };
+        squad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true, bowlType: CAREER.player.bowlBroadType || 'seam' };
         CAREER.draft.assignedClubSquad = squad;
       }
       const p = CAREER.player;
@@ -16447,6 +16450,12 @@
       'keeper.keeperBatsman': 6,
       'bowler': 10,
     };
+    // See simTrackedPlayerInnings — explicit per-position runs multiplier,
+    // tuned against real season simulation rather than derived from a
+    // formula, since presenceFloor's own position-based share (a separate
+    // mechanic keyed off raw `pos`) compounds unevenly on top of whatever's
+    // set here.
+    const CAREER_POS_RUNS_FACTOR = { 1: 1.0, 4: 0.77, 5: 0.4, 6: 0.57, 7: 0.57 };
     function careerPosKey(p) {
       if (p.role === 'batter') return `batter.${p.type}`;
       if (p.role === 'keeper') return `keeper.${p.type}`;
@@ -16478,7 +16487,7 @@
       const fours = Math.floor((boundaryRuns - sixRuns) / 4);
       return { fours, sixes };
     }
-    function simTrackedPlayerInnings(player, myTeamScore, myTeamWktsLost, myTeamOvers) {
+    function simTrackedPlayerInnings(player, myTeamScore, myTeamWktsLost, myTeamOvers, oppRating) {
       // A lookup miss (an old save from before Specialist Keeper was
       // removed, still carrying that type) must not silently become NaN
       // here — pos feeds every downstream calculation, so one bad lookup
@@ -16503,6 +16512,20 @@
       const r = careerEffectiveRatings(player);
       const skill = r.technique * 0.4 + r.power * 0.35 + r.temperament * 0.25;
       const moraleFactor = ((player.morale ?? 50) - 50) / 50;
+      // Individual output used to be entirely self-referential — a function
+      // of your own rating alone, with zero regard for how that compares to
+      // the attack you're actually facing. Club ratings in a Local Club
+      // league only span 40-50, while a player's own rating runs 15-99, so
+      // a 55-rated player is already better than the best team in their
+      // whole division — and should look it. `oppRating` is the opposing
+      // club's overall rating, standing in for the attack's real strength;
+      // being clearly above it should compound into a genuinely dominant
+      // season, not just a modest bump over the flat, opponent-blind curve.
+      // Bounded both ways so a still-developing player who's below the
+      // league's level is hindered by a facing a stronger attack, not just
+      // never boosted.
+      const ratingEdge = skill - (oppRating ?? skill);
+      const edgeMultiplier = Math.max(0.55, Math.min(2.3, 1 + ratingEdge / 42));
       // Batting position used to carry its cost two ways: a real chance of
       // not batting at all, and this per-position runs discount. Making team
       // wickets realistic (see careerRandomWickets) pushed most matches to
@@ -16510,7 +16533,15 @@
       // so the "might not bat" half of the cost mostly evaporated. Steepened
       // the discount to compensate, since that's the only lever left doing
       // real work for a middle-order/all-rounder batting slot.
-      const posFactor = Math.max(0.3, 1 - (pos - 1) * 0.09);
+      // Explicit per-position values, not a single formula — real season
+      // output doesn't fall off linearly with the position penalty alone,
+      // since presenceFloor's not-out share (below, keyed off raw `pos`,
+      // not this) also shrinks with position and compounds on top of
+      // whatever's set here. Tuned against real full-season simulation to
+      // land the 25%-chance-of-a-big-year season target at roughly 1000
+      // runs for an opener, 800 top order, 600 batting all-rounder, 400
+      // keeper, 300 bowling all-rounder.
+      const posFactor = CAREER_POS_RUNS_FACTOR[pos] ?? Math.max(0.3, 1 - (pos - 1) * 0.09);
       // Not out is a fact about how the INNINGS ended, not primarily a roll
       // about the individual batter — skill alone (the old formula) doesn't
       // know or care whether the team was bowled out or not, so it produced
@@ -16551,7 +16582,7 @@
       // scaling against the opposition (via posFactor, skill, and the team
       // total this is ultimately capped against) is untouched, so a genuinely
       // progressed batter facing weaker bowling still scores well above this.
-      const rawMeanRuns = skill * posFactor * 0.33;
+      const rawMeanRuns = skill * posFactor * 0.29 * edgeMultiplier;
       // The mean itself used to be computed purely from skill/position, with
       // zero awareness of what the team actually totalled — only clamped
       // against it at the very end. On a modest scoring day, the exponential
@@ -16564,9 +16595,17 @@
       // itself to a believable share of today's total (an opener's ceiling
       // share is roughly double a tail-ender's, via posFactor) fixes this at
       // the source rather than papering over it with a harder clip.
-      const shareCeiling = Math.min(0.5, 0.18 + posFactor * 0.17);
+      const shareCeiling = Math.min(0.6, 0.22 + posFactor * 0.2);
       const moraleMeanMult = 1 + moraleFactor * 0.10;
-      const meanRuns = Math.min(rawMeanRuns, myTeamScore * shareCeiling * (out ? 1 : 1.15)) * moraleMeanMult;
+      // Most innings play out around a normal mean, but real batters have
+      // days where everything comes off — without some chance of that, a
+      // modest rating could mathematically never string together a genuine
+      // career-best season (a 1000-run year for someone not yet elite),
+      // since every single innings was being drawn from the same tight
+      // ceiling no matter how well the day was going. ~10% of innings roll
+      // a "purple patch" instead of the normal rate.
+      const formBoost = Math.random() < 0.19 ? 2.3 + Math.random() * 3.4 : 1;
+      const meanRuns = Math.min(rawMeanRuns * formBoost, myTeamScore * shareCeiling * (out ? 1 : 1.15)) * moraleMeanMult;
       let runs = Math.min(myTeamScore, Math.max(0, Math.round(-Math.log(1 - Math.random()) * meanRuns)));
       // The extra "shareCeiling * 1.5" backstop that used to sit here is
       // gone — it was clipping runs without touching the balls a stretched
@@ -16606,7 +16645,7 @@
         // past three figures keeps a real hundred the outright fastest band,
         // without touching anything below it.
         const tempoRamp = 0.5 + Math.log(1 + forRuns / 25) * 0.52 + Math.max(0, forRuns - 100) * 0.0025;
-        return (0.88 + 0.042 * Math.sqrt(r.power)) * tempoRamp * srNoise * (1 + moraleFactor * 0.10);
+        return (0.54 + 0.009 * r.power) * tempoRamp * srNoise * (1 + moraleFactor * 0.10);
       };
       const sr = srForRuns(runs);
       // A second, independent jitter on the runs→balls conversion itself,
@@ -16650,7 +16689,20 @@
         // is the share-based cap applied to the initial exponential draw
         // above, before this stretch ever runs, not this floor.
         const inningsShareAtEntry = Math.max(0.05, 1 - (pos - 1) / 10);
-        const strikeShare = 0.35 + Math.random() * 0.25;
+        // Checked against World Cup mode's genuine ball-by-ball sim (not a
+        // guess): a not-out opener there — at the crease the WHOLE innings,
+        // strike rotating roughly evenly between the two batters out there —
+        // faces a mean of 49% of the team's total balls, tightly clustered
+        // (44-54% covers the 10th-90th percentile across 2000 simulated
+        // innings), never once landing under 60 balls in 500 samples. This
+        // used to be 0.18-0.35 specifically to stop not-out innings
+        // dominating a season's total, but that under-credited the ball
+        // count itself — which is what was producing "60 balls, not out,
+        // opening" reports that don't happen in the real simulation.
+        // Season-total balance is handled elsewhere (rawMeanRuns, the
+        // edge/form multipliers) rather than by lowballing how long a
+        // not-out innings actually was.
+        const strikeShare = 0.44 + Math.random() * 0.12;
         const presenceFloor = Math.round(teamBalls * inningsShareAtEntry * strikeShare);
         if (presenceFloor > balls) {
           // Stretching balls out to match how long you were actually there
@@ -16668,26 +16720,32 @@
           const stretchedEstimate = Math.max(runs, Math.round(balls * sr));
           const stretchedSr = srForRuns(stretchedEstimate);
           runs = Math.max(runs, Math.round(balls * stretchedSr));
-          // This stretch has no cap of its own (unlike the initial
-          // exponential draw a few lines up, which is bounded by shareCeiling
-          // before it's ever stretched) — without one, a chase in particular
-          // regularly stretched a not-out opener's runs past the ENTIRE team
-          // score, which the hard team-score clamp below then rounded up to
-          // exactly 100%: 42% of not-out chase innings were landing at the
-          // literal full team total, teammates left with zero between them.
-          // A genuine carried-the-bat innings is a real, celebrated thing —
-          // it just isn't ever actually 100%. Capping the SHARE here, not
-          // just the raw number, and scaling balls down with it rather than
-          // clipping runs alone, keeps the strike rate this innings already
-          // earned intact instead of manufacturing the same SR-crushing
-          // artifact the old flat cap did.
-          const notOutShareCap = Math.min(0.8, shareCeiling + 0.4);
-          const shareCappedRuns = Math.round(myTeamScore * notOutShareCap);
-          if (runs > shareCappedRuns) {
-            balls = Math.max(1, Math.round(balls * (shareCappedRuns / runs)));
-            runs = shareCappedRuns;
-          }
         }
+        // This has no cap of its own beyond whatever the initial exponential
+        // draw already applied — without one, a chase in particular could
+        // stretch a not-out opener's runs past the ENTIRE team score, which
+        // the hard team-score clamp below then rounded up to exactly 100%:
+        // teammates left with zero between them. A genuine carried-the-bat
+        // innings is a real, celebrated thing — it just isn't ever actually
+        // 100%. Runs outside the `if` above too, not just after a stretch:
+        // with the season-level tail widened (the "purple patch" formBoost,
+        // needed so a normal first season has a real shot at 1000 runs), the
+        // INITIAL draw alone could independently hit the team total on a
+        // not-out innings that never even needed stretching, bypassing a
+        // cap that only lived inside the stretch branch.
+        // Caps RUNS only now, balls stay exactly what presenceFloor said —
+        // scaling balls down to match used to "preserve" this innings' own
+        // strike rate, but that shrank the ball count itself below what a
+        // real not-out innings this long actually looks like (checked
+        // against World Cup mode's ball-by-ball sim — a not-out opener
+        // basically never faces under 60 balls there). A capped innings
+        // just genuinely batted slower than its raw pace suggested — a real
+        // cricket outcome (anchoring, required-rate management), not a
+        // fabricated crash, since it's the runs that were capped, not the
+        // time spent at the crease.
+        const notOutShareCap = Math.min(0.7, shareCeiling + 0.22);
+        const shareCappedRuns = Math.round(myTeamScore * notOutShareCap);
+        runs = Math.min(runs, shareCappedRuns);
       }
       // Hard physical bound only: can't personally outscore the whole team.
       runs = Math.min(runs, myTeamScore);
@@ -16705,7 +16763,7 @@
     // even if they're nominally filed as a "Bowler". careerBowlSlot still
     // decides *when* you come on (seamers open, spinners/all-rounders come
     // on first change) — that's timing, not workload, and stays type-based.
-    function simTrackedPlayerBowling(player, oppWktsAvailable, oppScoreAvailable, oppOvers) {
+    function simTrackedPlayerBowling(player, oppWktsAvailable, oppScoreAvailable, oppOvers, oppRating) {
       // tempBoost is a flat shift to every real rating for this game only —
       // see careerEffectiveRatings — so it flows straight into control/
       // threat below like a real rating change. Morale stays a separate
@@ -16720,7 +16778,12 @@
       // baseline) always earn a chance.
       if (skill < 45 && Math.random() < (45 - skill) / 45) return null;
       const moraleFactor = ((player.morale ?? 50) - 50) / 50;
-      const economy = Math.max(2.5, 7.5 - r.control / 20) * (1 - moraleFactor * 0.10);
+      // Same rating-relative scaling as the batting side — how good you are
+      // against the specific attack/lineup you're facing, not just your own
+      // rating read in isolation. See the comment on simTrackedPlayerInnings.
+      const ratingEdge = skill - (oppRating ?? skill);
+      const edgeMultiplier = Math.max(0.55, Math.min(2.3, 1 + ratingEdge / 42));
+      const economy = Math.max(2.5, (7.5 - r.control / 20) / edgeMultiplier) * (1 - moraleFactor * 0.10);
       // /175 (audited): a starting specialist Bowler (threat~53) landed a
       // 15.4 bowling average and took a wicket in 96.6% of matches (league-
       // wide generated bowlers, same 30-60 rating band, averaged 23.3) — an
@@ -16729,7 +16792,15 @@
       // ~30+ average with real wicketless games, leaving room for progression
       // (cap 80 threat) to earn a genuinely elite ~15 average rather than
       // start there for free.
-      const wicketChancePerOver = (r.threat / 350) * (1 + moraleFactor * 0.10);
+      // Capped, not pure linear — against real season data, the best bowler
+      // in an entire league season topped out at 58 wickets, but an
+      // uncapped linear rate rode straight through that at rating 70 and
+      // kept climbing to 74+ at the rating cap. Overs bowled (skillCeiling
+      // below) still keeps growing with skill past this point, so an elite
+      // bowler still takes more wickets than a good one — just from bowling
+      // more overs at a rate that's stopped climbing, not from an ever-
+      // increasing per-over chance with no real-world ceiling.
+      const wicketChancePerOver = Math.min(0.245, r.threat / 295) * (1 + moraleFactor * 0.10) * edgeMultiplier;
       // The captain's ceiling for how long today's spell CAN run, scaled
       // from skill: a borderline part-timer (~38) tops out around a brief
       // 5-over look, an unprogressed specialist (~47-52) around 8-9, a fully
@@ -16770,7 +16841,14 @@
         if (overs >= 3 && overs < spellCap) {
           const spellEcon = spellRuns / overs;
           let keepGoing = spellEcon <= economy + 1.5 ? 0.88 : spellEcon <= economy + 3.5 ? 0.55 : 0.2;
-          if (overWicket) keepGoing = Math.min(0.95, keepGoing + 0.25);
+          // Any wicket banked so far this spell buys extra rope, not just one
+          // struck on the exact over being checked — a captain weighing
+          // whether to keep a bowler on looks at the whole spell's figures
+          // (1/13 off 3 is good bowling), not just whether the last single
+          // over happened to be the one with the wicket in it. The old
+          // per-over-only check could pull a bowler with a perfectly good
+          // spell for no reason visible in their own figures.
+          if (wickets > 0) keepGoing = Math.min(0.95, keepGoing + 0.25);
           if (Math.random() > keepGoing) break;
         }
         // Reached the planned end of the spell still on song: a captain
@@ -17121,10 +17199,178 @@
       return careerPick(CAREER_VERDICT_TEMPLATES[bucket]);
     }
 
+    // ── Ball-by-ball engine for your own match ───────────────────────────
+    // World Cup mode's proven simODIInnings (index.html ~12696), reused
+    // as-is — it's a pure function of its arguments, no WC-only globals —
+    // so your match gets a genuine per-ball simulation instead of the
+    // generate-a-total-then-decompose approach every other AI-vs-AI fixture
+    // still uses (resolveRoundAIMatches/simCheapClubMatch, unchanged). Flip
+    // CAREER_ENGINE back to 'legacy' to revert instantly if this causes
+    // problems — the old simTrackedPlayerInnings/simTrackedPlayerBowling
+    // path below is untouched and still fully wired up.
+    const CAREER_ENGINE = 'ballByBall'; // 'ballByBall' | 'legacy'
+
+    // simODIInnings' formulas were tuned for World Cup's international
+    // squads (roughly 52-99, and hard-floored there) — Local Club ratings
+    // run ~15-99 but the generated field sits at 30-60. Fed in raw, most
+    // Local Club players would collapse to the same floor value and erase
+    // the rating-vs-weaker-opposition dominance effect calibrated by hand
+    // elsewhere this session. Remap into a range that stays clear of that
+    // floor before it ever reaches the engine. Starting point only — retune
+    // against the season-long Monte Carlo harness once real output is in.
+    // Convex, not linear: the 30-60 field (and an un-progressed tracked
+    // player) should stay compressed near the floor — "not yet special" —
+    // with real separation only opening up once a player is genuinely
+    // elite, same diminishing-returns philosophy as careerPointValue.
+    const CAREER_RATING_INPUT_FLOOR = 15, CAREER_RATING_INPUT_CEIL = 99;
+    const CAREER_SIM_RATING_FLOOR = 53, CAREER_SIM_RATING_CEIL = 98;
+    const CAREER_RATING_CURVE_POWER = 1.7;
+    // Per-position correction (keyed by CAREER_BAT_POSITION's pos numbers)
+    // — see the comment where this is applied in careerBuildXIForSim.
+    const CAREER_POS_SIM_DELTA = { 1: -6, 4: -4, 5: -14, 6: 2, 7: -7 };
+    function careerRatingToSim(rating) {
+      const t = (Math.max(CAREER_RATING_INPUT_FLOOR, Math.min(CAREER_RATING_INPUT_CEIL, rating)) - CAREER_RATING_INPUT_FLOOR) / (CAREER_RATING_INPUT_CEIL - CAREER_RATING_INPUT_FLOOR);
+      return Math.round(CAREER_SIM_RATING_FLOOR + Math.pow(t, CAREER_RATING_CURVE_POWER) * (CAREER_SIM_RATING_CEIL - CAREER_SIM_RATING_FLOOR));
+    }
+
+    // Builds simODIInnings' batName/batRating/bowlPool arrays for one club,
+    // forcing the tracked player into their existing CAREER_BAT_POSITION /
+    // careerBowlSlot slot (index.html:16444/16465) — simODIInnings treats
+    // batting order as pure array order, so splicing them in at the right
+    // index reproduces "an Opener always opens" with zero engine changes.
+    function careerBuildXIForSim(club, isMyClub) {
+      const others = club.squad.filter(p => !p.isTrackedPlayer);
+      const names = others.map(p => p.name);
+      const ratings = others.map(p => careerRatingToSim(p.rating));
+      // Bowling pool: every squad member is eligible (matches the legacy
+      // engine's own simplification — generateTeamBowling already lets any
+      // squad member bowl, no separate "specialist" roster). maxOv raised
+      // above the ODI-regulation 10 for the same local-club-isn't-regulated
+      // reason generateTeamBowling already documents.
+      const bowlPool = others.map(p => ({ n: p.name, t: 's', sp: p.bowlType === 'spin', maxOv: 12, rating: careerRatingToSim(p.rating) }));
+      if (isMyClub) {
+        const player = CAREER.player;
+        const r = careerEffectiveRatings(player);
+        const batSkill = r.technique * 0.4 + r.power * 0.35 + r.temperament * 0.25;
+        const pos = CAREER_BAT_POSITION[careerPosKey(player)] ?? 6;
+        const idx = Math.max(0, Math.min(names.length, pos - 1));
+        names.splice(idx, 0, player.name);
+        // simODIInnings' own position-based dismissal risk (posM) doesn't
+        // line up evenly with Career's position→target-runs table (e.g. a
+        // Keeper's forced slot sits in a much riskier posM band than an
+        // AR-Bat's, despite a lower target) — a small per-position sim-scale
+        // correction closes that gap. Tuned against the season-long Monte
+        // Carlo harness against the established 25%-chance targets, same as
+        // every other position-based constant this session.
+        const simDelta = CAREER_POS_SIM_DELTA[pos] ?? 0;
+        ratings.splice(idx, 0, Math.max(52, Math.min(99, careerRatingToSim(batSkill) + simDelta)));
+
+        const bowlSkill = (r.control + r.threat + r.variation) / 3;
+        const slot = careerBowlSlot(player);
+        if (slot) {
+          // Your own spell can run longer than a generated teammate's (15,
+          // matching generateTeamBowling's own local-club-isn't-regulated
+          // ceiling) — a genuinely elite strike bowler getting trusted with
+          // more of the innings is exactly how a real 50+ wicket season
+          // happens, not a higher per-over strike rate.
+          const entry = { n: player.name, t: 's', sp: player.bowlBroadType === 'spin', maxOv: 15, rating: careerRatingToSim(bowlSkill) };
+          if (slot === 'opening') bowlPool.unshift(entry);
+          else bowlPool.splice(Math.min(1, bowlPool.length), 0, entry);
+        }
+        // batter/keeper roles (careerBowlSlot returns null) never bowl —
+        // matches simTrackedPlayerBowling's own early-out for those roles.
+      }
+      const keeperName = names[6] || names[Math.min(5, names.length - 1)] || names[0];
+      return { names, ratings, bowlPool, keeperName };
+    }
+
+    // Reshapes simODIInnings' real per-player output into the exact row
+    // shape generateTeamInnings/generateTeamBowling already produce
+    // ({id,name,clubId,clubName,runs,balls,out,isTrackedPlayer} etc.) —
+    // every downstream consumer (table, league stats, mini-scorecard,
+    // drip-feed, morale, milestones) reads that shape and nothing else, so
+    // none of it needs to know which engine produced it. Matched back to a
+    // stable squad id by name (unique within a squad by construction, see
+    // careerRandomXIName) since simODIInnings' own player objects don't
+    // carry Career's ids.
+    function careerRowsFromBatters(battersArr, club) {
+      return battersArr.filter(b => b.batted).map(b => {
+        const p = club.squad.find(sp => sp.name === b.name);
+        return { id: p ? p.id : b.name, name: b.name, clubId: club.id, clubName: club.name, runs: b.runs, balls: b.balls, out: b.out, isTrackedPlayer: !!(p && p.isTrackedPlayer) };
+      });
+    }
+    function careerRowsFromBowlers(bowlersArr, club) {
+      return bowlersArr.map(b => {
+        const p = club.squad.find(sp => sp.name === b.name);
+        return { id: p ? p.id : b.name, name: b.name, clubId: club.id, clubName: club.name, overs: b.overs, runsConceded: b.runs, wickets: b.wickets, isTrackedPlayer: !!(p && p.isTrackedPlayer) };
+      });
+    }
+    function careerAdaptScorecard(clubA, clubB, inningsOfA, inningsOfB) {
+      return {
+        battingA: careerRowsFromBatters(inningsOfA._batters, clubA),
+        battingB: careerRowsFromBatters(inningsOfB._batters, clubB),
+        bowlingA: careerRowsFromBowlers(inningsOfB._bowlers, clubA), // A's bowlers bowled in B's innings
+        bowlingB: careerRowsFromBowlers(inningsOfA._bowlers, clubB), // B's bowlers bowled in A's innings
+      };
+    }
+
+    function simCareerMatchBallByBall(clubAId, clubBId, myClubId) {
+      const clubA = CAREER.clubs[clubAId], clubB = CAREER.clubs[clubBId];
+      const xiA = careerBuildXIForSim(clubA, clubAId === myClubId);
+      const xiB = careerBuildXIForSim(clubB, clubBId === myClubId);
+      const batRA = careerRatingToSim(clubA.rating), batRB = careerRatingToSim(clubB.rating);
+
+      // Same toss narration as the legacy engine (simCheapClubMatch) — a
+      // real toss result the match screen announces and acts on, not an
+      // internal implementation detail like World Cup mode's own coin flip.
+      const tossWinnerIsA = Math.random() < 0.5;
+      const tossChoiceBat = Math.random() < 0.5;
+      const battingFirstIsA = tossWinnerIsA ? tossChoiceBat : !tossChoiceBat;
+
+      const ib = isA => isA ? batRA : batRB, iw = isA => isA ? batRB : batRA;
+      const ownXi = isA => isA ? xiA : xiB, oppXi = isA => isA ? xiB : xiA;
+
+      const inn1 = simODIInnings(ib(battingFirstIsA), iw(battingFirstIsA), CAREER_MAX_OVERS, undefined,
+        ownXi(battingFirstIsA).names, oppXi(battingFirstIsA).bowlPool, oppXi(battingFirstIsA).keeperName, ownXi(battingFirstIsA).ratings);
+      const target = inn1.runs + 1;
+      const inn2 = simODIInnings(ib(!battingFirstIsA), iw(!battingFirstIsA), CAREER_MAX_OVERS, target,
+        ownXi(!battingFirstIsA).names, oppXi(!battingFirstIsA).bowlPool, oppXi(!battingFirstIsA).keeperName, ownXi(!battingFirstIsA).ratings);
+
+      // Exact tie: same break World Cup mode uses (simWCMatch) — coin flip,
+      // nudge the loser down by the single run that separates them.
+      if (inn2.runs === inn1.runs) { if (Math.random() < 0.5) inn2.runs += 1; else inn1.runs += 1; }
+
+      const inningsOfA = battingFirstIsA ? inn1 : inn2;
+      const inningsOfB = battingFirstIsA ? inn2 : inn1;
+      const scoreA = inningsOfA.runs, wktsA = inningsOfA.wkts, oversA = inningsOfA.oversPlayed;
+      const scoreB = inningsOfB.runs, wktsB = inningsOfB.wkts, oversB = inningsOfB.oversPlayed;
+      const winnerId = scoreA > scoreB ? clubAId : clubBId;
+
+      const teamResult = { clubAId, clubBId, scoreA, wktsA, oversA, scoreB, wktsB, oversB, winnerId, battingFirstIsA, tossWinnerIsA, tossChoiceBat };
+      const scorecard = careerAdaptScorecard(clubA, clubB, inningsOfA, inningsOfB);
+
+      const myBatting = myClubId === clubAId ? scorecard.battingA : scorecard.battingB;
+      const myBowling = myClubId === clubAId ? scorecard.bowlingA : scorecard.bowlingB;
+      const myBatRow = myBatting.find(r => r.isTrackedPlayer) || null;
+      const myBowlRow = myBowling.find(r => r.isTrackedPlayer) || null;
+      const player = CAREER.player;
+      const pos = CAREER_BAT_POSITION[careerPosKey(player)] ?? 6;
+      const bat = myBatRow ? { runs: myBatRow.runs, out: myBatRow.out, balls: myBatRow.balls, pos, ...careerGenerateBoundaries(myBatRow.runs, careerEffectiveRatings(player).power) } : null;
+      const bowl = myBowlRow ? { overs: myBowlRow.overs, runsConceded: myBowlRow.runsConceded, wickets: myBowlRow.wickets } : null;
+
+      return { teamResult, scorecard, bat, bowl };
+    }
+
     function playCareerMatch(round, oppId, isHome) {
       const player = CAREER.player;
       const myClubId = CAREER.myClubId;
-      const teamResult = simCheapClubMatch(isHome ? myClubId : oppId, isHome ? oppId : myClubId);
+      let teamResult, bat, bowl, scorecard;
+      if (CAREER_ENGINE === 'ballByBall') {
+        const bb = simCareerMatchBallByBall(isHome ? myClubId : oppId, isHome ? oppId : myClubId, myClubId);
+        teamResult = bb.teamResult; bat = bb.bat; bowl = bb.bowl; scorecard = bb.scorecard;
+      } else {
+        teamResult = simCheapClubMatch(isHome ? myClubId : oppId, isHome ? oppId : myClubId);
+      }
       const mine = teamResult.clubAId === myClubId ? 'A' : 'B';
       const myScore = mine === 'A' ? teamResult.scoreA : teamResult.scoreB;
       const myWkts = mine === 'A' ? teamResult.wktsA : teamResult.wktsB;
@@ -17134,8 +17380,11 @@
       const oppOvers = mine === 'A' ? teamResult.oversB : teamResult.oversA;
       const won = teamResult.winnerId === myClubId;
 
-      const bat = simTrackedPlayerInnings(player, myScore, myWkts, myOvers);
-      const bowl = simTrackedPlayerBowling(player, oppWkts, oppScore, oppOvers);
+      const oppRating = CAREER.clubs[oppId].rating;
+      if (CAREER_ENGINE !== 'ballByBall') {
+        bat = simTrackedPlayerInnings(player, myScore, myWkts, myOvers, oppRating);
+        bowl = simTrackedPlayerBowling(player, oppWkts, oppScore, oppOvers, oppRating);
+      }
       const field = simTrackedPlayerFielding(player);
       // A one-match boost from a random event (a hot week in the nets, a
       // niggle) is spent the moment the sim calls above have read it —
@@ -17181,34 +17430,36 @@
       }
       { const s = CAREER.seasonStats.field; s.involvements += field.involvements; s.clean += field.clean; }
 
-      // Progression: cumulative career milestones — every 60 runs and every
-      // 2 wickets banked *across the season*, not gated behind a single
-      // big day. Gating a whole discipline's growth behind a big innings
-      // or spell in one match made batting/bowling points 5-6x rarer than
-      // fielding's (which fires on every single clean catch, no threshold
-      // at all) — a keeper especially could go entire seasons without ever
-      // crossing either bar and never earn a single batting point.
-      // Comparing cumulative totals before/after the match catches every
-      // 60/2 boundary crossed, including a big innings/spell that crosses
-      // more than one at once.
-      // Was 50/3 — a specialist opener's season (~780 runs) banked roughly
-      // twice the points of a specialist bowler's (~24 wickets) even after
-      // the batting-average recalibration above, since 780/50=15.6 points
-      // against 24/3=8 points. 60/2 lands both close to parity (~13 each)
-      // without needing to touch the underlying output stats themselves.
+      // Progression: cumulative career milestones — every 100 runs and every
+      // 5 wickets banked *across the season*, not gated behind a single big
+      // day (a keeper especially could otherwise go entire seasons without
+      // crossing either bar). Deliberately the two real, celebrated
+      // thresholds cricket already has names for — a century, a five-for —
+      // rather than an arbitrary round number, and steep enough that a
+      // season's progression is a real step forward without letting a
+      // single-season career player blow through the whole rating range
+      // (see careerPointValue below for the other half of that same fix —
+      // 60/2 plus the old value-per-point curve let a focused player hit
+      // the high 80s/90s, sometimes the 99 cap, in ONE season across every
+      // build tested; this pairs with a flatter value curve to land a
+      // focused season around +10-20 instead). Comparing cumulative totals
+      // before/after the match catches every 100/5 boundary crossed,
+      // including a big innings/spell that crosses more than one at once.
       if (bat) {
-        const newBatMilestones = Math.floor(CAREER.seasonStats.bat.runs / 60) - Math.floor(prevSeasonRuns / 60);
+        const newBatMilestones = Math.floor(CAREER.seasonStats.bat.runs / 100) - Math.floor(prevSeasonRuns / 100);
         for (let i = 0; i < newBatMilestones; i++) CAREER.pendingPoints.push({ category: 'bat', detail: bat.runs });
       }
       if (bowl) {
-        const newBowlMilestones = Math.floor(CAREER.seasonStats.bowl.wickets / 2) - Math.floor(prevSeasonWkts / 2);
+        const newBowlMilestones = Math.floor(CAREER.seasonStats.bowl.wickets / 5) - Math.floor(prevSeasonWkts / 5);
         for (let i = 0; i < newBowlMilestones; i++) CAREER.pendingPoints.push({ category: 'bowl', detail: bowl.wickets });
       }
       for (let i = 0; i < field.clean; i++) CAREER.pendingPoints.push({ category: 'field', detail: null });
 
       applyResultToTable(teamResult);
 
-      const scorecard = generateMatchScorecard(CAREER.clubs[teamResult.clubAId], CAREER.clubs[teamResult.clubBId], teamResult, bat, bowl);
+      if (CAREER_ENGINE !== 'ballByBall') {
+        scorecard = generateMatchScorecard(CAREER.clubs[teamResult.clubAId], CAREER.clubs[teamResult.clubBId], teamResult, bat, bowl);
+      }
       accumulateLeagueStats(scorecard);
 
       const oppName = CAREER.clubs[oppId].name;
@@ -17306,6 +17557,17 @@
       const runRatePerBall = finalBalls > 0 ? ctx.myScore / finalBalls : 0;
       const partnerRuns = Math.round(balls * runRatePerBall);
       return Math.min(ctx.myScore, baseline.baselineRuns + runs + partnerRuns);
+    }
+    // Same idea for the bowling live score — the bowler at the other end is
+    // conceding runs throughout your spell too, not just standing there. The
+    // mini-scorecard used to only add YOUR OWN runs conceded on top of the
+    // baseline, so the team's total barely moved between your wickets —
+    // reading as if the other bowler were going for nothing.
+    function careerBowlingLiveScore(ctx, baseline, runs, ballsBowled, oppClubId) {
+      const finalBalls = careerFinalOversBalls(ctx, oppClubId);
+      const runRatePerBall = finalBalls > 0 ? ctx.oppScore / finalBalls : 0;
+      const partnerRuns = Math.round(ballsBowled * runRatePerBall);
+      return Math.min(ctx.oppScore, baseline.baselineRuns + runs + partnerRuns);
     }
     // Teammates keep falling around you while you're still at the crease —
     // the mini-scorecard used to only bump the wicket count on your own
@@ -17684,7 +17946,8 @@
         // known length so a long spell that runs to the last over can't hit
         // the cap early and freeze while your own overs are still animating.
         const teamBallsSoFar = careerPacedTeamBalls(baseline.baselineBalls, oi * 6 + bi + 1, totalBalls, careerFinalOversBalls(ctx, oppClubId));
-        careerPaintScorecard(careerScorecardRows(ctx, oppClubId, careerLiveRowText(baseline.baselineRuns + runs, baseline.baselineWkts + wkts, teamBallsSoFar)));
+        const liveConceded = careerBowlingLiveScore(ctx, baseline, runs, oi * 6 + bi + 1, oppClubId);
+        careerPaintScorecard(careerScorecardRows(ctx, oppClubId, careerLiveRowText(liveConceded, baseline.baselineWkts + wkts, teamBallsSoFar)));
         if (fieldBallIdxs.has(ballCount) && fieldPtr < fieldEvents.length) {
           const clean = fieldEvents[fieldPtr++];
           careerLiveFeedRow('🧤', careerPick(CAREER_MOMENT_TEMPLATES[clean ? 'fieldingClean' : 'fieldingDropped'])(player.name));
@@ -17940,11 +18203,11 @@
     // the sim already treats skill (square-root, not linear, in the batting
     // SR curve above).
     function careerPointValue(currentRating) {
-      if (currentRating < 40) return 6;
-      if (currentRating < 50) return 5;
-      if (currentRating < 60) return 4;
-      if (currentRating < 70) return 3;
-      if (currentRating < 80) return 2;
+      if (currentRating < 40) return 3;
+      if (currentRating < 50) return 3;
+      if (currentRating < 60) return 2;
+      if (currentRating < 70) return 2;
+      if (currentRating < 80) return 1;
       return 1;
     }
     const CAREER_RATING_CAP = 99;
