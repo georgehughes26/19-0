@@ -10,6 +10,7 @@ const CAREER_LEAGUES = {
     id: 'bradford',
     name: 'Bradford Premier League',
     tier: 'Local Club',
+    county: 'Yorkshire',
     clubs: [
       { name: 'New Farnley',          rating: 50 },
       { name: 'Townville',            rating: 49 },
@@ -29,6 +30,7 @@ const CAREER_LEAGUES = {
     id: 'manchester',
     name: 'Greater Manchester Premier League',
     tier: 'Local Club',
+    county: 'Lancashire',
     clubs: [
       { name: 'Edgworth',             rating: 50 },
       { name: 'Roe Green',            rating: 49 },
@@ -48,6 +50,7 @@ const CAREER_LEAGUES = {
     id: 'lancashire',
     name: 'Lancashire Premier League',
     tier: 'Local Club',
+    county: 'Lancashire',
     clubs: [
       { name: 'Burnley',                  rating: 50 },
       { name: 'Darwen',                   rating: 49 },
@@ -67,6 +70,7 @@ const CAREER_LEAGUES = {
     id: 'yorkshire_north',
     name: 'Yorkshire North Premier League',
     tier: 'Local Club',
+    county: 'Yorkshire',
     clubs: [
       { name: 'Clifton Alliance',          rating: 50 },
       { name: 'Castleford',                rating: 49 },
@@ -86,6 +90,7 @@ const CAREER_LEAGUES = {
     id: 'yorkshire_south',
     name: 'Yorkshire South Premier League',
     tier: 'Local Club',
+    county: 'Yorkshire',
     clubs: [
       { name: 'Cleethorpes',                 rating: 50 },
       { name: 'Wakefield Thornes',           rating: 49 },
@@ -105,6 +110,7 @@ const CAREER_LEAGUES = {
     id: 'birmingham',
     name: 'Birmingham Premier League',
     tier: 'Local Club',
+    county: 'Warwickshire',
     clubs: [
       { name: 'Smethwick',            rating: 50 },
       { name: 'Halesowen',            rating: 49 },
@@ -124,6 +130,7 @@ const CAREER_LEAGUES = {
     id: 'cheshire',
     name: 'Cheshire Premier League',
     tier: 'Local Club',
+    county: 'Cheshire',
     clubs: [
       { name: 'Didsbury',                 rating: 50 },
       { name: 'Nantwich',                 rating: 49 },
@@ -143,6 +150,7 @@ const CAREER_LEAGUES = {
     id: 'derbyshire',
     name: 'Derbyshire Premier League',
     tier: 'Local Club',
+    county: 'Derbyshire',
     clubs: [
       { name: 'Ockbrook & Borrowash',    rating: 50 },
       { name: 'Sandiacre Town',          rating: 49 },
@@ -162,6 +170,7 @@ const CAREER_LEAGUES = {
     id: 'huddersfield',
     name: 'Huddersfield Premier League',
     tier: 'Local Club',
+    county: 'Yorkshire',
     clubs: [
       { name: 'Hoylandswaine',            rating: 50 },
       { name: 'Rastrick',                 rating: 49 },
@@ -181,6 +190,7 @@ const CAREER_LEAGUES = {
     id: 'leicestershire',
     name: 'Leicestershire Premier League',
     tier: 'Local Club',
+    county: 'Leicestershire',
     clubs: [
       { name: 'Rothley Park',               rating: 50 },
       { name: 'Leicester Ivanhoe',          rating: 49 },

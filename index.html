@@ -2586,6 +2586,33 @@
       .career-inbox-flash.show { animation: none !important; opacity: 1 !important }
     }
 
+    /* Career agent chat — an iMessage-style thread pastiche, built from the
+       existing token set rather than new colors (see DESIGN.md §2/§5):
+       incoming bubbles use Panel Black, outgoing "reply" bubbles reuse Info
+       Blue with ink-black text, the same colored-bg-needs-dark-text rule the
+       primary gold CTA already follows. */
+    .imsg-timestamp { font-size: 11px; color: #6060a0; text-align: center; margin: 12px 0 6px; font-weight: 700 }
+    .imsg-row { display: flex; width: 100%; margin: 3px 0 }
+    .imsg-row.in { justify-content: flex-start }
+    .imsg-row.out { justify-content: flex-end }
+    .imsg-bubble { max-width: 78%; padding: 10px 14px; font-size: 14px; line-height: 1.4; text-align: left; border-radius: 18px; word-wrap: break-word }
+    .imsg-bubble.in { background: #252535; color: #fff; border-bottom-left-radius: 5px }
+    .imsg-bubble.out { background: #60a5fa; color: #0f0f13; font-weight: 600; border-bottom-right-radius: 5px }
+    .imsg-typing-dots { display: inline-flex; gap: 3px; padding: 5px 2px }
+    .imsg-typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: #6060a0; animation: imsg-bounce 1.2s infinite ease-in-out }
+    .imsg-typing-dots span:nth-child(2) { animation-delay: .15s }
+    .imsg-typing-dots span:nth-child(3) { animation-delay: .3s }
+    @keyframes imsg-bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: .5 }
+      30% { transform: translateY(-4px); opacity: 1 }
+    }
+    .imsg-replies { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 14px; justify-content: flex-end }
+    .imsg-reply-chip { background: #111118; border: 1px solid #1a1a24; color: #c0c0d8; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 16px; cursor: pointer }
+    .imsg-reply-chip:active { transform: scale(0.96) }
+    @media (prefers-reduced-motion: reduce) {
+      .imsg-typing-dots span { animation: none !important; opacity: 1 }
+    }
+
     .sc-result-banner {
       width: 100%;
       padding: 20px;
@@ -7114,7 +7141,7 @@
       // Career Mode access is its own, slightly wider allowlist — these
       // usernames get Career Mode without also picking up the WC/T20
       // auto-draft dev tools above, which stay 'ghughesy'-only.
-      const CAREER_ACCESS_USERNAMES = ['ghughesy', 'E4U Cricket', 'YOUBEARS', 'HarishM10233161', 'Icefire297', '15tslevin', 'Coby1235', 'sumanth', 'KarunNair123', 'punka', 'Pavillon', 'OrphanX', 'sajju', "MichaelEnglish22"];
+      const CAREER_ACCESS_USERNAMES = ['ghughesy', 'E4U Cricket', 'YOUBEARS', 'HarishM10233161', 'Icefire297', '15tslevin', 'Coby1235', 'sumanth', 'KarunNair123', 'punka', 'Pavillon', 'OrphanX', 'sajju', "MichaelEnglish22","Thomascurphey","Crawh11","SmaillWmiT","Knightrider92"];
       const hasCareerAccess = AUTH_USER && CAREER_ACCESS_USERNAMES.includes(AUTH_USER.username);
       const careerDevBtn = document.getElementById('career-dev-entry-btn');
       if (careerDevBtn) careerDevBtn.style.display = hasCareerAccess ? 'block' : 'none';
@@ -12709,7 +12736,11 @@
         return{name:b.n,type:b.t,isSpin:!!b.sp,maxOvers:b.maxOv||(b.t==='p'?5:10),overs:0,runs:0,wickets:0,maidens:0,
           ratingFactor:baseRatingFactor*typeSkillMod,
           economyFactor:(2-baseRatingFactor)/typeSkillMod,
-          hotFactor:0.88+Math.random()*0.30};
+          hotFactor:0.88+Math.random()*0.30,
+          // Optional, additive — only ever set by Career mode's own bowler
+          // (see careerBowlEliteBoost). World Cup's bowlPool objects never
+          // set this, so it's always 1 there: zero behavior change.
+          wktBoost:b.wktBoost||1};
       });
       const fieldNames=bowlPool.map(b=>b.n);
       const makeHow=bn=>{
@@ -12717,19 +12748,31 @@
         if(r<0.22)return`b ${bn}`;if(r<0.44)return`c ${of()} b ${bn}`;if(r<0.58)return`lbw b ${bn}`;
         if(r<0.66)return`c ${keeperName} b ${bn}`;if(r<0.74)return`c & b ${bn}`;if(r<0.82)return`run out (${of()})`;return`b ${bn}`;
       };
-      let lastBowlerIdx=-1,activeBowlerIdx=-1,activeBowlerOvs=0;
+      // lastBowlerIdx/spellIdx are deliberately separate: lastBowlerIdx is
+      // whoever bowled the immediately preceding over (used only to block a
+      // bowler going twice in a row, an actual cricket rule); spellIdx is
+      // the bowler currently "on" — persists across the overs they don't
+      // bowl (the other end's), so a real spell can be tracked at all. An
+      // earlier version conflated the two (set lastBowlerIdx from the same
+      // variable nextBowler was about to compare it against, on the line
+      // right before calling it), which made the "give a spell at least 4
+      // overs before reconsidering" check permanently false — every single
+      // over went through full re-scoring, so a fresh bowler's just-arrived
+      // bonus could out-score anyone one or two overs into a good spell.
+      let lastBowlerIdx=-1,spellIdx=-1,spellOvs=0;
       function nextBowler(ov){
-        if(activeBowlerIdx>=0&&activeBowlerIdx!==lastBowlerIdx){const ab=bwlrs[activeBowlerIdx];if(ab.overs<ab.maxOvers&&activeBowlerOvs<4&&!(ov<10&&ab.isSpin))return activeBowlerIdx;}
+        if(spellIdx>=0&&spellIdx!==lastBowlerIdx){const sb=bwlrs[spellIdx];if(sb.overs<sb.maxOvers&&spellOvs<4&&!(ov<10&&sb.isSpin))return spellIdx;}
         let best=-1,bestScore=-Infinity;
         bwlrs.forEach((b,i)=>{
           if(i===lastBowlerIdx||b.overs>=b.maxOvers||(ov<10&&b.isSpin))return;
           let sc=b.type==='s'?3:b.type==='a'?1.5:0.5;
           sc-=(b.overs/b.maxOvers)*3;
           if(b.overs===0)sc+=0.8;
-          // Adaptive captaincy: once a bowler has a couple of overs on the board, read
-          // their form THIS match — an expensive spell gets pulled, a tight/wicket-taking
-          // one gets extended, regardless of the fixed type/overs schedule above.
-          if(b.overs>=2){
+          // Adaptive captaincy: once a bowler has finished a spell (4+
+          // overs), read their form THIS match — an expensive spell makes a
+          // recall less likely, a tight/wicket-taking one more so — rather
+          // than the fixed type/overs schedule above deciding alone.
+          if(b.overs>=4){
             const econ=b.runs/b.overs;
             sc-=Math.max(0,econ-6)*0.5;
             sc+=Math.max(0,5-econ)*0.4;
@@ -12740,14 +12783,15 @@
         if(best<0)best=bwlrs.findIndex((b,i)=>i!==lastBowlerIdx&&b.overs<b.maxOvers&&!(ov<10&&b.isSpin));
         if(best<0)best=bwlrs.findIndex((b,i)=>i!==lastBowlerIdx&&b.overs<b.maxOvers);
         if(best<0)best=bwlrs.findIndex(b=>b.overs<b.maxOvers); // last resort: relax no-consecutive-over rule, never the cap itself
-        if(best>=0)activeBowlerOvs=0;return best;
+        return best;
       }
       let striker=0,nonStriker=1,nextIn=2,wkts=0,totalRuns=0,ovCount=0,sinceWkt=0;const oversLog=[];
       for(let ov=0;ov<oversMax&&wkts<10;ov++){
         if(target!==undefined&&totalRuns>=target)break;
         const isPP=ov<10,isDeath=ov>=40;
-        lastBowlerIdx=activeBowlerIdx;const nb=nextBowler(ov);if(nb<0)break;if(nb!==activeBowlerIdx){activeBowlerIdx=nb;activeBowlerOvs=0;}
-        const bowler=bwlrs[activeBowlerIdx];let overRuns=0,dotBalls=0,wktsThisOver=0;
+        const nb=nextBowler(ov);if(nb<0)break;
+        if(nb!==spellIdx){spellIdx=nb;spellOvs=0;}
+        const bowler=bwlrs[nb];let overRuns=0,dotBalls=0,wktsThisOver=0;
 
         // Momentum/pressure: a mini-collapse (2+ wkts in the last 3 overs) tightens the
         // batting side up — runs get harder to find, and the shaken tail-end of that
@@ -12784,7 +12828,7 @@
           const settleM=batters[striker].balls<8?1.12:1.0;
           const bRat=batRatings?Math.max(52,Math.min(99,batRatings[striker]||70)):70;
           const batWktMod=1.18-(bRat-52)/47*0.42;
-          const wktP=wktProbBase*posM*settleM*bowler.ratingFactor*bowler.hotFactor*batWktMod*pressureWktMult*chaseWktMult;
+          const wktP=wktProbBase*posM*settleM*bowler.ratingFactor*bowler.hotFactor*batWktMod*pressureWktMult*chaseWktMult*bowler.wktBoost;
           batters[striker].balls++;
           if(Math.random()<wktP){batters[striker].out=true;batters[striker].batting=false;batters[striker].how=makeHow(bowler.name);bowler.wickets++;wkts++;wktsThisOver++;striker=nextIn++;if(striker<11){batters[striker].batting=batters[striker].batted=true;}}
           else{
@@ -12811,7 +12855,8 @@
           }
         }
         const tmp=striker;striker=nonStriker;nonStriker=tmp;
-        bowler.overs++;activeBowlerOvs++;bowler.runs+=overRuns;if(dotBalls===6)bowler.maidens++;
+        bowler.overs++;spellOvs++;bowler.runs+=overRuns;if(dotBalls===6)bowler.maidens++;
+        lastBowlerIdx=nb;
         sinceWkt=wktsThisOver>0?0:sinceWkt+1;
         const prevWkts=oversLog.length?oversLog[oversLog.length-1].totalWkts:0;
         // Snapshots of batter/bowler state as it stood right after this over — lets the
@@ -15005,6 +15050,9 @@
     <div id="profile-season-stats" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px"></div>
     <div id="profile-milestones" style="width:100%;font-size:11px;color:#8080a0;text-align:left;margin-bottom:20px"></div>
 
+    <div id="profile-goals-title" style="display:none;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Season Target</div>
+    <div class="stage-bar" id="profile-goals" style="text-align:left;margin-bottom:20px"></div>
+
     <button class="btn-auth-small" onclick="go('s-career-hub')" style="width:100%">← Back to Hub</button>
   </div>
 
@@ -15099,6 +15147,19 @@
     </div>
     <div id="career-event-content" style="width:100%;margin-bottom:4px;text-align:left"></div>
     <div id="career-event-buttons" style="width:100%;display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+
+  <!-- CAREER AGENT CHAT SCREEN -->
+  <div id="s-career-agent-chat" class="screen">
+    <div style="width:100%;display:flex;align-items:center;gap:10px;padding-bottom:14px;margin-bottom:6px;border-bottom:1px solid #1a1a24">
+      <div style="width:38px;height:38px;border-radius:50%;background:#111118;border:1px solid #252535;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🕴️</div>
+      <div style="flex:1;text-align:left;min-width:0">
+        <div style="font-size:14px;font-weight:800;color:#fff">Your Agent</div>
+        <div style="font-size:10px;color:#4ade80;font-weight:700">online</div>
+      </div>
+      <button class="btn-auth-small" id="career-chat-skip" style="padding:6px 12px;font-size:11px" onclick="careerChatSkipAll()">Skip</button>
+    </div>
+    <div id="career-chat-messages" style="width:100%;display:flex;flex-direction:column" onclick="careerChatTapAdvance()"></div>
   </div>
 
   <div id="s-career-season-end" class="screen">
@@ -15318,6 +15379,7 @@
         pendingMOTM: null,
         resultStreak: 0,
         lastResultWon: null,
+        halfwayChatShown: false,
       };
     }
     const CAREER_SETTINGS = { autoAdvanceAI: true };
@@ -15730,8 +15792,8 @@
       CAREER.currentRound = 0;
       CAREER.seasonComplete = false;
       CAREER.seasonStartOvr = CAREER.player.ovr;
-      go('s-career-hub');
-      buildCareerHub();
+      go('s-career-agent-chat');
+      showCareerAgentChat(careerAgentSigningScript(), () => { go('s-career-hub'); buildCareerHub(); });
     }
 
     // ── Points (spec §11) ───────────────────────────────────────────────
@@ -16419,7 +16481,211 @@
       onDone();
     }
 
-    function playNextCareerFixture() {
+    // ── Career agent chat (iMessage-style) ───────────────────────────────
+    // Two scripted moments: right after signing (see beginCareerSeason) and
+    // at the season's halfway point (see playNextCareerFixture below).
+    // Reply chips are cosmetic — tapping one only changes which bubble gets
+    // appended to the transcript, nothing downstream reads the choice.
+    let careerChatState = null;
+    function careerChatReduceMotion() {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    function careerChatScrollBottom() {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: careerChatReduceMotion() ? 'auto' : 'smooth' });
+    }
+    function showCareerAgentChat(steps, onDone) {
+      const messages = document.getElementById('career-chat-messages');
+      messages.innerHTML = '';
+      const ts = document.createElement('div');
+      ts.className = 'imsg-timestamp';
+      ts.textContent = 'Message · Today';
+      messages.appendChild(ts);
+      const skipBtn = document.getElementById('career-chat-skip');
+      if (skipBtn) skipBtn.style.display = '';
+      careerChatState = { steps, idx: 0, onDone, timer: null, skipTyping: null, currentBubble: null, awaitingReply: false };
+      careerChatPlayStep();
+    }
+    // Tapping the transcript while a message is typing (dots or mid-word)
+    // jumps straight to the full text — same "tap to skip the wait, not the
+    // content" pattern the match drip-feed already uses.
+    function careerChatTapAdvance() {
+      const st = careerChatState;
+      if (st && st.skipTyping) st.skipTyping();
+    }
+    function careerChatPlayStep() {
+      const st = careerChatState;
+      if (!st || st.idx >= st.steps.length) {
+        careerChatShowContinue();
+        return;
+      }
+      const step = st.steps[st.idx];
+      const messages = document.getElementById('career-chat-messages');
+      const row = document.createElement('div');
+      row.className = 'imsg-row in';
+      const bubble = document.createElement('div');
+      bubble.className = 'imsg-bubble in';
+      bubble.innerHTML = '<span class="imsg-typing-dots"><span></span><span></span><span></span></span>';
+      row.appendChild(bubble);
+      messages.appendChild(row);
+      st.currentBubble = bubble;
+      careerChatScrollBottom();
+      const reduceMotion = careerChatReduceMotion();
+      const startTyping = () => {
+        bubble.textContent = '';
+        if (reduceMotion) { bubble.textContent = step.text; careerChatAfterType(step); return; }
+        const full = step.text;
+        let i = 0;
+        st.skipTyping = () => { clearTimeout(st.timer); bubble.textContent = full; st.skipTyping = null; careerChatAfterType(step); };
+        function tick() {
+          i = Math.min(full.length, i + 1 + Math.floor(Math.random() * 2));
+          bubble.textContent = full.slice(0, i);
+          careerChatScrollBottom();
+          if (i < full.length) { st.timer = setTimeout(tick, 18 + Math.random() * 22); }
+          else { st.skipTyping = null; careerChatAfterType(step); }
+        }
+        tick();
+      };
+      st.skipTyping = startTyping; // tap during the "..." dots skips straight to the typed message
+      st.timer = setTimeout(startTyping, reduceMotion ? 0 : 750 + Math.random() * 350);
+    }
+    function careerChatAfterType(step) {
+      const st = careerChatState;
+      if (!st) return;
+      st.currentBubble = null;
+      if (step.replies && step.replies.length) {
+        st.awaitingReply = true;
+        const wrap = document.createElement('div');
+        wrap.className = 'imsg-replies';
+        step.replies.forEach(label => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'imsg-reply-chip';
+          btn.textContent = label;
+          btn.onclick = e => { e.stopPropagation(); careerChatPickReply(label, wrap); };
+          wrap.appendChild(btn);
+        });
+        document.getElementById('career-chat-messages').appendChild(wrap);
+        careerChatScrollBottom();
+      } else {
+        st.idx++;
+        st.timer = setTimeout(careerChatPlayStep, careerChatReduceMotion() ? 150 : 1000);
+      }
+    }
+    function careerChatPickReply(label, wrap) {
+      const st = careerChatState;
+      if (!st) return;
+      st.awaitingReply = false;
+      wrap.remove();
+      const row = document.createElement('div');
+      row.className = 'imsg-row out';
+      const bubble = document.createElement('div');
+      bubble.className = 'imsg-bubble out';
+      bubble.textContent = label;
+      row.appendChild(bubble);
+      document.getElementById('career-chat-messages').appendChild(row);
+      careerChatScrollBottom();
+      st.idx++;
+      st.timer = setTimeout(careerChatPlayStep, careerChatReduceMotion() ? 150 : 650);
+    }
+    // Fast-forwards the REST of the conversation straight into the
+    // transcript (full text, no typing animation, no interactive replies)
+    // rather than abandoning the screen — the player still gets to read
+    // every message, just without waiting for it. Lands on the same
+    // Continue-button end state a normally-played-out conversation does.
+    function careerChatSkipAll() {
+      const st = careerChatState;
+      if (!st) return;
+      clearTimeout(st.timer);
+      st.skipTyping = null;
+      const messages = document.getElementById('career-chat-messages');
+      messages.querySelectorAll('.imsg-replies').forEach(el => el.remove());
+      let startIdx = st.idx;
+      if (st.currentBubble) {
+        // Current step's bubble is already on screen (dots or mid-type) —
+        // finish it in place rather than duplicating it.
+        st.currentBubble.textContent = st.steps[st.idx].text;
+        st.currentBubble = null;
+        startIdx = st.idx + 1;
+      } else if (st.awaitingReply) {
+        // Current step already fully typed, just sitting on its (now
+        // removed) reply chips — move past it without adding a reply bubble.
+        startIdx = st.idx + 1;
+      }
+      st.awaitingReply = false;
+      for (let i = startIdx; i < st.steps.length; i++) {
+        const row = document.createElement('div');
+        row.className = 'imsg-row in';
+        const bubble = document.createElement('div');
+        bubble.className = 'imsg-bubble in';
+        bubble.textContent = st.steps[i].text;
+        row.appendChild(bubble);
+        messages.appendChild(row);
+      }
+      st.idx = st.steps.length;
+      careerChatScrollBottom();
+      careerChatShowContinue();
+    }
+    function careerChatShowContinue() {
+      const st = careerChatState;
+      if (!st) return;
+      const skipBtn = document.getElementById('career-chat-skip');
+      if (skipBtn) skipBtn.style.display = 'none';
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'width:100%;margin-top:14px';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-start';
+      btn.style.width = '100%';
+      btn.textContent = 'Continue';
+      btn.onclick = () => {
+        const onDone = st.onDone;
+        careerChatState = null;
+        if (onDone) onDone();
+      };
+      wrap.appendChild(btn);
+      document.getElementById('career-chat-messages').appendChild(wrap);
+      careerChatScrollBottom();
+    }
+    function careerAgentSigningScript() {
+      const p = CAREER.player;
+      const league = CAREER_LEAGUES[CAREER.leagueId];
+      const county = (league && league.county) || 'the county';
+      const goals = CAREER_SEASON_GOALS[careerPosKey(p)] || {};
+      const goalText = careerGoalText(goals);
+      return [
+        { text: `Mate! 🎉 Congrats — ${CAREER.myClubName} have signed you. Ink's dry, you're officially in the side now.`, replies: ['Buzzing 🙌', "Let's go"] },
+        { text: `Been on the phone all morning about you actually. ${county} 2nd XI's coach already knows your name.`, replies: ['No way', 'Serious?'] },
+        { text: goalText ? `Yeah, dead serious. He's going to be watching this season closely. Wants to see ${goalText} out of you.` : `Yeah, dead serious. He's going to be watching this season closely.`, replies: ["I've got this", 'No pressure then 😅'] },
+        { text: `That's the attitude. Go get him a season worth talking about. Speak soon 👊`, replies: null },
+      ];
+    }
+    function careerAgentHalfwayScript() {
+      const { goals, current, remaining, onPace } = careerSeasonGoalProgress();
+      const statParts = obj => {
+        const parts = [];
+        if (goals.runs != null) parts.push(`${obj.runs} runs`);
+        if (goals.wickets != null) parts.push(`${obj.wickets} wickets`);
+        return parts.join(' and ');
+      };
+      const currentText = statParts(current);
+      const remainingText = statParts(remaining);
+      const league = CAREER_LEAGUES[CAREER.leagueId];
+      const county = (league && league.county) || 'the county';
+      if (onPace) {
+        return [
+          { text: `Quick one — just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', "What'd he say?"] },
+          { text: `He's impressed. You're at ${currentText} with half the season gone — right where he wants you.`, replies: ['Class', 'Not done yet'] },
+          { text: `Keep this up and you're in the frame. ${remainingText} more and it's basically job done.`, replies: null },
+        ];
+      }
+      return [
+        { text: `Quick one — just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', 'Good or bad?'] },
+        { text: `Not gonna lie, he's not blown away. ${currentText} at the halfway mark isn't quite the number he wanted.`, replies: ["I'll turn it around", 'Tough season'] },
+        { text: `Still time. ${remainingText} more in the second half and he'll forget all about it.`, replies: null },
+      ];
+    }
+
+    function playNextCareerFixtureContinue() {
       if (CAREER.currentRound >= 22) return;
       // A save from before morale/random events existed carries a `player`
       // with neither field — every read already defaults safely (`?? 50`/
@@ -16438,6 +16704,18 @@
       const eventType = rollCareerRandomEvent();
       if (eventType) { CAREER.pendingEvent = eventType; showCareerEventScreen(startMatch); }
       else startMatch();
+    }
+    // 22-round season — round 11 is the halfway point (11 played, 11 to go).
+    // Gated ahead of the normal fixture flow so the chat always lands
+    // between two matches, never mid-match.
+    function playNextCareerFixture() {
+      if (CAREER.currentRound === 11 && !CAREER.halfwayChatShown) {
+        CAREER.halfwayChatShown = true;
+        go('s-career-agent-chat');
+        showCareerAgentChat(careerAgentHalfwayScript(), playNextCareerFixtureContinue);
+        return;
+      }
+      playNextCareerFixtureContinue();
     }
 
     // ── Tracked-player match simulation (spec §5 of the plan) ───────────
@@ -16461,6 +16739,45 @@
       if (p.role === 'keeper') return `keeper.${p.type}`;
       if (p.role === 'allrounder') return `allrounder.${p.lean}`;
       return 'bowler';
+    }
+    // Season-long targets — the 25%-chance-at-baseline-rating marks
+    // established this session against the ball-by-ball engine's real
+    // output. An all-rounder needs both stats, not either/or. Referenced by
+    // the agent chat screens (careerAgentSigningScript/HalfwayScript) —
+    // nothing in the match/progression engine itself reads these, this is
+    // purely the number told to the player.
+    const CAREER_SEASON_GOALS = {
+      'batter.opener': { runs: 1000 },
+      'batter.topOrder': { runs: 850 },
+      'keeper.keeperBatsman': { runs: 400 },
+      'allrounder.battingAR': { runs: 600, wickets: 25 },
+      'allrounder.bowlingAR': { runs: 300, wickets: 40 },
+      'bowler': { wickets: 50 },
+    };
+    function careerGoalText(goals) {
+      const parts = [];
+      if (goals.runs) parts.push(`${goals.runs.toLocaleString()} runs`);
+      if (goals.wickets) parts.push(`${goals.wickets} wickets`);
+      return parts.join(' and ');
+    }
+    // current/remaining per stat the role actually has a target for, plus
+    // onPace — true only if EVERY targeted stat is at least halfway to goal,
+    // matching "all-rounders need to meet two" rather than either one.
+    function careerSeasonGoalProgress() {
+      const goals = CAREER_SEASON_GOALS[careerPosKey(CAREER.player)] || {};
+      const stats = CAREER.seasonStats;
+      const out = { goals, current: {}, remaining: {}, onPace: true };
+      if (goals.runs) {
+        out.current.runs = stats.bat.runs;
+        out.remaining.runs = Math.max(0, goals.runs - stats.bat.runs);
+        if (stats.bat.runs < goals.runs / 2) out.onPace = false;
+      }
+      if (goals.wickets) {
+        out.current.wickets = stats.bowl.wickets;
+        out.remaining.wickets = Math.max(0, goals.wickets - stats.bowl.wickets);
+        if (stats.bowl.wickets < goals.wickets / 2) out.onPace = false;
+      }
+      return out;
     }
     // Same idea for the bowling attack: seamers open it, spinners come on
     // first change, and an all-rounder is first change regardless of type
@@ -17228,6 +17545,24 @@
     // Per-position correction (keyed by CAREER_BAT_POSITION's pos numbers)
     // — see the comment where this is applied in careerBuildXIForSim.
     const CAREER_POS_SIM_DELTA = { 1: -6, 4: -4, 5: -14, 6: 2, 7: -7 };
+    // simODIInnings' own rating->wicket-probability curve has a narrow
+    // built-in ceiling (bowler rating clamps at 97, and the formula's own
+    // spread between a 55-rated and a 97-rated bowler is only ~1.4x) —
+    // it was tuned for World Cup's already-elite international attacks, not
+    // for "a 50-55 rated Local Club player should have a real shot at 50
+    // wickets, and a genuinely elite one should be miles beyond that."
+    // Rather than widen simODIInnings' own formula (which WC also relies
+    // on), this is an additive, opt-in multiplier only Career's own bowler
+    // ever sets (see wktBoost on the bwlrs construction in simODIInnings —
+    // it defaults to 1, so World Cup is completely unaffected). Same
+    // escalating-with-rating shape as the batting/progression design this
+    // whole session has used — tuned empirically against the season-long
+    // Monte Carlo harness for a 25%-chance-of-50-wickets mark at 50-55
+    // rated, climbing well past that at genuinely elite ratings.
+    function careerBowlEliteBoost(rating) {
+      const t = Math.max(0, Math.min(1, (rating - 15) / (99 - 15)));
+      return 1 + Math.pow(t, 1.6) * 1.55;
+    }
     function careerRatingToSim(rating) {
       const t = (Math.max(CAREER_RATING_INPUT_FLOOR, Math.min(CAREER_RATING_INPUT_CEIL, rating)) - CAREER_RATING_INPUT_FLOOR) / (CAREER_RATING_INPUT_CEIL - CAREER_RATING_INPUT_FLOOR);
       return Math.round(CAREER_SIM_RATING_FLOOR + Math.pow(t, CAREER_RATING_CURVE_POWER) * (CAREER_SIM_RATING_CEIL - CAREER_SIM_RATING_FLOOR));
@@ -17242,12 +17577,18 @@
       const others = club.squad.filter(p => !p.isTrackedPlayer);
       const names = others.map(p => p.name);
       const ratings = others.map(p => careerRatingToSim(p.rating));
-      // Bowling pool: every squad member is eligible (matches the legacy
-      // engine's own simplification — generateTeamBowling already lets any
-      // squad member bowl, no separate "specialist" roster). maxOv raised
-      // above the ODI-regulation 10 for the same local-club-isn't-regulated
-      // reason generateTeamBowling already documents.
-      const bowlPool = others.map(p => ({ n: p.name, t: 's', sp: p.bowlType === 'spin', maxOv: 12, rating: careerRatingToSim(p.rating) }));
+      // Bowling pool: capped to the top 6 by rating, same as the legacy
+      // engine's own generateTeamBowling (index.html:16115) — generated
+      // squad members have no role tag to say who's actually a recognized
+      // bowler, so this was previously letting all 11 (including whoever
+      // stands in for the keeper/pure batters) rotate through the attack.
+      // That diluted overs across far more bowlers than a real XI ever
+      // fields, which was suppressing wicket hauls for the players who
+      // SHOULD be doing most of the bowling. maxOv raised above the
+      // ODI-regulation 10 for the same local-club-isn't-regulated reason
+      // generateTeamBowling already documents.
+      const bowlPool = others.slice().sort((a, b) => b.rating - a.rating).slice(0, 6)
+        .map(p => ({ n: p.name, t: 's', sp: p.bowlType === 'spin', maxOv: 12, rating: careerRatingToSim(p.rating) }));
       if (isMyClub) {
         const player = CAREER.player;
         const r = careerEffectiveRatings(player);
@@ -17273,7 +17614,17 @@
           // ceiling) — a genuinely elite strike bowler getting trusted with
           // more of the innings is exactly how a real 50+ wicket season
           // happens, not a higher per-over strike rate.
-          const entry = { n: player.name, t: 's', sp: player.bowlBroadType === 'spin', maxOv: 15, rating: careerRatingToSim(bowlSkill) };
+          // The elite wicket-taking boost only applies when bowling is your
+          // PRIMARY discipline (specialist bowler, or a bowling-lean
+          // all-rounder) — careerBowlSlot gives every all-rounder a slot
+          // regardless of lean (matches the legacy engine's own "any
+          // all-rounder can be handed the ball" simplification), but a
+          // batting all-rounder's bowling is a real secondary skill, not a
+          // second specialist attack — applying the same boost there let a
+          // batting-primary all-rounder rack up specialist-level wicket
+          // hauls, which isn't what "primary discipline" is supposed to mean.
+          const isPrimaryBowler = player.role === 'bowler' || (player.role === 'allrounder' && player.lean === 'bowlingAR');
+          const entry = { n: player.name, t: 's', sp: player.bowlBroadType === 'spin', maxOv: 15, rating: careerRatingToSim(bowlSkill), wktBoost: isPrimaryBowler ? careerBowlEliteBoost(bowlSkill) : 1 };
           if (slot === 'opening') bowlPool.unshift(entry);
           else bowlPool.splice(Math.min(1, bowlPool.length), 0, entry);
         }
@@ -17296,17 +17647,22 @@
     function careerRowsFromBatters(battersArr, club) {
       return battersArr.filter(b => b.batted).map(b => {
         const p = club.squad.find(sp => sp.name === b.name);
-        return { id: p ? p.id : b.name, name: b.name, clubId: club.id, clubName: club.name, runs: b.runs, balls: b.balls, out: b.out, isTrackedPlayer: !!(p && p.isTrackedPlayer) };
+        // how/batting are real, per-ball data the ball-by-ball engine
+        // already computed (dismissal type, whether they finished not out)
+        // — carried through so the scorecard screen can show a genuine
+        // dismissal line instead of Career's old blank one.
+        return { id: p ? p.id : b.name, name: b.name, clubId: club.id, clubName: club.name, runs: b.runs, balls: b.balls, out: b.out, how: b.how, batting: b.batting, isTrackedPlayer: !!(p && p.isTrackedPlayer) };
       });
     }
     function careerRowsFromBowlers(bowlersArr, club) {
       return bowlersArr.map(b => {
         const p = club.squad.find(sp => sp.name === b.name);
-        return { id: p ? p.id : b.name, name: b.name, clubId: club.id, clubName: club.name, overs: b.overs, runsConceded: b.runs, wickets: b.wickets, isTrackedPlayer: !!(p && p.isTrackedPlayer) };
+        return { id: p ? p.id : b.name, name: b.name, clubId: club.id, clubName: club.name, overs: b.overs, runsConceded: b.runs, wickets: b.wickets, maidens: b.maidens, isTrackedPlayer: !!(p && p.isTrackedPlayer) };
       });
     }
     function careerAdaptScorecard(clubA, clubB, inningsOfA, inningsOfB) {
       return {
+        clubAId: clubA.id, clubBId: clubB.id,
         battingA: careerRowsFromBatters(inningsOfA._batters, clubA),
         battingB: careerRowsFromBatters(inningsOfB._batters, clubB),
         bowlingA: careerRowsFromBowlers(inningsOfB._bowlers, clubA), // A's bowlers bowled in B's innings
@@ -18465,6 +18821,35 @@
         <div class="stat-card"><div class="stat-card-label">Fielding</div><div class="stat-card-val">${fl.clean}</div><div class="stat-card-sub">${fieldPct}%</div><div class="stat-card-sub">of ${fl.involvements} chances</div></div>`;
       document.getElementById('profile-milestones').textContent =
         `${bs.fifties} fift${bs.fifties === 1 ? 'y' : 'ies'} · ${bs.hundreds} hundred${bs.hundreds === 1 ? '' : 's'} · ${bw.bigSpells} three-wicket haul${bw.bigSpells === 1 ? '' : 's'}`;
+
+      // Season Target — same goals/progress the agent chat screens talk
+      // about (careerSeasonGoalProgress), just always visible here rather
+      // than only mentioned twice a season. An all-rounder gets both bars;
+      // roles with no target (shouldn't happen for a real player) hide the
+      // whole section rather than show an empty one.
+      const goalProgress = careerSeasonGoalProgress();
+      const goalRows = [];
+      if (goalProgress.goals.runs) {
+        const pct = Math.min(100, Math.round((goalProgress.current.runs / goalProgress.goals.runs) * 100));
+        goalRows.push({ label: 'Runs', text: `${goalProgress.current.runs}/${goalProgress.goals.runs}`, pct, color: '#f9c846' });
+      }
+      if (goalProgress.goals.wickets) {
+        const pct = Math.min(100, Math.round((goalProgress.current.wickets / goalProgress.goals.wickets) * 100));
+        goalRows.push({ label: 'Wickets', text: `${goalProgress.current.wickets}/${goalProgress.goals.wickets}`, pct, color: '#60a5fa' });
+      }
+      document.getElementById('profile-goals-title').style.display = goalRows.length ? '' : 'none';
+      const goalsEl = document.getElementById('profile-goals');
+      goalsEl.innerHTML = goalRows.map(g => `
+        <div class="stage-bar-row">
+          <div class="stage-bar-label">${g.label}</div>
+          <div class="stage-bar-track"><div class="stage-bar-fill" data-pct="${g.pct}" style="width:${reduceMotion ? g.pct : 0}%;background:${g.color}"></div></div>
+          <div class="stage-bar-pct" style="width:56px;color:${g.color}">${g.text}</div>
+        </div>`).join('');
+      if (!reduceMotion) {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          goalsEl.querySelectorAll('.stage-bar-fill').forEach(bar => { bar.style.width = bar.dataset.pct + '%'; });
+        }));
+      }
     }
 
     function buildCareerMatchHistory() {
@@ -18532,29 +18917,52 @@
     }
 
     // ── Scorecards ────────────────────────────────────────────────────
+    // Same visual language as World Cup mode's innings card (renderODIBatters,
+    // index.html ~13021) — the sc-* classes are global, not WC-scoped, so
+    // this reuses them directly rather than approximating the look with a
+    // separate table style. how/batting only exist on rows the ball-by-ball
+    // engine produced (see careerRowsFromBatters) — the legacy engine's rows
+    // degrade gracefully to a plain out/not-out label, no dismissal type.
     function careerBattingCardHTML(card) {
+      const ROW = 'display:grid;grid-template-columns:110px 1fr 34px 38px;align-items:center;padding:7px 10px;border-bottom:1px solid #111118';
       const rows = card.map(p => {
-        const sr = p.balls ? ((p.runs / p.balls) * 100).toFixed(1) : '0.0';
-        return `<tr class="${p.isTrackedPlayer ? 'myrow' : ''}">
-          <td style="text-align:left">${p.name}${p.out ? '' : ' *'}</td>
-          <td>${p.runs}</td><td>${p.balls}</td><td>${sr}</td>
-        </tr>`;
+        const nameCol = p.isTrackedPlayer ? 'color:#f9c846;font-weight:800' : 'color:#c0c0d8';
+        const howCol = p.out ? 'color:#6060a0' : 'color:#4ade80';
+        const howText = p.out ? (p.how || 'out') : 'not out';
+        const runsCls = p.runs >= 100 ? 'hundred' : p.runs >= 50 ? 'fifty' : '';
+        return `<div style="${ROW}">
+          <span style="font-size:12px;font-weight:700;${nameCol};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</span>
+          <span style="font-size:10px;${howCol};padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${howText}</span>
+          <span class="sc-batter-runs${runsCls ? ' ' + runsCls : ''}">${p.runs}</span>
+          <span class="sc-batter-balls">${p.balls > 0 ? '(' + p.balls + ')' : ''}</span>
+        </div>`;
       }).join('');
-      return `<table class="tbl">
-        <colgroup><col style="width:52%"><col style="width:16%"><col style="width:16%"><col style="width:16%"></colgroup>
-        <thead><tr><th>Batter</th><th>R</th><th>B</th><th>SR</th></tr></thead><tbody>${rows}</tbody></table>`;
+      return `<div class="sc-innings" style="margin-bottom:4px">
+        <div style="display:grid;grid-template-columns:110px 1fr 34px 38px;padding:5px 10px 4px;background:#0a0a0f;border-bottom:1px solid #111">
+          <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700">Batter</span>
+          <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;font-weight:700;padding-left:6px">Dismissal</span>
+          <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:right;font-weight:700">R</span>
+          <span style="font-size:9px;color:#606070;letter-spacing:1px;text-transform:uppercase;text-align:right;font-weight:700">B</span>
+        </div>
+        ${rows}
+      </div>`;
     }
     function careerBowlingCardHTML(card) {
-      const rows = card.map(p => {
-        const econ = p.overs ? (p.runsConceded / p.overs).toFixed(1) : '0.0';
-        return `<tr class="${p.isTrackedPlayer ? 'myrow' : ''}">
-          <td style="text-align:left">${p.name}</td>
-          <td>${p.overs}</td><td>${p.runsConceded}</td><td>${p.wickets}</td><td>${econ}</td>
-        </tr>`;
-      }).join('');
-      return `<table class="tbl">
-        <colgroup><col style="width:40%"><col style="width:15%"><col style="width:15%"><col style="width:15%"><col style="width:15%"></colgroup>
-        <thead><tr><th>Bowler</th><th>O</th><th>R</th><th>W</th><th>Econ</th></tr></thead><tbody>${rows}</tbody></table>`;
+      if (!card.length) return '';
+      const rows = card.map(p => `<div class="sc-bowler-row">
+        <span class="sc-bowler-name"${p.isTrackedPlayer ? ' style="color:#f9c846;font-weight:800"' : ''}>${p.name}</span>
+        <span class="sc-bowler-stat">${p.overs}</span>
+        <span class="sc-bowler-stat">${p.maidens || 0}</span>
+        <span class="sc-bowler-stat">${p.runsConceded}</span>
+        <span class="sc-bowler-wkts${p.wickets >= 3 ? ' haul' : ''}">${p.wickets}</span>
+      </div>`).join('');
+      return `<div class="sc-innings" style="margin-bottom:6px">
+        <div class="sc-bowling-header">
+          <span class="sc-bowl-th" style="flex:1;text-align:center">Bowler</span>
+          <span class="sc-bowl-th">O</span><span class="sc-bowl-th">M</span>
+          <span class="sc-bowl-th">R</span><span class="sc-bowl-th">W</span>
+        </div>${rows}
+      </div>`;
     }
     function careerScorecardMetaHTML(entry, sc, clubA, clubB) {
       const tr = entry.teamResult;
