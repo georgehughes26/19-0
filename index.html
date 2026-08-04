@@ -15171,6 +15171,11 @@
     <div id="career-end-rating" class="ov-reveal" style="width:100%;margin-bottom:24px"></div>
 
     <div class="ov-reveal" style="width:100%">
+      <div class="section-lbl">Trophies</div>
+      <div id="career-end-trophies" style="width:100%;margin-bottom:24px"></div>
+    </div>
+
+    <div class="ov-reveal" style="width:100%">
       <div class="section-lbl">Final Standings</div>
       <div id="career-end-table" style="width:100%;margin-bottom:24px;overflow-x:auto"></div>
     </div>
@@ -15380,6 +15385,8 @@
         lastResultWon: null,
         halfwayChatShown: false,
         seasonEndChatShown: false,
+        seasonTrophiesComputed: false,
+        seasonTrophiesWonThisSeason: [],
       };
     }
     const CAREER_SETTINGS = { autoAdvanceAI: true };
@@ -15560,6 +15567,15 @@
         battingType: d.battingType, bowlBroadType: d.bowlBroadType, bowlType: d.bowlType,
         ratings, ovr,
         morale: 50, tempBoost: 0, tempBoostCategory: null,
+        // Fixed at 18 for a debut season (not randomized) — the plan is to
+        // age the player up by one every season once multi-season careers
+        // exist (no such flow is built yet, see the note where
+        // resetCareerState's other season-scoped flags live). Young Player
+        // of the Season's 18-23 eligibility window (careerComputeSeasonTrophies)
+        // is written against this same starting point. Generated squad
+        // members get their own (wider, adult) age spread — see generateClubXI.
+        age: 18,
+        trophies: [],
       };
       renderCareerReveal();
       go('s-career-create-reveal');
@@ -15650,8 +15666,12 @@
       const shift = targetRating - raw.reduce((s, v) => s + v, 0) / n;
       // bowlType flavours the ball-by-ball engine's bowler-selection scoring
       // (spinners held back before over 10) — a real club attack, not every
-      // generated player being interchangeable pace.
-      return raw.map(v => ({ name: careerRandomXIName(used), rating: Math.max(30, Math.min(60, Math.round(v + shift))), bowlType: Math.random() < 0.35 ? 'spin' : 'seam' }));
+      // generated player being interchangeable pace. age is a realistic
+      // club-cricket spread (18-38, weighted toward the middle of a career
+      // rather than uniform) — only consumed by the Young Player of the
+      // Season award (careerComputeSeasonTrophies), which needs real rivals
+      // to compare your own age against, not just a rule about you.
+      return raw.map(v => ({ name: careerRandomXIName(used), rating: Math.max(30, Math.min(60, Math.round(v + shift))), bowlType: Math.random() < 0.35 ? 'spin' : 'seam', age: 18 + Math.floor(Math.random() * 21) }));
     }
     function careerSquadRating(squad) {
       return Math.round(squad.reduce((s, p) => s + p.rating, 0) / squad.length);
@@ -15702,7 +15722,7 @@
         const squad = generateClubXI(club.rating);
         const idx = Math.floor(Math.random() * squad.length);
         CAREER.draft.replacedPlayerName = squad[idx].name;
-        squad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true, bowlType: CAREER.player.bowlBroadType || 'seam' };
+        squad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true, bowlType: CAREER.player.bowlBroadType || 'seam', age: CAREER.player.age };
         CAREER.draft.assignedClubSquad = squad;
       }
       const p = CAREER.player;
@@ -18096,8 +18116,13 @@
       stumped: { one: 'stumping', many: 'stumpings' },
     };
     function careerTallyDismissals(count) {
+      // A stumping needs the batter out of their crease charging a
+      // slower/turning ball — realistically a spinner's dismissal, not a
+      // seamer's. Only strip it from a seam bowler's own wicket-tally
+      // flavour text; a spin/AR-bowling-spin player keeps the full pool.
+      const pool = CAREER.player.bowlBroadType === 'seam' ? CAREER_DISMISSAL_TYPES.filter(t => t !== 'stumped') : CAREER_DISMISSAL_TYPES;
       const counts = {};
-      for (let i = 0; i < count; i++) { const t = careerPick(CAREER_DISMISSAL_TYPES); counts[t] = (counts[t] || 0) + 1; }
+      for (let i = 0; i < count; i++) { const t = careerPick(pool); counts[t] = (counts[t] || 0) + 1; }
       return Object.entries(counts).map(([t, n]) => `${n} ${n > 1 ? CAREER_DISMISSAL_SUMMARY_LABEL[t].many : CAREER_DISMISSAL_SUMMARY_LABEL[t].one}`).join(', ');
     }
     function careerScoreWkts(score, wkts) {
@@ -18964,12 +18989,57 @@
     // ── League stats / leaderboard ───────────────────────────────────────
     const CAREER_STAT_CATEGORIES = [
       { key: 'runs',    label: 'Most Runs',        qualify: s => true,                value: s => s.bat.runs,                                      fmt: v => v,             sortDesc: true },
-      { key: 'avg',     label: 'Best Average',     qualify: s => s.bat.innings >= 5,  value: s => s.bat.outs ? s.bat.runs / s.bat.outs : s.bat.runs, fmt: v => v.toFixed(1),  sortDesc: true },
+      { key: 'avg',     label: 'Best Average',     qualify: s => s.bat.innings >= 11 && s.bat.runs >= 400, value: s => s.bat.outs ? s.bat.runs / s.bat.outs : s.bat.runs, fmt: v => v.toFixed(1),  sortDesc: true },
       { key: 'sr',      label: 'Best Strike Rate', qualify: s => s.bat.innings >= 5,  value: s => s.bat.balls ? (s.bat.runs / s.bat.balls) * 100 : 0, fmt: v => v.toFixed(1), sortDesc: true },
       { key: 'wickets', label: 'Most Wickets',     qualify: s => true,                value: s => s.bowl.wickets,                                   fmt: v => v,             sortDesc: true },
-      { key: 'bowlAvg', label: 'Best Bowling Avg', qualify: s => s.bowl.wickets >= 5, value: s => s.bowl.wickets ? s.bowl.runsConceded / s.bowl.wickets : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
+      { key: 'bowlAvg', label: 'Best Bowling Avg', qualify: s => s.bowl.wickets >= 30, value: s => s.bowl.wickets ? s.bowl.runsConceded / s.bowl.wickets : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
       { key: 'econ',    label: 'Best Economy',     qualify: s => s.bowl.overs >= 15,  value: s => s.bowl.overs ? s.bowl.runsConceded / s.bowl.overs : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
     ];
+    // ── Season trophies ──────────────────────────────────────────────────
+    // Four of the six reuse CAREER_STAT_CATEGORIES' own qualify/value/sort
+    // rules directly (same "who's the league leader" logic the stats screen
+    // already shows) so a trophy can never disagree with what that screen
+    // says. Player of the Season / Young Player of the Season are new,
+    // whole-league composites — runs and wickets aren't directly
+    // comparable, so they're combined at roughly the same 1000-runs-equals-
+    // 50-wickets equivalence this session's own progression targets landed
+    // on (a wicket worth about 20 runs), giving one "how good was this
+    // season" number to rank the full league on. Age (generateClubXI /
+    // finishCareerCreation) only exists to give the Young award real rivals
+    // to compare against, not to gate anything else.
+    const CAREER_YOUNG_AGE_CUTOFF = 23;
+    function careerPlayerAge(entry) {
+      const club = CAREER.clubs[entry.clubId];
+      const p = club && club.squad.find(sp => sp.id === entry.id);
+      return p ? p.age : null;
+    }
+    function careerImpactScore(s) {
+      return s.bat.runs + s.bowl.wickets * 20;
+    }
+    function careerComputeSeasonTrophies() {
+      const all = Object.values(CAREER.leagueStats);
+      const trophies = [];
+      const awardFromPool = (key, label, icon, pool, valueFn, fmt, sortDesc) => {
+        if (!pool.length) return;
+        const sorted = pool.slice().sort((a, b) => sortDesc ? valueFn(b) - valueFn(a) : valueFn(a) - valueFn(b));
+        const winner = sorted[0];
+        if (winner.isTrackedPlayer) trophies.push({ key, label, icon, value: fmt(valueFn(winner)) });
+      };
+      const statCat = key => CAREER_STAT_CATEGORIES.find(c => c.key === key);
+      const trophyLabel = { runs: 'Most Runs', wickets: 'Most Wickets', avg: 'Best Batting Average', bowlAvg: 'Best Bowling Average' };
+      const trophyIcon = { runs: '🏏', wickets: '🎯', avg: '📈', bowlAvg: '🛡️' };
+      ['runs', 'wickets', 'avg', 'bowlAvg'].forEach(key => {
+        const cat = statCat(key);
+        awardFromPool(key, trophyLabel[key], trophyIcon[key],
+          all.filter(cat.qualify), cat.value, cat.fmt, cat.sortDesc);
+      });
+      const playedEnough = s => (s.bat.innings + s.bowl.innings) >= 5;
+      awardFromPool('pots', 'Player of the Season', '⭐', all.filter(playedEnough), careerImpactScore, v => Math.round(v), true);
+      awardFromPool('young', 'Young Player of the Season', '🌟',
+        all.filter(s => playedEnough(s) && careerPlayerAge(s) != null && careerPlayerAge(s) <= CAREER_YOUNG_AGE_CUTOFF),
+        careerImpactScore, v => Math.round(v), true);
+      return trophies;
+    }
     function buildCareerStats() {
       document.getElementById('stats-league-name').textContent = CAREER_LEAGUES[CAREER.leagueId].name + ' · Season Stats';
       document.getElementById('stats-tabs').innerHTML = CAREER_STAT_CATEGORIES.map(c =>
@@ -19206,6 +19276,30 @@
           <div class="perf-eyebrow" style="color:#9a9ad4">Final Rating</div>
           <div class="perf-row"><span class="perf-label">Overall</span><span class="perf-val" style="color:#e0e0f0">${CAREER.seasonStartOvr} → ${player.ovr}</span></div>
         </div>`;
+
+      // Trophies — computed once per season (revisiting this screen later,
+      // or reloading a save from after the season finished, must not
+      // re-award/duplicate them) and added to the player's permanent
+      // cabinet, not just shown here.
+      if (!CAREER.seasonTrophiesComputed) {
+        CAREER.seasonTrophiesComputed = true;
+        const won = careerComputeSeasonTrophies();
+        CAREER.seasonTrophiesWonThisSeason = won;
+        player.trophies = (player.trophies || []).concat(won);
+      }
+      const trophiesEl = document.getElementById('career-end-trophies');
+      if (CAREER.seasonTrophiesWonThisSeason.length) {
+        trophiesEl.innerHTML = `<div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${CAREER.seasonTrophiesWonThisSeason.map(t => `
+            <div class="perf-card perf-met" style="text-align:center">
+              <div style="font-size:26px;margin-bottom:6px">${t.icon}</div>
+              <div style="font-size:12px;font-weight:800;color:#fff;line-height:1.3">${t.label}</div>
+              <div style="font-size:11px;color:#9a9ad4;margin-top:4px">${t.value}</div>
+            </div>`).join('')}
+        </div>`;
+      } else {
+        trophiesEl.innerHTML = `<div style="font-size:12px;color:#606070;text-align:center;padding:10px 0">No trophies this season — come back next year.</div>`;
+      }
 
       document.getElementById('career-end-table').innerHTML = `<table class="tbl">
         <colgroup><col style="width:6%"><col style="width:44%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:10%"><col style="width:16%"></colgroup>
