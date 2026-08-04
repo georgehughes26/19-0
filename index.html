@@ -15233,6 +15233,13 @@
     // ═══════════════════════════════════════════════════════════════════
 
     const careerPick = arr => arr[Math.floor(Math.random() * arr.length)];
+    function careerShuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
 
     // ── Rating tables (spec §6, transcribed exactly) ────────────────────
     // Every table below is a flat Type-keyed trio (no archetype layer): each
@@ -15710,18 +15717,66 @@
       usedNames.add(name);
       return name;
     }
+    // 1 keeper, 4 specialist batters, 2 all-rounders, 4 specialist bowlers —
+    // a realistic club-XI split. Shuffled per squad so it's not always the
+    // same rating-rank landing the same role.
+    const CAREER_XI_ROLE_TEMPLATE = ['keeper', 'batter', 'batter', 'batter', 'batter', 'allrounder', 'allrounder', 'bowler', 'bowler', 'bowler', 'bowler'];
     function generateClubXI(targetRating) {
       const n = 11, used = new Set();
       const raw = Array.from({ length: n }, () => targetRating + (Math.random() - 0.5) * 16);
       const shift = targetRating - raw.reduce((s, v) => s + v, 0) / n;
+      const roles = careerShuffle(CAREER_XI_ROLE_TEMPLATE.slice());
       // bowlType flavours the ball-by-ball engine's bowler-selection scoring
       // (spinners held back before over 10) — a real club attack, not every
-      // generated player being interchangeable pace. age is a realistic
-      // club-cricket spread (18-38, weighted toward the middle of a career
-      // rather than uniform) — only consumed by the Young Player of the
-      // Season award (careerComputeSeasonTrophies), which needs real rivals
-      // to compare your own age against, not just a rule about you.
-      return raw.map(v => ({ name: careerRandomXIName(used), rating: Math.max(30, Math.min(60, Math.round(v + shift))), bowlType: Math.random() < 0.35 ? 'spin' : 'seam', age: 18 + Math.floor(Math.random() * 21) }));
+      // generated player being interchangeable pace. age is a uniform
+      // 18-38 club-cricket spread — only consumed by the Young Player of
+      // the Season award (careerComputeSeasonTrophies), which needs real
+      // rivals to compare your own age against, not just a rule about you.
+      //
+      // role/batSkill/bowlSkill exist because without them every generated
+      // player used their one overall `rating` for both batting AND (if
+      // picked for the attack) bowling threat — a club's single best player
+      // could end up posting a specialist-grade season with the bat AND the
+      // ball simultaneously. `rating` itself is left untouched (it still
+      // drives careerSquadRating/club strength for match-level team
+      // balance) — batSkill/bowlSkill are separate, role-adjusted numbers
+      // that everything reading an individual's discipline output should
+      // use instead.
+      //
+      // Dampening only the bowling side wasn't enough on its own: an
+      // all-rounder still batted at full specialist-tier rating, so even a
+      // *reduced* bowling contribution stacked on top of undiminished
+      // batting still out-scored every pure specialist on any combined
+      // metric (like the Player of the Season impact score, runs +
+      // wickets*20) — a specialist can only ever post a number in ONE of
+      // the two terms, so an all-rounder doesn't need to match a
+      // specialist's ceiling in either discipline to still come out on top
+      // of both of them combined. Both sides of an all-rounder's game are
+      // now knocked down from the specialist baseline (batting lightly,
+      // bowling more), matching this session's own tracked-player AR
+      // targets (600 runs/25 wickets, or 300 runs/40 wickets — well under
+      // either specialist quota alone) rather than letting them approach
+      // both specialist ceilings at once. bowlSkill stays null for
+      // batter/keeper (never eligible to bowl at all, matching
+      // careerBowlSlot's rule for the tracked player); batSkill is
+      // untouched for batter/keeper, and dampened harder for a specialist
+      // bowler (real tail-enders) than for an all-rounder's batting.
+      const players = raw.map((v, i) => {
+        const rating = Math.max(30, Math.min(60, Math.round(v + shift)));
+        const role = roles[i];
+        let bowlSkill = null, batSkill = rating;
+        if (role === 'bowler') { bowlSkill = rating; batSkill = Math.max(20, Math.round(rating - 15 - Math.random() * 8)); }
+        else if (role === 'allrounder') { bowlSkill = Math.max(25, Math.round(rating - 14 - Math.random() * 8)); batSkill = Math.max(25, Math.round(rating - 6 - Math.random() * 6)); }
+        return { name: careerRandomXIName(used), rating, role, batSkill, bowlSkill, bowlType: Math.random() < 0.35 ? 'spin' : 'seam', age: 18 + Math.floor(Math.random() * 21) };
+      });
+      // Batting order follows role and batSkill (not raw rating) — a
+      // dampened all-rounder or specialist bowler sinks below a pure
+      // batter of the same overall rating, same as their batSkill number
+      // already says they should.
+      const battersAndAR = players.filter(p => p.role === 'batter' || p.role === 'allrounder').sort((a, b) => b.batSkill - a.batSkill);
+      const keeper = players.filter(p => p.role === 'keeper');
+      const bowlers = players.filter(p => p.role === 'bowler').sort((a, b) => b.bowlSkill - a.bowlSkill);
+      return [...battersAndAR, ...keeper, ...bowlers];
     }
     function careerSquadRating(squad) {
       return Math.round(squad.reduce((s, p) => s + p.rating, 0) / squad.length);
@@ -16112,7 +16167,7 @@
       // Every batter faced at least 1 ball, so the target can't be pushed
       // below however many of them there are.
       const ballsTarget = Math.max(batted.length, remainingBalls);
-      const weights = batted.map(p => Math.max(0.15, 1 - p.battingOrder * 0.07) * careerRatingWeight(p.rating));
+      const weights = batted.map(p => Math.max(0.15, 1 - p.battingOrder * 0.07) * careerRatingWeight(p.batSkill));
       const totalW = weights.reduce((s, w) => s + w, 0) || 1;
       // Per-player noise is mean-zero only in expectation — for any one match
       // the noise terms can all land the same way (a few early batters rolling
@@ -16142,7 +16197,7 @@
       // set is then rescaled to the real, known ball total rather than left
       // as each player's independent, unconstrained guess.
       const rawBalls = batted.map((p, i) => {
-        const sr = 0.5 + p.rating / 90 + Math.random() * 0.3;
+        const sr = 0.5 + p.batSkill / 90 + Math.random() * 0.3;
         return Math.max(0.5, runsArr[i] / sr);
       });
       const rawBallsTotal = rawBalls.reduce((s, x) => s + x, 0) || 1;
@@ -16183,8 +16238,14 @@
       // covered most of), that's more slots than there's room for, so shrink
       // the attack to however many can genuinely get a 2-over minimum.
       const bowlerCount = Math.min(6, Math.floor(oversTarget / 2));
-      const bowlers = club.squad.filter(p => p.id !== 'me').sort((a, b) => b.rating - a.rating).slice(0, bowlerCount);
-      const weights = bowlers.map(p => careerRatingWeight(p.rating));
+      // Only bowler/all-rounder roles are eligible — a specialist batter or
+      // keeper never bowls here, matching careerBowlSlot's rule for the
+      // tracked player. Sorted and weighted by bowlSkill, not the flat
+      // overall `rating` — an all-rounder's bowlSkill is deliberately
+      // weaker than their batting rating (see generateClubXI), so they
+      // contribute without matching a genuine specialist.
+      const bowlers = club.squad.filter(p => p.id !== 'me' && p.bowlSkill != null).sort((a, b) => b.bowlSkill - a.bowlSkill).slice(0, bowlerCount);
+      const weights = bowlers.map(p => careerRatingWeight(p.bowlSkill));
       const totalW = weights.reduce((s, w) => s + w, 0) || 1;
       // Overs are allocated by the same rating weights as runs/wickets — a
       // captain trusts their best bowler with more overs, not a flat random
@@ -16245,7 +16306,7 @@
       // dumping the whole rounding remainder on whichever bowler happened to
       // be last (the old approach) could hand them a wildly unrepresentative
       // economy with no relation to their own rating.
-      const rawRuns = bowlers.map((p, i) => overs[i] * Math.max(3, 8 - p.rating / 15 + (Math.random() - 0.5) * 3));
+      const rawRuns = bowlers.map((p, i) => overs[i] * Math.max(3, 8 - p.bowlSkill / 15 + (Math.random() - 0.5) * 3));
       const rawTotal = rawRuns.reduce((s, x) => s + x, 0) || 1;
       const scale = remainingRuns / rawTotal;
       let assigned = 0;
@@ -17873,19 +17934,19 @@
     function careerBuildXIForSim(club, isMyClub) {
       const others = club.squad.filter(p => !p.isTrackedPlayer);
       const names = others.map(p => p.name);
-      const ratings = others.map(p => careerRatingToSim(p.rating));
-      // Bowling pool: capped to the top 6 by rating, same as the legacy
-      // engine's own generateTeamBowling (index.html:16115) — generated
-      // squad members have no role tag to say who's actually a recognized
-      // bowler, so this was previously letting all 11 (including whoever
-      // stands in for the keeper/pure batters) rotate through the attack.
-      // That diluted overs across far more bowlers than a real XI ever
-      // fields, which was suppressing wicket hauls for the players who
-      // SHOULD be doing most of the bowling. maxOv raised above the
-      // ODI-regulation 10 for the same local-club-isn't-regulated reason
-      // generateTeamBowling already documents.
-      const bowlPool = others.slice().sort((a, b) => b.rating - a.rating).slice(0, 6)
-        .map(p => ({ n: p.name, t: 's', sp: p.bowlType === 'spin', maxOv: 12, rating: careerRatingToSim(p.rating) }));
+      const ratings = others.map(p => careerRatingToSim(p.batSkill));
+      // Bowling pool: only bowler/all-rounder roles are eligible (matches
+      // generateTeamBowling's own rule) — generated squad members used to
+      // have no role tag at all, so this let a club's top 6 by RAW rating
+      // rotate through the attack regardless of role, meaning a pure
+      // specialist batter could end up as the club's most dangerous bowler
+      // too. Sorted and capped to 6 by bowlSkill, which is null for
+      // batter/keeper (excluded here) and deliberately weaker than a raw
+      // all-rounder's batting rating (see generateClubXI). maxOv raised
+      // above the ODI-regulation 10 for the same local-club-isn't-regulated
+      // reason generateTeamBowling already documents.
+      const bowlPool = others.filter(p => p.bowlSkill != null).sort((a, b) => b.bowlSkill - a.bowlSkill).slice(0, 6)
+        .map(p => ({ n: p.name, t: 's', sp: p.bowlType === 'spin', maxOv: 12, rating: careerRatingToSim(p.bowlSkill) }));
       if (isMyClub) {
         const player = CAREER.player;
         const r = careerEffectiveRatings(player);
@@ -17928,7 +17989,10 @@
         // batter/keeper roles (careerBowlSlot returns null) never bowl —
         // matches simTrackedPlayerBowling's own early-out for those roles.
       }
-      const keeperName = names[6] || names[Math.min(5, names.length - 1)] || names[0];
+      // The actual tagged keeper, not a positional guess — generated squads
+      // now carry a real role (see generateClubXI), so there's no more need
+      // to assume whoever landed at index 6 is the gloveman.
+      const keeperName = (others.find(p => p.role === 'keeper') || {}).name || names[6] || names[Math.min(5, names.length - 1)] || names[0];
       return { names, ratings, bowlPool, keeperName };
     }
 
