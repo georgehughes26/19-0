@@ -12748,23 +12748,22 @@
         if(r<0.22)return`b ${bn}`;if(r<0.44)return`c ${of()} b ${bn}`;if(r<0.58)return`lbw b ${bn}`;
         if(r<0.66)return`c ${keeperName} b ${bn}`;if(r<0.74)return`c & b ${bn}`;if(r<0.82)return`run out (${of()})`;return`b ${bn}`;
       };
-      // lastBowlerIdx/spellIdx are deliberately separate: lastBowlerIdx is
-      // whoever bowled the immediately preceding over (used only to block a
-      // bowler going twice in a row, an actual cricket rule); spellIdx is
-      // the bowler currently "on" — persists across the overs they don't
-      // bowl (the other end's), so a real spell can be tracked at all. An
-      // earlier version conflated the two (set lastBowlerIdx from the same
-      // variable nextBowler was about to compare it against, on the line
-      // right before calling it), which made the "give a spell at least 4
-      // overs before reconsidering" check permanently false — every single
-      // over went through full re-scoring, so a fresh bowler's just-arrived
-      // bonus could out-score anyone one or two overs into a good spell.
-      let lastBowlerIdx=-1,spellIdx=-1,spellOvs=0;
-      function nextBowler(ov){
-        if(spellIdx>=0&&spellIdx!==lastBowlerIdx){const sb=bwlrs[spellIdx];if(sb.overs<sb.maxOvers&&spellOvs<4&&!(ov<10&&sb.isSpin))return spellIdx;}
+      // A real innings has TWO ends bowling, each holding its own bowler
+      // across a real spell — a single "current spell" tracker can never
+      // tell "my partner just bowled, it's my turn again" apart from
+      // "someone brand new is up," because by the time either end needs a
+      // new pick, the tracker has already been overwritten to whoever
+      // bowled the very last over (an earlier version of this fix made
+      // exactly that mistake). Two independent end trackers fixes it for
+      // real: each end keeps its own bowler+spellOvs, alternates strictly
+      // by over parity (real ends don't swap mid-over), and only goes
+      // through full re-scoring once ITS OWN bowler's spell actually ends.
+      const ends=[{idx:-1,ovs:0},{idx:-1,ovs:0}];
+      function pickForEnd(end,otherEndIdx,ov){
+        if(end.idx>=0){const b=bwlrs[end.idx];if(b.overs<b.maxOvers&&end.ovs<4&&!(ov<10&&b.isSpin))return end.idx;}
         let best=-1,bestScore=-Infinity;
         bwlrs.forEach((b,i)=>{
-          if(i===lastBowlerIdx||b.overs>=b.maxOvers||(ov<10&&b.isSpin))return;
+          if(i===otherEndIdx||b.overs>=b.maxOvers||(ov<10&&b.isSpin))return;
           let sc=b.type==='s'?3:b.type==='a'?1.5:0.5;
           sc-=(b.overs/b.maxOvers)*3;
           if(b.overs===0)sc+=0.8;
@@ -12780,17 +12779,18 @@
           }
           if(sc>bestScore){bestScore=sc;best=i;}
         });
-        if(best<0)best=bwlrs.findIndex((b,i)=>i!==lastBowlerIdx&&b.overs<b.maxOvers&&!(ov<10&&b.isSpin));
-        if(best<0)best=bwlrs.findIndex((b,i)=>i!==lastBowlerIdx&&b.overs<b.maxOvers);
-        if(best<0)best=bwlrs.findIndex(b=>b.overs<b.maxOvers); // last resort: relax no-consecutive-over rule, never the cap itself
+        if(best<0)best=bwlrs.findIndex((b,i)=>i!==otherEndIdx&&b.overs<b.maxOvers&&!(ov<10&&b.isSpin));
+        if(best<0)best=bwlrs.findIndex((b,i)=>i!==otherEndIdx&&b.overs<b.maxOvers);
+        if(best<0)best=bwlrs.findIndex(b=>b.overs<b.maxOvers); // last resort: relax the "not both ends the same bowler" rule, never the cap itself
         return best;
       }
       let striker=0,nonStriker=1,nextIn=2,wkts=0,totalRuns=0,ovCount=0,sinceWkt=0;const oversLog=[];
       for(let ov=0;ov<oversMax&&wkts<10;ov++){
         if(target!==undefined&&totalRuns>=target)break;
         const isPP=ov<10,isDeath=ov>=40;
-        const nb=nextBowler(ov);if(nb<0)break;
-        if(nb!==spellIdx){spellIdx=nb;spellOvs=0;}
+        const end=ends[ov%2],otherEnd=ends[1-ov%2];
+        const nb=pickForEnd(end,otherEnd.idx,ov);if(nb<0)break;
+        if(nb!==end.idx){end.idx=nb;end.ovs=0;}
         const bowler=bwlrs[nb];let overRuns=0,dotBalls=0,wktsThisOver=0;
 
         // Momentum/pressure: a mini-collapse (2+ wkts in the last 3 overs) tightens the
@@ -12855,8 +12855,7 @@
           }
         }
         const tmp=striker;striker=nonStriker;nonStriker=tmp;
-        bowler.overs++;spellOvs++;bowler.runs+=overRuns;if(dotBalls===6)bowler.maidens++;
-        lastBowlerIdx=nb;
+        bowler.overs++;end.ovs++;bowler.runs+=overRuns;if(dotBalls===6)bowler.maidens++;
         sinceWkt=wktsThisOver>0?0:sinceWkt+1;
         const prevWkts=oversLog.length?oversLog[oversLog.length-1].totalWkts:0;
         // Snapshots of batter/bowler state as it stood right after this over — lets the
@@ -16599,27 +16598,47 @@
       st.skipTyping = null;
       const messages = document.getElementById('career-chat-messages');
       messages.querySelectorAll('.imsg-replies').forEach(el => el.remove());
+      const appendAgentBubble = text => {
+        const row = document.createElement('div');
+        row.className = 'imsg-row in';
+        const bubble = document.createElement('div');
+        bubble.className = 'imsg-bubble in';
+        bubble.textContent = text;
+        row.appendChild(bubble);
+        messages.appendChild(row);
+      };
+      // Skipping still plays out like a real back-and-forth — auto-picks
+      // the first reply option for any step that has one, rather than
+      // leaving a one-sided wall of agent messages with no responses.
+      const appendReplyBubble = label => {
+        const row = document.createElement('div');
+        row.className = 'imsg-row out';
+        const bubble = document.createElement('div');
+        bubble.className = 'imsg-bubble out';
+        bubble.textContent = label;
+        row.appendChild(bubble);
+        messages.appendChild(row);
+      };
       let startIdx = st.idx;
       if (st.currentBubble) {
         // Current step's bubble is already on screen (dots or mid-type) —
         // finish it in place rather than duplicating it.
         st.currentBubble.textContent = st.steps[st.idx].text;
         st.currentBubble = null;
+        const step = st.steps[st.idx];
+        if (step.replies && step.replies.length) appendReplyBubble(step.replies[0]);
         startIdx = st.idx + 1;
       } else if (st.awaitingReply) {
         // Current step already fully typed, just sitting on its (now
-        // removed) reply chips — move past it without adding a reply bubble.
+        // removed) reply chips — auto-pick its first reply too.
+        const step = st.steps[st.idx];
+        if (step.replies && step.replies.length) appendReplyBubble(step.replies[0]);
         startIdx = st.idx + 1;
       }
       st.awaitingReply = false;
       for (let i = startIdx; i < st.steps.length; i++) {
-        const row = document.createElement('div');
-        row.className = 'imsg-row in';
-        const bubble = document.createElement('div');
-        bubble.className = 'imsg-bubble in';
-        bubble.textContent = st.steps[i].text;
-        row.appendChild(bubble);
-        messages.appendChild(row);
+        appendAgentBubble(st.steps[i].text);
+        if (st.steps[i].replies && st.steps[i].replies.length) appendReplyBubble(st.steps[i].replies[0]);
       }
       st.idx = st.steps.length;
       careerChatScrollBottom();
@@ -17561,7 +17580,7 @@
     // rated, climbing well past that at genuinely elite ratings.
     function careerBowlEliteBoost(rating) {
       const t = Math.max(0, Math.min(1, (rating - 15) / (99 - 15)));
-      return 1 + Math.pow(t, 1.6) * 1.55;
+      return 1 + Math.pow(t, 1.3) * 1.18;
     }
     function careerRatingToSim(rating) {
       const t = (Math.max(CAREER_RATING_INPUT_FLOOR, Math.min(CAREER_RATING_INPUT_CEIL, rating)) - CAREER_RATING_INPUT_FLOOR) / (CAREER_RATING_INPUT_CEIL - CAREER_RATING_INPUT_FLOOR);
