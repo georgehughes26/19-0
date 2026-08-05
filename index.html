@@ -15164,7 +15164,7 @@
       </button>
       <button class="ov-reveal btn-sim" id="motm-attribute-choice-btn" style="background:#061420;border:1px solid #60a5fa;color:#60a5fa;text-align:left" onclick="careerMOTMShowAttributePicker()">
         <span style="display:block;font-size:14px;font-weight:800">📈 Take an Attribute Upgrade</span>
-        <span style="display:block;font-size:11px;font-weight:600;opacity:.75;margin-top:3px">+1 to a stat of your choice</span>
+        <span style="display:block;font-size:11px;font-weight:600;opacity:.75;margin-top:3px">Upgrade a stat of your choice</span>
       </button>
     </div>
     <div id="motm-bars-wrap" style="display:none;width:100%">
@@ -15437,6 +15437,8 @@
         pendingEvent: null,
         pendingEventContinue: null,
         pendingFreeTimeStat: null,
+        pendingBadPerf: null,
+        pendingBadPerfStat: null,
         pendingMOTM: null,
         resultStreak: 0,
         lastResultWon: null,
@@ -16496,6 +16498,51 @@
         };
       },
     };
+    // Deliberately a separate map from CAREER_EVENT_TYPES, not more entries
+    // in it — rollCareerRandomEvent's pool is built from
+    // Object.keys(CAREER_EVENT_TYPES), and these two aren't random pre-match
+    // flavour, they're a guaranteed post-match consequence of a specific bad
+    // performance (careerFinishMatch reads CAREER.pendingBadPerf, set in
+    // playCareerMatch). Keeping them out of that map is what stops a duck
+    // from also being rollable as an ordinary Tuesday-night dilemma.
+    const CAREER_POSTMATCH_EVENT_TYPES = {
+      duck: () => {
+        if (!CAREER.pendingBadPerfStat) CAREER.pendingBadPerfStat = careerPick(CAREER_BATTING_STAT_KEYS);
+        const key = CAREER.pendingBadPerfStat;
+        return {
+          variant: 'harm', emoji: '🦆', tag: 'Rough Day',
+          headline: `${CAREER.player.name} Out for a Duck`,
+          detail: `Gone without scoring. Days like that stick with you — knocks your confidence in that part of the game.`,
+          sub: `-1 ${CAREER_RATING_LABELS[key]}`,
+          effect: () => {
+            CAREER.player.ratings[key] = Math.max(1, CAREER.player.ratings[key] - 1);
+            CAREER.player.ovr = computeOVR(CAREER.player.ratings, CAREER.player.role);
+            CAREER.pendingBadPerfStat = null;
+          },
+        };
+      },
+      expensiveBowling: () => {
+        if (!CAREER.pendingBadPerfStat) CAREER.pendingBadPerfStat = careerPick(CAREER_BOWLING_STAT_KEYS);
+        const key = CAREER.pendingBadPerfStat;
+        return {
+          variant: 'harm', emoji: '💸', tag: 'Rough Day',
+          headline: `${CAREER.player.name} Leaks Runs Without Reward`,
+          detail: `Went for plenty today with nothing to show for it. A wicketless spell like that leaves a mark.`,
+          sub: `-1 ${CAREER_RATING_LABELS[key]}`,
+          effect: () => {
+            CAREER.player.ratings[key] = Math.max(1, CAREER.player.ratings[key] - 1);
+            CAREER.player.ovr = computeOVR(CAREER.player.ratings, CAREER.player.role);
+            CAREER.pendingBadPerfStat = null;
+          },
+        };
+      },
+    };
+    // Both the ordinary random-dilemma pool and the guaranteed post-match
+    // consequences render through the exact same s-career-event screen —
+    // this is the one place that needs to know both maps exist.
+    function careerEventConfig(type) {
+      return (CAREER_EVENT_TYPES[type] || CAREER_POSTMATCH_EVENT_TYPES[type])();
+    }
     // Most events are open to anyone; a couple only make sense for players
     // who actually field a discipline the gear applies to. Checked at roll
     // time, not filtered out of the pool permanently — a batting all-rounder
@@ -16515,7 +16562,7 @@
     function showCareerEventScreen(onDone) {
       CAREER.pendingEventDone = onDone;
       const type = CAREER.pendingEvent;
-      const cfg = CAREER_EVENT_TYPES[type]();
+      const cfg = careerEventConfig(type);
       const variantClass = cfg.variant === 'boost' ? 'wch-hero-win' : cfg.variant === 'harm' ? 'wch-hero-loss' : '';
       document.getElementById('career-event-content').innerHTML = `
         <div class="ov-reveal ov-pop wch-hero ${variantClass}" style="cursor:default">
@@ -16536,7 +16583,7 @@
       requestAnimationFrame(() => wireReveals(document.getElementById('s-career-event')));
     }
     function handleCareerEventChoice(action) {
-      const cfg = CAREER_EVENT_TYPES[CAREER.pendingEvent]();
+      const cfg = careerEventConfig(CAREER.pendingEvent);
       let sub, color;
       if (cfg.buttons) {
         const btn = cfg.buttons.find(b => b.action === action) || cfg.buttons[0];
@@ -16986,6 +17033,8 @@
       CAREER.pendingEvent = null;
       CAREER.pendingEventContinue = null;
       CAREER.pendingFreeTimeStat = null;
+      CAREER.pendingBadPerf = null;
+      CAREER.pendingBadPerfStat = null;
       CAREER.pendingMOTM = null;
       CAREER.usedEvents = new Set();
       CAREER.resultStreak = 0;
@@ -18128,6 +18177,17 @@
       // "+4" when a maxed-out player didn't actually move would be a lie.
       const appliedMoraleDelta = player.morale - moraleBefore;
 
+      // A rough day costs more than morale — queued here (not applied
+      // immediately) so careerFinishMatch can show it as its own post-match
+      // event, the same shell the random pre-match dilemmas use, rather
+      // than silently docking a stat with nothing on screen to explain why
+      // it dropped. Duck takes priority if both somehow happen in the same
+      // match (an all-rounder having a genuinely bad day both ways) — one
+      // event per match, not two.
+      if (bat && bat.runs === 0 && bat.out) CAREER.pendingBadPerf = 'duck';
+      else if (bowl && bowl.wickets === 0 && bowl.runsConceded >= 50) CAREER.pendingBadPerf = 'expensiveBowling';
+      else CAREER.pendingBadPerf = null;
+
       const prevSeasonRuns = CAREER.seasonStats.bat.runs;
       const prevSeasonWkts = CAREER.seasonStats.bowl.wickets;
       if (bat) {
@@ -18164,12 +18224,19 @@
       // before/after the match catches every 100/5 boundary crossed,
       // including a big innings/spell that crosses more than one at once.
       if (bat) {
-        const newBatMilestones = Math.floor(CAREER.seasonStats.bat.runs / 100) - Math.floor(prevSeasonRuns / 100);
-        for (let i = 0; i < newBatMilestones; i++) CAREER.pendingPoints.push({ category: 'bat', detail: bat.runs });
+        const prevBatBand = Math.floor(prevSeasonRuns / 100);
+        const newBatMilestones = Math.floor(CAREER.seasonStats.bat.runs / 100) - prevBatBand;
+        // detail is the cumulative season threshold actually crossed (100,
+        // 200, 300...), not this match's own runs — the milestone is a
+        // running season total, and a modest 20-run knock that happens to
+        // tip the season over 300 shouldn't read as if it were itself a
+        // 300-run innings.
+        for (let i = 0; i < newBatMilestones; i++) CAREER.pendingPoints.push({ category: 'bat', detail: (prevBatBand + i + 1) * 100 });
       }
       if (bowl) {
-        const newBowlMilestones = Math.floor(CAREER.seasonStats.bowl.wickets / 5) - Math.floor(prevSeasonWkts / 5);
-        for (let i = 0; i < newBowlMilestones; i++) CAREER.pendingPoints.push({ category: 'bowl', detail: bowl.wickets });
+        const prevBowlBand = Math.floor(prevSeasonWkts / 5);
+        const newBowlMilestones = Math.floor(CAREER.seasonStats.bowl.wickets / 5) - prevBowlBand;
+        for (let i = 0; i < newBowlMilestones; i++) CAREER.pendingPoints.push({ category: 'bowl', detail: (prevBowlBand + i + 1) * 5 });
       }
       for (let i = 0; i < field.clean; i++) CAREER.pendingPoints.push({ category: 'field', detail: null });
 
@@ -18736,6 +18803,19 @@
       // MOTM is tied directly to the final whistle, points are a quieter
       // reflection that makes more sense after.
       if (CAREER.pendingMOTM) { buildCareerMOTM(); go('s-career-motm'); return; }
+      // A rough day (a duck, or an expensive wicketless spell) gets the
+      // same "final whistle" priority MOTM does — set in playCareerMatch,
+      // shown through the same event shell the random pre-match dilemmas
+      // use so it reads as one consistent system rather than a separate
+      // popup style just for bad news.
+      if (CAREER.pendingBadPerf) {
+        const type = CAREER.pendingBadPerf;
+        CAREER.pendingBadPerf = null;
+        CAREER.pendingEvent = type;
+        go('s-career-event');
+        showCareerEventScreen(() => careerFinishMatch());
+        return;
+      }
       if (CAREER.pendingPoints.length) { go('s-career-points'); renderCareerPointsStep(); return; }
       if (CAREER.currentRound >= 22) {
         CAREER.seasonComplete = true;
@@ -18889,7 +18969,12 @@
     function careerMOTMPickStat(stat) {
       const p = CAREER.player;
       const before = p.ratings[stat];
-      const after = Math.min(CAREER_RATING_CAP, before + 1);
+      // Same diminishing-returns point value as a regular in-season
+      // progression point (careerSpendPoint) — a flat +1 regardless of
+      // where the stat already sat undersold this as a genuine reward next
+      // to those points, and never distinguished an early-career jump from
+      // a late-career one the way the rest of progression already does.
+      const after = Math.min(CAREER_RATING_CAP, before + careerPointValue(before));
       const delta = after - before;
       p.ratings[stat] = after;
       p.ovr = computeOVR(p.ratings, p.role);
@@ -18958,8 +19043,8 @@
       return role === 'keeper' ? ['keeping', 'catching', 'groundFielding'] : ['catching', 'groundFielding'];
     }
     function careerPointDescription(point, p) {
-      if (point.category === 'bat') return `${p.name} crossed fifty this innings (${point.detail} runs). Choose a batting stat to sharpen.`;
-      if (point.category === 'bowl') return `${p.name} took a haul this innings (${point.detail} wickets). Choose a bowling stat to sharpen.`;
+      if (point.category === 'bat') return `${p.name} has passed ${point.detail} runs for the season. Choose a batting stat to sharpen.`;
+      if (point.category === 'bowl') return `${p.name} has passed ${point.detail} wickets for the season. Choose a bowling stat to sharpen.`;
       return `${p.name} held a clean catch. Choose a fielding stat to sharpen.`;
     }
     // Same full 9-bar layout as the creation reveal (career-reveal-bars),
