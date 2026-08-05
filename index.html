@@ -14906,7 +14906,7 @@
       </div>
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Local Club Season</div>
-        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">22 matches, double round-robin against 11 other clubs. You'll see <span style="color:#f9c846;font-weight:800">your moments only</span>: every run and wicket that matters, told second-person, one at a time.</div>
+        <div style="font-size:14px;color:#c0c0d8;line-height:1.6">A full double round-robin against every other club in your league. You'll see <span style="color:#f9c846;font-weight:800">your moments only</span>: every run and wicket that matters, told second-person, one at a time.</div>
       </div>
       <div style="background:#0d0d12;border:1px solid #1a1a24;border-radius:12px;padding:16px">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:6px">Off the Pitch</div>
@@ -14988,10 +14988,11 @@
   </div>
 
   <div id="s-career-pick-league" class="screen">
-    <div style="width:100%;text-align:left;margin-bottom:20px">
+    <div style="width:100%;text-align:left;margin-bottom:6px">
       <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9090a8;margin-bottom:6px">Career Mode</div>
       <div style="font-size:24px;font-weight:900;color:#fff">Choose your league</div>
     </div>
+    <div id="career-league-sub" style="width:100%;text-align:left;font-size:13px;color:#8080a0;line-height:1.5;margin-bottom:18px"></div>
     <div id="career-league-list" style="width:100%;margin-bottom:10px"></div>
     <button class="btn-start" id="career-league-continue" style="width:100%;margin-top:10px" onclick="go('s-career-team-reveal');renderCareerTeamReveal()" disabled>Continue</button>
     <button class="btn-auth-small" onclick="go('s-career-create-reveal')" style="margin-top:14px">← Back</button>
@@ -15791,12 +15792,19 @@
     }
 
     function renderCareerLeaguePicker() {
+      const leagues = Object.values(CAREER_LEAGUES).sort((a, b) => a.name.localeCompare(b.name));
+      const countyCount = new Set(leagues.map(l => l.county)).size;
+      document.getElementById('career-league-sub').textContent =
+        `${leagues.length} real recreational leagues across ${countyCount} counties, clubs and pecking order both modelled on the real thing. Wherever you sign, that's your career.`;
       const list = document.getElementById('career-league-list');
-      list.innerHTML = Object.values(CAREER_LEAGUES).map(l => `
-        <div class="player-card" data-league="${l.id}" onclick="careerSelectLeague('${l.id}')" style="padding:14px 16px;margin-bottom:8px">
-          <div style="text-align:left;min-width:0">
-            <div style="font-size:15px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.name}</div>
-            <div style="font-size:11px;color:#9090a8;margin-top:2px">${l.tier} · ${l.clubs.length} clubs</div>
+      list.innerHTML = leagues.map((l, i) => `
+        <div class="player-card card-in" data-league="${l.id}" onclick="careerSelectLeague('${l.id}')" style="padding:14px 16px;margin-bottom:8px;animation-delay:${Math.min(i * 35, 350)}ms">
+          <div style="text-align:left;min-width:0;flex:1">
+            <div class="pc-name" style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.name}</div>
+            <div class="pc-meta" style="margin-top:3px">
+              <span style="color:#c0c0d8;font-weight:700">${l.county}</span>
+              <span style="color:#363650"> · </span>${l.tier}<span style="color:#363650"> · </span>${l.clubs.length} clubs
+            </div>
           </div>
           <span class="career-league-check" style="font-size:18px;font-weight:900;color:#f9c846;flex-shrink:0;opacity:${CAREER.draft.leagueId === l.id ? 1 : 0}">✓</span>
         </div>`).join('');
@@ -16863,7 +16871,7 @@
       const p = CAREER.player;
       const league = CAREER_LEAGUES[CAREER.leagueId];
       const county = (league && league.county) || 'the county';
-      const goals = CAREER_SEASON_GOALS[careerPosKey(p)] || {};
+      const goals = careerScaledSeasonGoals();
       const goalText = careerGoalText(goals);
       return [
         { text: `Mate! 🎉 Congrats — ${CAREER.myClubName} have signed you. Ink's dry, you're officially in the side now.`, replies: ['Buzzing 🙌', "Let's go"] },
@@ -16966,7 +16974,7 @@
       const player = CAREER.player;
       const isPrimaryBowler = player.role === 'bowler' || (player.role === 'allrounder' && player.lean === 'bowlingAR');
       const statKeys = isPrimaryBowler ? CAREER_BOWLING_STAT_KEYS : CAREER_BATTING_STAT_KEYS;
-      const goals = CAREER_SEASON_GOALS[careerPosKey(player)] || {};
+      const goals = careerScaledSeasonGoals();
       const applyBoost = key => {
         player.ratings[key] = Math.min(CAREER_RATING_CAP, player.ratings[key] + 5);
         player.ovr = computeOVR(player.ratings, player.role);
@@ -17049,7 +17057,7 @@
     }
 
     function playNextCareerFixtureContinue() {
-      if (CAREER.currentRound >= 22) return;
+      if (CAREER.currentRound >= CAREER.fixtures.length) return;
       // A save from before morale/random events existed carries a `player`
       // with neither field — every read already defaults safely (`?? 50`/
       // `?? 0`), but the mutation sites (morale update, event effects)
@@ -17068,11 +17076,14 @@
       if (eventType) { CAREER.pendingEvent = eventType; showCareerEventScreen(startMatch); }
       else startMatch();
     }
-    // 22-round season — round 11 is the halfway point (11 played, 11 to go).
-    // Gated ahead of the normal fixture flow so the chat always lands
-    // between two matches, never mid-match.
+    // Halfway point scales with the league's actual round count (a 22-round
+    // season halfway's at round 11, an 18-round one at round 9, etc — see
+    // generateRoundRobin, which sizes CAREER.fixtures off the real club
+    // count rather than assuming 12). Gated ahead of the normal fixture
+    // flow so the chat always lands between two matches, never mid-match.
     function playNextCareerFixture() {
-      if (CAREER.currentRound === 11 && !CAREER.halfwayChatShown) {
+      const halfwayRound = Math.floor(CAREER.fixtures.length / 2);
+      if (CAREER.currentRound === halfwayRound && !CAREER.halfwayChatShown) {
         CAREER.halfwayChatShown = true;
         go('s-career-agent-chat');
         showCareerAgentChat(careerAgentHalfwayScript(), playNextCareerFixtureContinue);
@@ -17123,11 +17134,23 @@
       if (goals.wickets) parts.push(`${goals.wickets} wickets`);
       return parts.join(' and ');
     }
+    // CAREER_SEASON_GOALS is tuned against a 22-round (12-club) season.
+    // Smaller leagues (e.g. a 10-club, 18-round one) play fewer matches, so
+    // the same raw target is proportionally harder to reach — scale it down
+    // by the league's actual round count and round to a clean number.
+    function careerScaledSeasonGoals() {
+      const base = CAREER_SEASON_GOALS[careerPosKey(CAREER.player)] || {};
+      const scale = (CAREER.fixtures ? CAREER.fixtures.length : 22) / 22;
+      const out = {};
+      if (base.runs) out.runs = Math.max(25, Math.round(base.runs * scale / 25) * 25);
+      if (base.wickets) out.wickets = Math.max(5, Math.round(base.wickets * scale / 5) * 5);
+      return out;
+    }
     // current/remaining per stat the role actually has a target for, plus
     // onPace — true only if EVERY targeted stat is at least halfway to goal,
     // matching "all-rounders need to meet two" rather than either one.
     function careerSeasonGoalProgress() {
-      const goals = CAREER_SEASON_GOALS[careerPosKey(CAREER.player)] || {};
+      const goals = careerScaledSeasonGoals();
       const stats = CAREER.seasonStats;
       const out = { goals, current: {}, remaining: {}, onPace: true };
       if (goals.runs) {
@@ -18817,7 +18840,7 @@
         return;
       }
       if (CAREER.pendingPoints.length) { go('s-career-points'); renderCareerPointsStep(); return; }
-      if (CAREER.currentRound >= 22) {
+      if (CAREER.currentRound >= CAREER.fixtures.length) {
         CAREER.seasonComplete = true;
         // One more agent/coach chat before the review itself — whether you
         // hit the season target or not. Guarded so revisiting the season
@@ -19191,8 +19214,8 @@
 
       const fixtureEl = document.getElementById('hub-next-fixture');
       const playBtn = document.getElementById('hub-play-btn');
-      if (CAREER.currentRound >= 22) {
-        fixtureEl.innerHTML = `<div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:3px">Season Complete</div><div style="font-size:13px;color:#c0c0d8">All 22 rounds played.</div>`;
+      if (CAREER.currentRound >= CAREER.fixtures.length) {
+        fixtureEl.innerHTML = `<div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:3px">Season Complete</div><div style="font-size:13px;color:#c0c0d8">All ${CAREER.fixtures.length} rounds played.</div>`;
         playBtn.textContent = 'See Season Review';
         playBtn.onclick = () => { buildCareerSeasonEnd(); go('s-career-season-end'); };
       } else {
@@ -19200,7 +19223,7 @@
         const oppId = pair[0] === CAREER.myClubId ? pair[1] : pair[0];
         const isHome = pair[0] === CAREER.myClubId;
         const opp = CAREER.clubs[oppId];
-        fixtureEl.innerHTML = `<div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:3px">Round ${CAREER.currentRound + 1} of 22</div><div style="font-size:14px;font-weight:900;color:#fff">${isHome ? 'vs' : '@'} ${opp.name}</div>`;
+        fixtureEl.innerHTML = `<div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#6060a0;font-weight:800;margin-bottom:3px">Round ${CAREER.currentRound + 1} of ${CAREER.fixtures.length}</div><div style="font-size:14px;font-weight:900;color:#fff">${isHome ? 'vs' : '@'} ${opp.name}</div>`;
         playBtn.textContent = 'Play Next Match';
         playBtn.onclick = playNextCareerFixture;
       }
@@ -19383,12 +19406,16 @@
     }
 
     // ── League stats / leaderboard ───────────────────────────────────────
+    // avg/bowlAvg's qualification bars (innings/wickets played) are set
+    // against a 22-round (12-club) season — scale them down for smaller
+    // leagues so a shorter season doesn't leave nobody ever qualifying.
+    function careerRoundScale() { return (CAREER.fixtures ? CAREER.fixtures.length : 22) / 22; }
     const CAREER_STAT_CATEGORIES = [
       { key: 'runs',    label: 'Most Runs',        qualify: s => true,                value: s => s.bat.runs,                                      fmt: v => v,             sortDesc: true },
-      { key: 'avg',     label: 'Best Average',     qualify: s => s.bat.innings >= 11 && s.bat.runs >= 400, value: s => s.bat.outs ? s.bat.runs / s.bat.outs : s.bat.runs, fmt: v => v.toFixed(1),  sortDesc: true },
+      { key: 'avg',     label: 'Best Average',     qualify: s => s.bat.innings >= Math.round(11 * careerRoundScale()) && s.bat.runs >= Math.round(400 * careerRoundScale()), value: s => s.bat.outs ? s.bat.runs / s.bat.outs : s.bat.runs, fmt: v => v.toFixed(1),  sortDesc: true },
       { key: 'sr',      label: 'Best Strike Rate', qualify: s => true,                value: s => s.bat.balls ? (s.bat.runs / s.bat.balls) * 100 : 0, fmt: v => v.toFixed(1), sortDesc: true },
       { key: 'wickets', label: 'Most Wickets',     qualify: s => true,                value: s => s.bowl.wickets,                                   fmt: v => v,             sortDesc: true },
-      { key: 'bowlAvg', label: 'Best Bowling Avg', qualify: s => s.bowl.wickets >= 30, value: s => s.bowl.wickets ? s.bowl.runsConceded / s.bowl.wickets : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
+      { key: 'bowlAvg', label: 'Best Bowling Avg', qualify: s => s.bowl.wickets >= Math.round(30 * careerRoundScale()), value: s => s.bowl.wickets ? s.bowl.runsConceded / s.bowl.wickets : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
       { key: 'econ',    label: 'Best Economy',     qualify: s => true,                value: s => s.bowl.overs ? s.bowl.runsConceded / s.bowl.overs : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
     ];
     const CAREER_STAT_ICONS = { runs: '🏏', avg: '📈', sr: '⚡', wickets: '🎯', bowlAvg: '🛡️', econ: '🔒' };
@@ -19714,7 +19741,7 @@
       const headerClass = isChampion ? 'ov-header ovh-perfect' : 'ov-header ovh-early';
       const icon = isChampion ? '👑' : '📋';
       const headline = isChampion ? 'League Champions' : 'Season Complete';
-      const sub = `Finished ${ordinal(myPos)} of 12 in ${leagueName}.`;
+      const sub = `Finished ${ordinal(myPos)} of ${finalTable.length} in ${leagueName}.`;
       document.getElementById('career-end-header').innerHTML = `
         <div class="${headerClass}">
           <span class="ov-icon" aria-hidden="true">${icon}</span>
