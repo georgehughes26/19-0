@@ -15484,6 +15484,8 @@
         seasonEndChatShown: false,
         seasonTrophiesComputed: false,
         seasonTrophiesWonThisSeason: [],
+        missStreak: 0,
+        seasonEndHit: null,
       };
     }
     const CAREER_SETTINGS = { autoAdvanceAI: true };
@@ -15893,7 +15895,7 @@
       const teammates = CAREER.draft.assignedClubSquad.filter(x => !x.isTrackedPlayer);
       const captain = [...teammates].sort((a, b) => b.rating - a.rating)[0];
       const captainQuote = careerPick([
-        `"We've had half an eye on ${p.name} for a while now — the trials just confirmed what we already thought. Delighted to get this one over the line."`,
+        `"We've had half an eye on ${p.name} for a while now, and the trials just confirmed what we already thought. Delighted to get this one over the line."`,
         `"Losing ${CAREER.draft.replacedPlayerName} leaves a gap, but ${p.name} coming in gives us real competition for places. Good business for the club."`,
         `"${p.name}'s attitude in the nets sold it as much as the ability did. Excited to see what they can do for us this season."`,
       ]);
@@ -16966,14 +16968,24 @@
       const goals = careerScaledSeasonGoals();
       const goalText = careerGoalText(goals);
       return [
-        { text: `Mate! 🎉 Congrats — ${CAREER.myClubName} have signed you. Ink's dry, you're officially in the side now.`, replies: ['Buzzing 🙌', "Let's go"] },
-        { text: `Been on the phone all morning about you actually. ${county} 2nd XI's coach already knows your name.`, replies: ['No way', 'Serious?'] },
+        { text: `Mate! Congrats, ${CAREER.myClubName} have signed you. It's official, you're in the side now.`, replies: ['Buzzing 🙌', "Let's go"] },
+        { text: `Been on the phone this morning about you actually. ${county} 2nd XI's coach already knows your name.`, replies: ['No way', 'Serious?'] },
         { text: goalText ? `Yeah, dead serious. He's going to be watching this season closely. Wants to see ${goalText} out of you.` : `Yeah, dead serious. He's going to be watching this season closely.`, replies: ["I've got this", 'No pressure then 😅'] },
         { text: `That's the attitude. Go get him a season worth talking about. Speak soon 👊`, replies: null },
       ];
     }
+    // Four tone tiers off bestPct (current/full-season-target, same metric
+    // careerSeasonEndGoalInfo uses) rather than the old binary onPace
+    // check — halfway "on pace" alone couldn't tell a player miles ahead
+    // of target from one barely scraping it, or a player close-but-behind
+    // from one hopelessly off, so every non-fire player got the same flat
+    // "doing fine" or "not blown away" line regardless of how true either
+    // read.
     function careerAgentHalfwayScript() {
-      const { goals, current, remaining, onPace } = careerSeasonGoalProgress();
+      const { goals, current, remaining } = careerSeasonGoalProgress();
+      const keys = Object.keys(goals);
+      let bestPct = 0;
+      keys.forEach(k => { bestPct = Math.max(bestPct, goals[k] ? current[k] / goals[k] : 0); });
       const statParts = obj => {
         const parts = [];
         if (goals.runs != null) parts.push(`${obj.runs} runs`);
@@ -16985,17 +16997,32 @@
       const remainingText = statParts(remaining);
       const league = CAREER_LEAGUES[CAREER.leagueId];
       const county = (league && league.county) || 'the county';
-      if (onPace) {
+      const tone = bestPct >= 0.75 ? 'fire' : bestPct >= 0.5 ? 'onPace' : bestPct >= 0.25 ? 'close' : 'far';
+      if (tone === 'fire') {
         return [
-          { text: `Quick one — just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', "What'd he say?"] },
-          { text: `He's impressed. You're at ${currentText} with half the season gone — right where he wants you.`, replies: ['Class', 'Not done yet'] },
+          { text: `Quick one, just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', "What'd he say?"] },
+          { text: `He couldn't stop talking about you. ${currentText} at halfway, you're not just on pace, you're miles ahead of it.`, replies: ['On fire 🔥', "Let's keep going"] },
+          { text: `Keep this up and he'll be signing you before the season's even done.`, replies: null },
+        ];
+      }
+      if (tone === 'onPace') {
+        return [
+          { text: `Quick one, just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', "What'd he say?"] },
+          { text: `He's impressed. You're at ${currentText} with half the season gone, right where he wants you.`, replies: ['Class', 'Not done yet'] },
           { text: `Keep this up and you're in the frame. ${remainingText} more and it's basically job done.`, replies: null },
         ];
       }
+      if (tone === 'close') {
+        return [
+          { text: `Quick one, just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', 'Good or bad?'] },
+          { text: `He reckons you're not far off. ${currentText} at the halfway mark, a bit behind where he wants you, but nothing drastic.`, replies: ['Good to know', "I'll push on"] },
+          { text: `${remainingText} more in the second half and you're right back in it.`, replies: null },
+        ];
+      }
       return [
-        { text: `Quick one — just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', 'Good or bad?'] },
-        { text: `Not gonna lie, he's not blown away. ${currentText} at the halfway mark isn't quite the number he wanted.`, replies: ["I'll turn it around", 'Tough season'] },
-        { text: `Still time. ${remainingText} more in the second half and he'll forget all about it.`, replies: null },
+        { text: `Quick one, just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', 'Good or bad?'] },
+        { text: `Not gonna lie, he's not blown away. ${currentText} at the halfway mark is a long way off what he wanted.`, replies: ["I'll turn it around", 'Tough season'] },
+        { text: `Big ask now. ${remainingText} more in the second half. Not impossible, but you need a big finish.`, replies: null },
       ];
     }
     // End-of-season verdict — the coach calls direct if the target was hit
@@ -17016,13 +17043,30 @@
       // 0/40 seasons under the old AND requirement). Single-stat roles
       // (Opener/Top Order/Bowler) have exactly one key, so `some` and
       // `every` are equivalent for them — no special-casing needed.
-      const hit = keys.length > 0 && keys.some(k => current[k] >= goals[k]);
+      const rawHit = keys.length > 0 && keys.some(k => current[k] >= goals[k]);
+      // Pity rule — three missed seasons in a row guarantees the fourth
+      // clears, regardless of the roll. Without this, the quota's own
+      // ~20-30% per-season odds mean a real (unlucky) minority of players
+      // can run 6-9 seasons without ever progressing (verified via a
+      // 480-career simulation this session) — nobody should be stuck at
+      // the bottom tier past their fourth attempt.
+      //
+      // Frozen the first time it's computed each season (via
+      // CAREER.seasonEndHit, reset to null in careerStartNextSeason/
+      // resetCareerState) rather than re-derived from missStreak on every
+      // call — this function gets read multiple times per season-end
+      // screen (the coach script, the trophy/continue-button check), and
+      // missStreak itself gets bumped to 3 by the *first* of those reads
+      // (see the season-end "computed once" site), which let the second
+      // read see missStreak>=3 and award pity a season early.
+      if (CAREER.seasonEndHit === null) CAREER.seasonEndHit = rawHit || CAREER.missStreak >= 3;
+      const hit = CAREER.seasonEndHit;
       // bestPct (not worst) — with an OR quota, "how close did you come"
       // should read off whichever target you very nearly cleared, not
       // whichever one you were furthest from.
       let bestPct = 0;
       keys.forEach(k => { bestPct = Math.max(bestPct, goals[k] ? current[k] / goals[k] : 0); });
-      return { hit, bestPct, goals, current, keys };
+      return { hit, rawHit, bestPct, goals, current, keys };
     }
     function careerStatSummary(obj, keys) {
       const parts = [];
@@ -17036,30 +17080,46 @@
       const league = CAREER_LEAGUES[CAREER.leagueId];
       const county = (league && league.county) || 'the county';
       const player = CAREER.player;
+      if (info.hit && info.rawHit) {
+        return {
+          sender: { name: `${county} Coach`, avatar: '🏆' },
+          steps: [
+            { text: `Alright, ${player.name}? Your agent passed on your number, hope that's alright.`, replies: ['Course, go on', 'No worries'] },
+            { text: `Been keeping tabs on you all year. ${careerStatSummary(info.current, info.keys)}, that's proper impressive stuff at your level.`, replies: ['Cheers', 'Means a lot'] },
+            { text: `You're firmly in our plans for next year. Wanted to tell you myself.`, replies: ['Buzzing 🙌', "Can't wait"] },
+            { text: `Good stuff. Speak soon.`, replies: null },
+          ],
+        };
+      }
+      // Pity hit (info.hit but !info.rawHit) — the numbers didn't actually
+      // clear this time, but a player shouldn't be stuck at the bottom
+      // past their fourth attempt (see careerSeasonEndGoalInfo). Framed as
+      // a development call-up on graft/potential rather than the coach
+      // pretending the target was met.
       if (info.hit) {
         return {
           sender: { name: `${county} Coach`, avatar: '🏆' },
           steps: [
             { text: `Alright, ${player.name}? Your agent passed on your number, hope that's alright.`, replies: ['Course, go on', 'No worries'] },
-            { text: `Been keeping tabs on you all year. ${careerStatSummary(info.current, info.keys)} — that's proper impressive stuff at your level.`, replies: ['Cheers', 'Means a lot'] },
-            { text: `You're firmly in our plans for next year. Wanted to tell you myself.`, replies: ['Buzzing 🙌', "Can't wait"] },
+            { text: `Look, ${careerStatSummary(info.current, info.keys)} isn't quite what we said we wanted, but I've watched you graft for four years now.`, replies: ['Cheers', 'Appreciate that'] },
+            { text: `I'm bringing you in anyway. Potential's there, and I'd rather back it now than keep waiting.`, replies: ['Buzzing 🙌', "Won't let you down"] },
             { text: `Good stuff. Speak soon.`, replies: null },
           ],
         };
       }
       const tone = info.bestPct >= 0.85 ? 'close' : info.bestPct >= 0.5 ? 'mid' : 'far';
       const missLine = tone === 'close'
-        ? `So close, mate. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} — just missed out on that one, properly gutting.`
+        ? `So close, mate. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)}, just missed out on that one, properly gutting.`
         : tone === 'mid'
-        ? `Wasn't quite enough for him. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} he wanted — not a disaster, but not there either.`
-        : `Not gonna sugarcoat it. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} is a way off — needs a real look at your game.`;
+        ? `Wasn't quite enough for him. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} he wanted, not a disaster, but not there either.`
+        : `Not gonna sugarcoat it. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} is a way off. Needs a real look at your game.`;
       const missReplies = tone === 'close' ? ['Gutted', 'So close'] : tone === 'mid' ? ['Fair enough', "I'll be better"] : ["I'll turn it around", 'Tough season'];
       return {
         sender: { name: 'Your Agent', avatar: '🕴️' },
         steps: [
           { text: `Right, had that chat with ${county}'s coach like I said I would.`, replies: ['And?', 'Go on...'] },
           { text: missLine, replies: missReplies },
-          { text: `Good news is you're staying put — he's asked for the same target again next year, ${careerGoalText(info.goals)}. Let's go get it this time.`, replies: null },
+          { text: `Good news is you're staying put. He's asked for the same target again next year, ${careerGoalText(info.goals)}. Let's go get it this time.`, replies: null },
         ],
       };
     }
@@ -17090,7 +17150,7 @@
             replies: statKeys.map(key => ({ label: CAREER_RATING_LABELS[key], value: key })),
             onPick: applyBoost,
           },
-          { text: `Nice one, that'll go in over the break. Good luck next year — same target as before: ${careerGoalText(goals)}. Go get it.`, replies: null },
+          { text: `Nice one, that'll go in over the break. Good luck next year, same target as before: ${careerGoalText(goals)}. Go get it.`, replies: null },
         ],
       };
     }
@@ -17157,6 +17217,7 @@
       CAREER.seasonEndChatShown = false;
       CAREER.seasonTrophiesComputed = false;
       CAREER.seasonTrophiesWonThisSeason = [];
+      CAREER.seasonEndHit = null;
 
       go('s-career-hub');
       buildCareerHub();
@@ -20004,6 +20065,10 @@
       // cabinet, not just shown here.
       if (!CAREER.seasonTrophiesComputed) {
         CAREER.seasonTrophiesComputed = true;
+        // Pity-rule bookkeeping (see careerSeasonEndGoalInfo) — updated
+        // exactly once per season, right alongside the other "computed
+        // once" season-end state below.
+        CAREER.missStreak = careerSeasonEndGoalInfo().hit ? 0 : CAREER.missStreak + 1;
         const won = careerComputeSeasonTrophies();
         // A team honour, not an individual stat leaderboard one — doesn't
         // come from careerComputeSeasonTrophies (that only ever looks at
