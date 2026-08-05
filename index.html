@@ -15252,13 +15252,22 @@
     // offset from the base (sum 135, avg 45/stat) trios used by the pure roles.
     // This keeps OVR===45 for every combo, same invariant as before.
     const CAREER_RATING_TABLES = {
-      // +2/stat over the neutral 45avg base — computeOVR now weights each
-      // role's categories rather than averaging only the relevant ones, and a
-      // pure specialist's fielding(43avg)/dead-discipline(15 floor) drag the
-      // weighted sum below 45 even at 80% weight on their main stat, so the
-      // main stat itself needs to sit slightly above 45 to compensate. See
-      // computeOVR's comment for the actual weights and the arithmetic.
+      // Every table below is solved so computeOVR's role-weighted average
+      // lands on exactly 45 for every role/lean, matching the "every build
+      // starts at a 45 overall" promise on the intro screen — that used to
+      // only be true for Batter/Keeper (Bowler actually landed on 50,
+      // All-Rounders on 43-44) because these seed values were tuned once
+      // and never rechecked after computeOVR's per-role weighting was added
+      // later. See computeOVR's own comment for the weights themselves.
       battingType: {
+        // Every build starts at the same 45 OVR — difficulty differences
+        // between roles live entirely in CAREER_SEASON_GOALS (the quota
+        // targets) now, not in these seed ratings. Opener's quota used to
+        // be nerfed via technique/power/temperament directly, which also
+        // dragged creation OVR down to 39 as a side effect; reverted back
+        // to the OVR-neutral values and the 1,000-run target was retuned
+        // instead. CAREER_POS_RUNS_FACTOR looked like an alternative lever
+        // for this but turned out to be dead code (see that const).
         opener:      { technique:53, power:41, temperament:47 },
         topOrder:    { technique:47, power:41, temperament:53 },
         middleOrder: { technique:41, power:53, temperament:47 },
@@ -15268,10 +15277,17 @@
         topOrder:    { technique:52, power:46, temperament:58 },
         middleOrder: { technique:46, power:58, temperament:52 },
       },
+      // +6/stat over the OVR-neutral values, -6/stat on bowlTypePrimary
+      // below — Bowling-lean All-Rounder was landing 40 wickets too easily
+      // (~47%) and 300 runs too rarely (~28%) at the neutral split; an
+      // all-rounder should be a worse bowler than a specialist and a
+      // better batter than that split gave them credit for. Weights are
+      // symmetric (0.425 bat / 0.425 bowl) so shifting the same amount
+      // both ways moves the bat/bowl balance without moving OVR off 45.
       battingTypeSecondary: {
-        opener:      { technique:44, power:32, temperament:38 },
-        topOrder:    { technique:38, power:32, temperament:44 },
-        middleOrder: { technique:32, power:44, temperament:38 },
+        opener:      { technique:57, power:45, temperament:51 },
+        topOrder:    { technique:51, power:45, temperament:57 },
+        middleOrder: { technique:45, power:57, temperament:51 },
       },
       // Flat across all four types within each tier, deliberately — control
       // and threat feed economy/wicket-rate directly in simTrackedPlayerBowling,
@@ -15279,31 +15295,55 @@
       // spread around the same average) made fast/leg genuinely better
       // wicket-takers and medium/off genuinely tighter economically despite
       // reading as the same "skill level" — bowling type ended up mattering
-      // for real output, not just flavour. Specialist now sits clearly above
-      // Bowling AR (primary), which sits clearly above Batting AR (secondary)
+      // for real output, not just flavour. Specialist still sits above
+      // Bowling AR (primary), which still sits above Batting AR (secondary)
       // — a specialist who commits fully to bowling should outbowl someone
-      // splitting focus with batting, which the old table's OVR-balancing
-      // (tuned per role in isolation) didn't check for.
+      // splitting focus with batting. That margin is thinner than it used to
+      // be (54/48/36 before this rebalance) because getting every role's OVR
+      // to land on exactly 45 leaves very little room once the specialist's
+      // 80%-bowl-weight and the All-Rounder's 42.5%-bowl-weight both have to
+      // solve to the same target — the ordering direction is preserved, the
+      // gap isn't as dramatic.
+      // Back to the OVR-neutral 47 (was buffed to 50 to fix a low quota
+      // hit-rate) — that difficulty tuning now lives entirely in the
+      // 50-wickets target in CAREER_SEASON_GOALS instead of in this rating.
       bowlType: {
-        fast:   { control:54, threat:54, variation:54 },
-        medium: { control:54, threat:54, variation:54 },
-        leg:    { control:54, threat:54, variation:54 },
-        off:    { control:54, threat:54, variation:54 },
+        fast:   { control:47, threat:47, variation:47 },
+        medium: { control:47, threat:47, variation:47 },
+        leg:    { control:47, threat:47, variation:47 },
+        off:    { control:47, threat:47, variation:47 },
       },
+      // -6/stat, paired with battingTypeSecondary's +6 above — see that
+      // comment for why. Was further nerfed to 36 to fix Bowling-lean
+      // All-Rounder's quota being too easy, which also dropped creation
+      // OVR to 43 as a side effect; reverted to the OVR-neutral 40 and the
+      // 40-wickets target retuned in CAREER_SEASON_GOALS instead.
       bowlTypePrimary: {
-        fast:   { control:48, threat:48, variation:48 },
-        medium: { control:48, threat:48, variation:48 },
-        leg:    { control:48, threat:48, variation:48 },
-        off:    { control:48, threat:48, variation:48 },
+        fast:   { control:40, threat:40, variation:40 },
+        medium: { control:40, threat:40, variation:40 },
+        leg:    { control:40, threat:40, variation:40 },
+        off:    { control:40, threat:40, variation:40 },
       },
       bowlTypeSecondary: {
-        fast:   { control:36, threat:36, variation:36 },
-        medium: { control:36, threat:36, variation:36 },
-        leg:    { control:36, threat:36, variation:36 },
-        off:    { control:36, threat:36, variation:36 },
+        fast:   { control:39, threat:39, variation:39 },
+        medium: { control:39, threat:39, variation:39 },
+        leg:    { control:39, threat:39, variation:39 },
+        off:    { control:39, threat:39, variation:39 },
       },
       keeper: {
         keeperBatsmanFielding: { keeping:60, catching:60, groundFielding:36 },
+        // Keeper's batting flavour used to just reuse battingTypeSecondary
+        // (All-Rounder's "leftover discipline" table) since the numbers
+        // happened to work out — but that made them silently coupled: this
+        // rebalance needed to raise battingTypeSecondary for the Bowling
+        // All-Rounder's OVR to reach 45, which would have dragged Keeper's
+        // OVR up to 48 as a side effect. Same original values, just a
+        // dedicated copy so the two roles can be tuned independently.
+        battingSecondary: {
+          opener:      { technique:44, power:32, temperament:38 },
+          topOrder:    { technique:38, power:32, temperament:44 },
+          middleOrder: { technique:32, power:44, temperament:38 },
+        },
       },
       // Catching/groundFielding for the three non-keeper roles — none of their
       // Type choices are fielding-related, so this is flat per role rather than
@@ -15312,16 +15352,13 @@
       // meant every Batter/Bowler/All-Rounder in the game shared one identical,
       // rock-bottom fielding skill regardless of build.
       //
-      // Same value for all three roles, deliberately — this keeps every role's
-      // average across its *active* stats (the ones the sim actually reads, not
-      // the ones deliberately parked at the 15 floor) sitting in the same ~44-45
-      // band: Batter/Bowler average 44.2 across their 5 active stats, Keeper
-      // averages exactly 45.0 across its 6, and All-Rounder averages 44.5 across
-      // its 8 (technique+power+temperament+control+threat+variation, at
-      // 156+114=270, is already within a few points of a strict 45avg budget for
-      // 8 stats — the only thing that would break that balance is over-crediting
-      // one specific role somewhere, which giving All-Rounder better fielding than
-      // everyone else — with zero offsetting cost — did. Not repeating that here.
+      // Same value for all three roles, deliberately — a flat, modest
+      // fielding baseline that every non-Keeper role's active-discipline
+      // tables (battingType/bowlType/battingTypePrimary+Secondary/
+      // bowlTypePrimary+Secondary — see computeOVR's exact per-role
+      // weights) are solved against so every role's OVR lands on the same
+      // 45. Giving All-Rounder better fielding than everyone else — with
+      // zero offsetting cost — broke that once already; not repeating it.
       fielding: {
         batter:     { catching:42, groundFielding:44 },
         bowler:     { catching:42, groundFielding:44 },
@@ -15339,7 +15376,7 @@
           : {...CAREER_RATING_TABLES.bowlTypePrimary[opts.bowlType], ...CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]},
           CAREER_RATING_TABLES.fielding.allrounder);
       } else if (role === 'keeper') {
-        Object.assign(r, CAREER_RATING_TABLES.keeper.keeperBatsmanFielding, CAREER_RATING_TABLES.battingTypeSecondary[opts.battingType]);
+        Object.assign(r, CAREER_RATING_TABLES.keeper.keeperBatsmanFielding, CAREER_RATING_TABLES.keeper.battingSecondary[opts.battingType]);
       }
       return r;
     }
@@ -15835,9 +15872,17 @@
       if (!club) { club = careerPick(league.clubs); CAREER.draft.assignedClub = club.name; }
       if (!CAREER.draft.assignedClubSquad) {
         const squad = generateClubXI(club.rating);
-        const idx = Math.floor(Math.random() * squad.length);
+        // Replace a squad member of the SAME role where one exists — a
+        // purely random slot could (and did) leave the club's real
+        // generated Keeper still sitting in the XI, untouched, while the
+        // tracked player took over some unrelated Batter/Bowler's spot.
+        // That squad then carried two players tagged role:'keeper' (one
+        // real, one a tracked-player ghost with no fielding ever rolled
+        // for them) — same risk for any role, not just Keeper.
+        const sameRoleIdx = squad.findIndex(p => p.role === CAREER.player.role);
+        const idx = sameRoleIdx !== -1 ? sameRoleIdx : Math.floor(Math.random() * squad.length);
         CAREER.draft.replacedPlayerName = squad[idx].name;
-        squad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true, bowlType: CAREER.player.bowlBroadType || 'seam', age: CAREER.player.age };
+        squad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true, role: CAREER.player.role, bowlType: CAREER.player.bowlBroadType || 'seam', age: CAREER.player.age };
         CAREER.draft.assignedClubSquad = squad;
       }
       const p = CAREER.player;
@@ -16346,11 +16391,56 @@
       };
     }
     function careerNewPlayerStatLine(line) {
+      // The tracked player's own squad-slot object never carries `role`
+      // (see renderCareerTeamReveal/careerStartNextSeason, which splice
+      // {name,rating,isTrackedPlayer,bowlType,age} in — no role) — CAREER.player.role
+      // is the only reliable source for them. Everyone else's role comes
+      // straight off their generated squad entry.
+      const role = line.isTrackedPlayer ? CAREER.player.role : (CAREER.clubs[line.clubId]?.squad.find(p => p.id === line.id)?.role ?? null);
       return {
-        id: line.id, name: line.name, clubId: line.clubId, clubName: line.clubName, isTrackedPlayer: !!line.isTrackedPlayer,
+        id: line.id, name: line.name, clubId: line.clubId, clubName: line.clubName, isTrackedPlayer: !!line.isTrackedPlayer, role,
         bat: { innings: 0, runs: 0, balls: 0, outs: 0 },
         bowl: { innings: 0, wickets: 0, runsConceded: 0, overs: 0 },
+        field: { involvements: 0, clean: 0 },
       };
+    }
+    // Shared by the tracked player's own fielding roll and the AI-keeper
+    // generator below — same shape, just parameterised on skill/role so
+    // AI keepers (who only have a flat `rating`, not the 9-way breakdown)
+    // can reuse it too.
+    function careerRollFielding(isKeeper, skill) {
+      // Keeper-side rates calibrated against a real Bradford Premier League
+      // keeper-stats sheet: 30 season victims (the intended progression
+      // quota) should land at roughly a 25%-chance mark for a normally-
+      // progressing keeper, matching how every other role's season target
+      // is calibrated. Verified empirically at 25.0% across 60 simulated
+      // seasons with these exact rates — don't retune without re-measuring.
+      const chances = Math.random() < (isKeeper ? 0.88 : 0.4) ? 1 + (Math.random() < (isKeeper ? 0.62 : 0.15) ? 1 : 0) : 0;
+      if (!chances) return { involvements: 0, clean: 0 };
+      const baseSuccess = isKeeper ? 0.42 : 0.4;
+      const skillDivisor = isKeeper ? 143 : 150;
+      let clean = 0;
+      for (let i = 0; i < chances; i++) if (Math.random() < baseSuccess + skill / skillDivisor) clean++;
+      return { involvements: chances, clean };
+    }
+    // AI keepers never had fielding simulated at all before this — every
+    // club's keeper (opponent or your own teammates) now gets a per-match
+    // roll too, calibrated off real Bradford Premier League keeper stats
+    // (~1 victim/match average across a season), so MOTM/Player of the
+    // Season/Most Victims have real numbers to compare against instead of
+    // only ever seeing the tracked player's own fielding line.
+    function careerKeeperFieldEntry(club) {
+      if (club.isMine && CAREER.player.role === 'keeper') return null; // tracked player's own roll already covers this
+      const keeper = club.squad.find(p => p.role === 'keeper' && !p.isTrackedPlayer);
+      if (!keeper) return null;
+      const roll = careerRollFielding(true, keeper.rating);
+      return { id: keeper.id, name: keeper.name, clubId: club.id, clubName: club.name, isTrackedPlayer: false, ...roll };
+    }
+    function careerAccumulateFieldEntry(entry) {
+      if (!entry) return;
+      const s = CAREER.leagueStats[entry.id] || (CAREER.leagueStats[entry.id] = careerNewPlayerStatLine(entry));
+      s.field.involvements += entry.involvements;
+      s.field.clean += entry.clean;
     }
     function accumulateLeagueStats(card) {
       const touch = line => CAREER.leagueStats[line.id] || (CAREER.leagueStats[line.id] = careerNewPlayerStatLine(line));
@@ -16372,6 +16462,8 @@
         const result = simCheapClubMatch(a, b);
         applyResultToTable(result);
         accumulateLeagueStats(generateMatchScorecard(CAREER.clubs[a], CAREER.clubs[b], result, null, null));
+        careerAccumulateFieldEntry(careerKeeperFieldEntry(CAREER.clubs[a]));
+        careerAccumulateFieldEntry(careerKeeperFieldEntry(CAREER.clubs[b]));
       });
     }
     function findMyFixtureInRound(round) {
@@ -16886,6 +16978,7 @@
         const parts = [];
         if (goals.runs != null) parts.push(`${obj.runs} runs`);
         if (goals.wickets != null) parts.push(`${obj.wickets} wickets`);
+        if (goals.victims != null) parts.push(`${obj.victims} victims`);
         return parts.join(' and ');
       };
       const currentText = statParts(current);
@@ -16916,17 +17009,26 @@
     function careerSeasonEndGoalInfo() {
       const { goals, current } = careerSeasonGoalProgress();
       const keys = Object.keys(goals);
-      let hit = keys.length > 0, worstPct = 1;
-      keys.forEach(k => {
-        if (current[k] < goals[k]) hit = false;
-        worstPct = Math.min(worstPct, goals[k] ? current[k] / goals[k] : 1);
-      });
-      return { hit, worstPct, goals, current, keys };
+      // Multi-stat roles (Keeper, All-Rounder) only need to clear ONE of
+      // their two targets, not both — requiring both compounds two
+      // independent ~10-35% chances into a near-impossible combined bar
+      // (this session's audit measured All-Rounder batting-lean hitting
+      // 0/40 seasons under the old AND requirement). Single-stat roles
+      // (Opener/Top Order/Bowler) have exactly one key, so `some` and
+      // `every` are equivalent for them — no special-casing needed.
+      const hit = keys.length > 0 && keys.some(k => current[k] >= goals[k]);
+      // bestPct (not worst) — with an OR quota, "how close did you come"
+      // should read off whichever target you very nearly cleared, not
+      // whichever one you were furthest from.
+      let bestPct = 0;
+      keys.forEach(k => { bestPct = Math.max(bestPct, goals[k] ? current[k] / goals[k] : 0); });
+      return { hit, bestPct, goals, current, keys };
     }
     function careerStatSummary(obj, keys) {
       const parts = [];
       if (keys.includes('runs')) parts.push(`${obj.runs} runs`);
       if (keys.includes('wickets')) parts.push(`${obj.wickets} wickets`);
+      if (keys.includes('victims')) parts.push(`${obj.victims} victims`);
       return parts.join(' and ');
     }
     function careerAgentEndOfSeasonScript() {
@@ -16945,7 +17047,7 @@
           ],
         };
       }
-      const tone = info.worstPct >= 0.85 ? 'close' : info.worstPct >= 0.5 ? 'mid' : 'far';
+      const tone = info.bestPct >= 0.85 ? 'close' : info.bestPct >= 0.5 ? 'mid' : 'far';
       const missLine = tone === 'close'
         ? `So close, mate. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} — just missed out on that one, properly gutting.`
         : tone === 'mid'
@@ -17013,8 +17115,12 @@
       const assigned = league.clubs.find(c => c.name === CAREER.myClubName) || league.clubs[0];
       const others = league.clubs.filter(c => c.name !== assigned.name);
       const mySquad = generateClubXI(assigned.rating);
-      const idx = Math.floor(Math.random() * mySquad.length);
-      mySquad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true, bowlType: CAREER.player.bowlBroadType || 'seam', age: CAREER.player.age };
+      // Same same-role-first replacement as renderCareerTeamReveal — a
+      // random slot risks leaving the club's real generated Keeper (or
+      // Bowler, or whatever role) still in the XI untouched every season.
+      const sameRoleIdx = mySquad.findIndex(p => p.role === CAREER.player.role);
+      const idx = sameRoleIdx !== -1 ? sameRoleIdx : Math.floor(Math.random() * mySquad.length);
+      mySquad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true, role: CAREER.player.role, bowlType: CAREER.player.bowlBroadType || 'seam', age: CAREER.player.age };
       CAREER.myClubRating = careerSquadRating(mySquad);
       CAREER.clubs = [
         { id: 0, name: assigned.name, isMine: true, rating: CAREER.myClubRating, squad: assignSquadIds(mySquad, 0) },
@@ -17102,11 +17208,20 @@
       'keeper.keeperBatsman': 6,
       'bowler': 10,
     };
-    // See simTrackedPlayerInnings — explicit per-position runs multiplier,
-    // tuned against real season simulation rather than derived from a
-    // formula, since presenceFloor's own position-based share (a separate
-    // mechanic keyed off raw `pos`) compounds unevenly on top of whatever's
-    // set here.
+    // DEAD CODE as of CAREER_ENGINE='ballByBall' (see that const): only
+    // read inside simTrackedPlayerInnings/simTrackedPlayerBowling, both
+    // gated behind `if (CAREER_ENGINE !== 'ballByBall')` — a branch that
+    // never runs. Confirmed this session by a controlled A/B test (n=1500
+    // each arm): changing Opener's factor here moved the measured hit-rate
+    // by MORE than noise alone would, in the WRONG direction — the tell
+    // that nothing was actually reading this value and the "effect" seen
+    // was pure batch-to-batch variance. Left in place (values unchanged
+    // from before this was discovered) rather than deleted, since
+    // resurrecting the legacy branch is plausible future work and this is
+    // still what it would read. Do not use this to tune Career Mode output
+    // — the live lever for batting output is CAREER_RATING_TABLES
+    // (technique/power/temperament), read via careerEffectiveRatings into
+    // the shared simODIInnings engine.
     const CAREER_POS_RUNS_FACTOR = { 1: 1.0, 4: 0.77, 5: 0.4, 6: 0.57, 7: 0.57 };
     function careerPosKey(p) {
       if (p.role === 'batter') return `batter.${p.type}`;
@@ -17121,17 +17236,49 @@
     // nothing in the match/progression engine itself reads these, this is
     // purely the number told to the player.
     const CAREER_SEASON_GOALS = {
-      'batter.opener': { runs: 1000 },
-      'batter.topOrder': { runs: 850 },
-      'keeper.keeperBatsman': { runs: 400 },
-      'allrounder.battingAR': { runs: 600, wickets: 25 },
-      'allrounder.bowlingAR': { runs: 300, wickets: 40 },
+      'batter.opener': { runs: 1100 },
+      'batter.topOrder': { runs: 900 },
+      'keeper.keeperBatsman': { runs: 500, victims: 30 },
+      'allrounder.battingAR': { runs: 700, wickets: 35 },
+      'allrounder.bowlingAR': { runs: 500, wickets: 40 },
       'bowler': { wickets: 50 },
+    };
+    // In-season progression milestones — how many runs/wickets/clean-catches
+    // it takes to earn one attribute point (playCareerMatch reads this).
+    // Used to be flat across every role (100 runs, 5 wickets, every single
+    // catch) — fine for batting/bowling since output volume is roughly
+    // comparable there, but fielding wasn't gated at all, and Keeper's real
+    // catch volume (~27/season) is ~3.5x every other role's (~7/season), so
+    // a flat "1 catch = 1 point" rate handed them roughly double everyone
+    // else's total progression just from that one category (a Keeper's
+    // fielding is also weighted far more heavily into their OVR than
+    // anyone else's — see CAREER_OVR_WEIGHTS — so it wasn't just more
+    // points, each one moved OVR further too). Thresholds below are solved
+    // from real measured season output (this session's audit) so total
+    // points/season — and the resulting OVR growth — land in the same
+    // ~15-16-point, ~+5-OVR band for every role, with each role's points
+    // split across its active categories in proportion to how much that
+    // category actually counts toward its own OVR (CAREER_OVR_WEIGHTS) —
+    // a batting-heavy role still progresses mostly through batting, a
+    // Keeper mostly through batting+fielding, an All-Rounder evenly split.
+    // Openers/Top Order (and Batting/Bowling-lean All-Rounders) get
+    // different runs/wickets thresholds from each other too, not just from
+    // other roles — an Opener bats more and racks up more raw runs than a
+    // Top Order batter at the same skill level, so needs a higher bar to
+    // land on a comparable points-per-season rate.
+    const CAREER_PROGRESSION_THRESHOLDS = {
+      'batter.opener':        { runs: 125, catches: 2 },
+      'batter.topOrder':      { runs: 90,  catches: 2 },
+      'keeper.keeperBatsman': { runs: 75,  catches: 3 },
+      'allrounder.battingAR': { runs: 75,  wickets: 3, catches: 2 },
+      'allrounder.bowlingAR': { runs: 50,  wickets: 5, catches: 2 },
+      'bowler':               { wickets: 5, catches: 2 },
     };
     function careerGoalText(goals) {
       const parts = [];
       if (goals.runs) parts.push(`${goals.runs.toLocaleString()} runs`);
       if (goals.wickets) parts.push(`${goals.wickets} wickets`);
+      if (goals.victims) parts.push(`${goals.victims} victims`);
       return parts.join(' and ');
     }
     // CAREER_SEASON_GOALS is tuned against a 22-round (12-club) season.
@@ -17144,25 +17291,34 @@
       const out = {};
       if (base.runs) out.runs = Math.max(25, Math.round(base.runs * scale / 25) * 25);
       if (base.wickets) out.wickets = Math.max(5, Math.round(base.wickets * scale / 5) * 5);
+      if (base.victims) out.victims = Math.max(5, Math.round(base.victims * scale / 5) * 5);
       return out;
     }
     // current/remaining per stat the role actually has a target for, plus
-    // onPace — true only if EVERY targeted stat is at least halfway to goal,
-    // matching "all-rounders need to meet two" rather than either one.
+    // onPace — true if ANY targeted stat is at least halfway to goal, matching
+    // careerSeasonEndGoalInfo's "only need to clear one of the two" quota
+    // (Keeper/All-Rounder) rather than requiring progress on both at once.
     function careerSeasonGoalProgress() {
       const goals = careerScaledSeasonGoals();
       const stats = CAREER.seasonStats;
-      const out = { goals, current: {}, remaining: {}, onPace: true };
+      const out = { goals, current: {}, remaining: {}, onPace: false };
+      const trackedKeys = Object.keys(goals);
       if (goals.runs) {
         out.current.runs = stats.bat.runs;
         out.remaining.runs = Math.max(0, goals.runs - stats.bat.runs);
-        if (stats.bat.runs < goals.runs / 2) out.onPace = false;
+        if (stats.bat.runs >= goals.runs / 2) out.onPace = true;
       }
       if (goals.wickets) {
         out.current.wickets = stats.bowl.wickets;
         out.remaining.wickets = Math.max(0, goals.wickets - stats.bowl.wickets);
-        if (stats.bowl.wickets < goals.wickets / 2) out.onPace = false;
+        if (stats.bowl.wickets >= goals.wickets / 2) out.onPace = true;
       }
+      if (goals.victims) {
+        out.current.victims = stats.field.clean;
+        out.remaining.victims = Math.max(0, goals.victims - stats.field.clean);
+        if (stats.field.clean >= goals.victims / 2) out.onPace = true;
+      }
+      if (!trackedKeys.length) out.onPace = true;
       return out;
     }
     // Same idea for the bowling attack: seamers open it, spinners come on
@@ -17586,14 +17742,10 @@
       // real cricket (every ball that beats the bat, every run out, every
       // stumping), not just a better success rate on the same number of
       // chances — so keepers roll for involvement more often, on top of
-      // their existing skill-based conversion edge.
+      // their existing skill-based conversion edge (see careerRollFielding).
       const isKeeper = player.role === 'keeper';
-      const chances = Math.random() < (isKeeper ? 0.72 : 0.4) ? 1 + (Math.random() < (isKeeper ? 0.35 : 0.15) ? 1 : 0) : 0;
-      if (!chances) return { involvements: 0, clean: 0 };
       const skill = isKeeper ? r.keeping : (r.catching + r.groundFielding) / 2;
-      let clean = 0;
-      for (let i = 0; i < chances; i++) if (Math.random() < 0.4 + skill / 150) clean++;
-      return { involvements: chances, clean };
+      return careerRollFielding(isKeeper, skill);
     }
 
     // ── Commentary + verdict templates (spec §1/§8) ─────────────────────
@@ -18213,6 +18365,7 @@
 
       const prevSeasonRuns = CAREER.seasonStats.bat.runs;
       const prevSeasonWkts = CAREER.seasonStats.bowl.wickets;
+      const prevSeasonClean = CAREER.seasonStats.field.clean;
       if (bat) {
         const s = CAREER.seasonStats.bat;
         s.innings++; s.runs += bat.runs; s.balls += bat.balls;
@@ -18247,21 +18400,30 @@
       // before/after the match catches every 100/5 boundary crossed,
       // including a big innings/spell that crosses more than one at once.
       if (bat) {
-        const prevBatBand = Math.floor(prevSeasonRuns / 100);
-        const newBatMilestones = Math.floor(CAREER.seasonStats.bat.runs / 100) - prevBatBand;
-        // detail is the cumulative season threshold actually crossed (100,
-        // 200, 300...), not this match's own runs — the milestone is a
-        // running season total, and a modest 20-run knock that happens to
-        // tip the season over 300 shouldn't read as if it were itself a
-        // 300-run innings.
-        for (let i = 0; i < newBatMilestones; i++) CAREER.pendingPoints.push({ category: 'bat', detail: (prevBatBand + i + 1) * 100 });
+        // Role/type-specific — see CAREER_PROGRESSION_THRESHOLDS. Falls
+        // back to the old flat 100 only if a build somehow isn't in the
+        // table (shouldn't happen for a real player).
+        const runsPerPoint = (CAREER_PROGRESSION_THRESHOLDS[careerPosKey(player)] || {}).runs || 100;
+        const prevBatBand = Math.floor(prevSeasonRuns / runsPerPoint);
+        const newBatMilestones = Math.floor(CAREER.seasonStats.bat.runs / runsPerPoint) - prevBatBand;
+        // detail is the cumulative season threshold actually crossed, not
+        // this match's own runs — the milestone is a running season total,
+        // and a modest 20-run knock that happens to tip the season over
+        // the line shouldn't read as if it were itself that big an innings.
+        for (let i = 0; i < newBatMilestones; i++) CAREER.pendingPoints.push({ category: 'bat', detail: (prevBatBand + i + 1) * runsPerPoint });
       }
       if (bowl) {
-        const prevBowlBand = Math.floor(prevSeasonWkts / 5);
-        const newBowlMilestones = Math.floor(CAREER.seasonStats.bowl.wickets / 5) - prevBowlBand;
-        for (let i = 0; i < newBowlMilestones; i++) CAREER.pendingPoints.push({ category: 'bowl', detail: (prevBowlBand + i + 1) * 5 });
+        const wktsPerPoint = (CAREER_PROGRESSION_THRESHOLDS[careerPosKey(player)] || {}).wickets || 5;
+        const prevBowlBand = Math.floor(prevSeasonWkts / wktsPerPoint);
+        const newBowlMilestones = Math.floor(CAREER.seasonStats.bowl.wickets / wktsPerPoint) - prevBowlBand;
+        for (let i = 0; i < newBowlMilestones; i++) CAREER.pendingPoints.push({ category: 'bowl', detail: (prevBowlBand + i + 1) * wktsPerPoint });
       }
-      for (let i = 0; i < field.clean; i++) CAREER.pendingPoints.push({ category: 'field', detail: null });
+      {
+        const catchesPerPoint = (CAREER_PROGRESSION_THRESHOLDS[careerPosKey(player)] || {}).catches || 1;
+        const prevFieldBand = Math.floor(prevSeasonClean / catchesPerPoint);
+        const newFieldMilestones = Math.floor(CAREER.seasonStats.field.clean / catchesPerPoint) - prevFieldBand;
+        for (let i = 0; i < newFieldMilestones; i++) CAREER.pendingPoints.push({ category: 'field', detail: null });
+      }
 
       applyResultToTable(teamResult);
 
@@ -18269,9 +18431,22 @@
         scorecard = generateMatchScorecard(CAREER.clubs[teamResult.clubAId], CAREER.clubs[teamResult.clubBId], teamResult, bat, bowl);
       }
       accumulateLeagueStats(scorecard);
+      // accumulateLeagueStats only ever touches bat/bowl — the tracked
+      // player's own fielding roll (above) needs its own accumulate call,
+      // same as every AI keeper's, or CAREER.leagueStats['me'].field stays
+      // permanently zero even when the player genuinely is the keeper.
+      careerAccumulateFieldEntry({ id: 'me', name: player.name, clubId: myClubId, clubName: CAREER.myClubName, isTrackedPlayer: true, involvements: field.involvements, clean: field.clean });
+      // The two AI keepers involved in this specific match (opponent's, and
+      // your own team's if you're not the keeper yourself) — rolled here so
+      // careerPickMOTM below can weigh them fairly against your own game,
+      // not just against the batting/bowling card.
+      const oppKeeperField = careerKeeperFieldEntry(CAREER.clubs[oppId]);
+      const myTeammateKeeperField = careerKeeperFieldEntry(CAREER.clubs[myClubId]);
+      careerAccumulateFieldEntry(oppKeeperField);
+      careerAccumulateFieldEntry(myTeammateKeeperField);
 
       const oppName = CAREER.clubs[oppId].name;
-      const ctx = { bat, bowl, field, won, myScore, myWkts, oppScore, oppWkts, oppName, isHome, teamResult, myClubId, player, scorecard, moraleDelta: appliedMoraleDelta };
+      const ctx = { bat, bowl, field, won, myScore, myWkts, oppScore, oppWkts, oppName, isHome, teamResult, myClubId, player, scorecard, moraleDelta: appliedMoraleDelta, oppKeeperField, myTeammateKeeperField };
 
       CAREER.matchLog.push({ round, opp: oppName, won, myScore, oppScore, bat, bowl, field, scorecard, teamResult });
       CAREER.currentRound = round + 1;
@@ -18492,12 +18667,26 @@
       const entries = {};
       const touch = (row, clubId) => {
         const key = clubId + ':' + row.id;
-        return entries[key] || (entries[key] = { name: row.name, clubName: row.clubName, isTrackedPlayer: !!row.isTrackedPlayer, bat: null, bowl: null, impact: 0 });
+        return entries[key] || (entries[key] = { name: row.name, clubName: row.clubName, isTrackedPlayer: !!row.isTrackedPlayer, bat: null, bowl: null, field: null, impact: 0 });
       };
       sc.battingA.forEach(r => { const e = touch(r, sc.clubAId); e.bat = { runs: r.runs, balls: r.balls, out: r.out }; e.impact += r.runs + (r.runs >= 100 ? 25 : r.runs >= 50 ? 10 : 0); });
       sc.battingB.forEach(r => { const e = touch(r, sc.clubBId); e.bat = { runs: r.runs, balls: r.balls, out: r.out }; e.impact += r.runs + (r.runs >= 100 ? 25 : r.runs >= 50 ? 10 : 0); });
       sc.bowlingA.forEach(r => { const e = touch(r, sc.clubAId); e.bowl = { overs: r.overs, runsConceded: r.runsConceded, wickets: r.wickets }; e.impact += r.wickets * 22 - r.runsConceded * 0.4 + (r.wickets >= 3 ? 8 : 0); });
       sc.bowlingB.forEach(r => { const e = touch(r, sc.clubBId); e.bowl = { overs: r.overs, runsConceded: r.runsConceded, wickets: r.wickets }; e.impact += r.wickets * 22 - r.runsConceded * 0.4 + (r.wickets >= 3 ? 8 : 0); });
+      // Fielding — the tracked player's own roll plus the two AI keepers in
+      // this match (see playCareerMatch), none of which show up in the
+      // batting/bowling rows above. Same 22-per-victim weight a wicket
+      // gets, so a genuinely standout keeping day can win it outright, not
+      // just nudge an existing batting/bowling score.
+      const addFielding = (row, clubId) => {
+        if (!row || !row.involvements) return;
+        const e = touch({ id: row.id, name: row.name, clubName: row.clubName, isTrackedPlayer: row.isTrackedPlayer }, clubId);
+        e.field = { involvements: row.involvements, clean: row.clean };
+        e.impact += row.clean * 22;
+      };
+      addFielding({ id: 'me', name: ctx.player.name, clubName: CAREER.myClubName, isTrackedPlayer: true, ...ctx.field }, ctx.myClubId);
+      if (ctx.oppKeeperField) addFielding(ctx.oppKeeperField, ctx.oppKeeperField.clubId);
+      if (ctx.myTeammateKeeperField) addFielding(ctx.myTeammateKeeperField, ctx.myTeammateKeeperField.clubId);
       let best = null;
       Object.values(entries).forEach(e => { if (!best || e.impact > best.impact) best = e; });
       return best;
@@ -18506,6 +18695,7 @@
       const parts = [];
       if (motm.bat && (motm.bat.runs > 0 || motm.bat.balls > 0)) parts.push(`${motm.bat.runs} (${motm.bat.balls})${motm.bat.out ? '' : '*'}`);
       if (motm.bowl && (motm.bowl.wickets > 0 || motm.bowl.overs > 0)) parts.push(`${motm.bowl.wickets}/${motm.bowl.runsConceded}`);
+      if (motm.field && motm.field.clean > 0) parts.push(`${motm.field.clean} victim${motm.field.clean === 1 ? '' : 's'}`);
       return parts.join(' & ');
     }
     // One consolidated full-time card: headline, the winning/losing score
@@ -19332,6 +19522,10 @@
         const pct = Math.min(100, Math.round((goalProgress.current.wickets / goalProgress.goals.wickets) * 100));
         goalRows.push({ label: 'Wickets', text: `${goalProgress.current.wickets}/${goalProgress.goals.wickets}`, pct, color: '#60a5fa' });
       }
+      if (goalProgress.goals.victims) {
+        const pct = Math.min(100, Math.round((goalProgress.current.victims / goalProgress.goals.victims) * 100));
+        goalRows.push({ label: 'Victims', text: `${goalProgress.current.victims}/${goalProgress.goals.victims}`, pct, color: '#c084fc' });
+      }
       document.getElementById('profile-goals-title').style.display = goalRows.length ? '' : 'none';
       const goalsEl = document.getElementById('profile-goals');
       goalsEl.innerHTML = goalRows.map(g => `
@@ -19417,8 +19611,11 @@
       { key: 'wickets', label: 'Most Wickets',     qualify: s => true,                value: s => s.bowl.wickets,                                   fmt: v => v,             sortDesc: true },
       { key: 'bowlAvg', label: 'Best Bowling Avg', qualify: s => s.bowl.wickets >= Math.round(30 * careerRoundScale()), value: s => s.bowl.wickets ? s.bowl.runsConceded / s.bowl.wickets : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
       { key: 'econ',    label: 'Best Economy',     qualify: s => true,                value: s => s.bowl.overs ? s.bowl.runsConceded / s.bowl.overs : Infinity, fmt: v => v.toFixed(1), sortDesc: false },
+      // Keeper-only, same open "no floor" shape as Most Runs/Most Wickets —
+      // a count, not a rate, so there's nothing to qualify against.
+      { key: 'victims', label: 'Most Victims',     qualify: s => s.role === 'keeper', value: s => s.field?.clean ?? 0,                              fmt: v => v,             sortDesc: true },
     ];
-    const CAREER_STAT_ICONS = { runs: '🏏', avg: '📈', sr: '⚡', wickets: '🎯', bowlAvg: '🛡️', econ: '🔒' };
+    const CAREER_STAT_ICONS = { runs: '🏏', avg: '📈', sr: '⚡', wickets: '🎯', bowlAvg: '🛡️', econ: '🔒', victims: '🧤' };
     // ── Season trophies ──────────────────────────────────────────────────
     // Four of the six reuse CAREER_STAT_CATEGORIES' own qualify/value/sort
     // rules directly (same "who's the league leader" logic the stats screen
@@ -19438,7 +19635,12 @@
       return p ? p.age : null;
     }
     function careerImpactScore(s) {
-      return s.bat.runs + s.bowl.wickets * 20;
+      // Same 20-per-wicket weight extended to a keeper's victims — before
+      // this, fielding had no representation here at all, so a Keeper could
+      // never win Player/Young Player of the Season no matter how many
+      // catches/stumpings they took (see careerKeeperFieldEntry/careerPickMOTM
+      // for the matching per-match fix).
+      return s.bat.runs + s.bowl.wickets * 20 + (s.field ? s.field.clean * 20 : 0);
     }
     function careerPlayedEnough(s) { return (s.bat.innings + s.bowl.innings) >= 5; }
     function careerComputeSeasonTrophies() {
@@ -19451,9 +19653,9 @@
         if (winner.isTrackedPlayer) trophies.push({ key, label, icon, value: fmt(valueFn(winner)) });
       };
       const statCat = key => CAREER_STAT_CATEGORIES.find(c => c.key === key);
-      const trophyLabel = { runs: 'Most Runs', wickets: 'Most Wickets', avg: 'Best Batting Average', bowlAvg: 'Best Bowling Average' };
-      const trophyIcon = { runs: '🏏', wickets: '🎯', avg: '📈', bowlAvg: '🛡️' };
-      ['runs', 'wickets', 'avg', 'bowlAvg'].forEach(key => {
+      const trophyLabel = { runs: 'Most Runs', wickets: 'Most Wickets', avg: 'Best Batting Average', bowlAvg: 'Best Bowling Average', victims: 'Most Victims' };
+      const trophyIcon = { runs: '🏏', wickets: '🎯', avg: '📈', bowlAvg: '🛡️', victims: '🧤' };
+      ['runs', 'wickets', 'avg', 'bowlAvg', 'victims'].forEach(key => {
         const cat = statCat(key);
         awardFromPool(key, trophyLabel[key], trophyIcon[key],
           all.filter(cat.qualify), cat.value, cat.fmt, cat.sortDesc);
@@ -19858,7 +20060,7 @@
         }).join('')}</tbody></table>`;
 
       document.getElementById('career-end-leaders').innerHTML =
-        ['runs', 'wickets', 'avg', 'bowlAvg'].map(careerLeagueLeaderCardHTML).join('');
+        ['runs', 'wickets', 'avg', 'bowlAvg', 'victims'].map(careerLeagueLeaderCardHTML).join('');
 
       requestAnimationFrame(() => wireReveals(document.getElementById('s-career-season-end')));
       if (isChampion) { launchConfetti(320, true); setTimeout(() => launchConfetti(200, true), 900); }
