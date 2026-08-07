@@ -994,7 +994,7 @@ const WC_PDB = {
     { id:"sco_024", name:"Alasdair Evans",     role:"bowler",      opener:false, canBowl:true,  bowlingStyle:"right-arm fast-medium",  positions:["10","11"], yearRatings:{2015:63} },
     { id:"sco_025", name:"Safyaan Sharif",     role:"bowler",      opener:false, canBowl:true,  bowlingStyle:"right-arm fast-medium",  positions:["10","11"], yearRatings:{2015:65} },
     { id:"sco_026", name:"Iain Wardlaw",       role:"bowler",      opener:false, canBowl:true,  bowlingStyle:"right-arm fast-medium",  positions:["10","11"], yearRatings:{2015:64} },
-    { id:"sco_001", name:"Michael English",    role:"batsman",     opener:true,  canBowl:false, bowlingStyle:null,                     positions:["1","2"],   yearRatings:{2026:68} },
+    { id:"sco_027", name:"Michael English",    role:"batsman",     opener:true,  canBowl:false, bowlingStyle:null,                     positions:["1","2"],   yearRatings:{2026:68} },
   ],
 
 };

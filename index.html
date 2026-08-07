@@ -1393,6 +1393,17 @@
       font-weight: 800
     }
 
+    /* County 2 table zone markers — a left-border stripe rather than a
+       full-row background so it layers cleanly whether or not the row is
+       also .myrow (border and background never fight for the same pixel).
+       leader = table top; relegation/promotion = the 50-Over League's own
+       movement zones (careerTableRowZoneClass); qualify = T20 Cup top-4
+       cutoff. */
+    .tbl tr.leader-row td:first-child { border-left: 3px solid #f9c846 }
+    .tbl tr.relegation-row td:first-child { border-left: 3px solid #f87171 }
+    .tbl tr.promotion-row td:first-child { border-left: 3px solid #4ade80 }
+    .tbl tr.qualify-row td:first-child { border-left: 3px solid #4ade80 }
+
     /* Career hub standings — slightly denser than the shared .tbl default so
        Play Next Match/Your Player stay closer to the top of the screen. */
     #hub-table-wrap .tbl th { padding: 3px 4px 5px; font-size: 9px }
@@ -2609,6 +2620,11 @@
     .imsg-replies { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 14px; justify-content: flex-end }
     .imsg-reply-chip { background: #111118; border: 1px solid #1a1a24; color: #c0c0d8; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 16px; cursor: pointer }
     .imsg-reply-chip:active { transform: scale(0.96) }
+    .imsg-doc-bubble { display: flex; align-items: center; gap: 10px; max-width: 78%; background: #1a1a24; border: 1px solid #3a3a52; border-radius: 14px; padding: 12px 16px; cursor: pointer }
+    .imsg-doc-bubble:active { transform: scale(0.97) }
+    .imsg-doc-bubble.imsg-doc-opened { opacity: .55; cursor: default }
+    .imsg-doc-icon { font-size: 22px; flex-shrink: 0 }
+    .imsg-doc-label { font-size: 13px; font-weight: 700; color: #fff }
     @media (prefers-reduced-motion: reduce) {
       .imsg-typing-dots span { animation: none !important; opacity: 1 }
     }
@@ -2683,6 +2699,33 @@
     .perf-under {
       background: linear-gradient(135deg, #1a0c06, #2a100a);
       border: 1px solid #5a3010
+    }
+
+    .perf-trophy {
+      background: linear-gradient(135deg, #1a1400, #241c08);
+      border: 1px solid #6a5218
+    }
+
+    /* Season history rows — background tier matches the finishing rating
+       badge's own bronze/silver/gold/ruby scale (ratingBadgeClass/ratingColor). */
+    .perf-bronze {
+      background: linear-gradient(135deg, #1a0f06, #2a1608);
+      border: 1px solid #8b4a0a
+    }
+
+    .perf-silver {
+      background: linear-gradient(135deg, #12141a, #1c1f28);
+      border: 1px solid #8898aa
+    }
+
+    .perf-gold {
+      background: linear-gradient(135deg, #1a1400, #241c08);
+      border: 1px solid #c8860a
+    }
+
+    .perf-ruby {
+      background: linear-gradient(135deg, #1a0610, #2a0a1a);
+      border: 1px solid #c9184a
     }
 
     .perf-eyebrow {
@@ -3779,6 +3822,7 @@
     </div>
 
     <button id="career-dev-entry-btn" onclick="enterCareerMode()" style="display:none;width:100%;margin-bottom:20px;padding:12px;background:#1a1400;border:1px solid #f9c846;border-radius:10px;color:#f9c846;font-size:13px;font-weight:700;cursor:pointer">⚡ Career Mode (Dev)</button>
+    <button id="career-dev-county2-btn" onclick="enterCareerModeDevCounty2()" style="display:none;width:100%;margin-bottom:20px;padding:12px;background:#1a1400;border:1px solid #f9c846;border-radius:10px;color:#f9c846;font-size:13px;font-weight:700;cursor:pointer">⚡ Skip to County 2 (Dev)</button>
 
     <!-- T20 content -->
     <div id="home-t20-content">
@@ -4179,6 +4223,7 @@
   <script src="test-players.js"></script>
   <script src="wc-players.js"></script>
   <script src="career-clubs.js"></script>
+  <script src="career-county2.js"></script>
   <script>
     const NORTH = ["Derbyshire", "Durham", "Lancashire", "Leicestershire", "Northamptonshire", "Nottinghamshire", "Warwickshire", "Worcestershire", "Yorkshire"];
     const SOUTH = ["Essex", "Glamorgan", "Gloucestershire", "Hampshire", "Kent", "Middlesex", "Somerset", "Surrey", "Sussex"];
@@ -7155,10 +7200,12 @@
       if (wcDevBtn) wcDevBtn.style.display = isDev ? '' : 'none';
       const t20DevBtn = document.getElementById('t20-dev-autodraft-btn');
       if (t20DevBtn) t20DevBtn.style.display = isDev ? '' : 'none';
+      const careerDevCounty2Btn = document.getElementById('career-dev-county2-btn');
+      if (careerDevCounty2Btn) careerDevCounty2Btn.style.display = isDev ? 'block' : 'none';
       // Career Mode access is its own, slightly wider allowlist — these
       // usernames get Career Mode without also picking up the WC/T20
       // auto-draft dev tools above, which stay 'ghughesy'-only.
-      const CAREER_ACCESS_USERNAMES = ['ghughesy', 'E4U Cricket', 'YOUBEARS', 'HarishM10233161', 'Icefire297', '15tslevin', 'Coby1235', 'sumanth', 'KarunNair123', 'punka', 'Pavillon', 'OrphanX', 'sajju', "MichaelEnglish22","Thomascurphey","Crawh11","SmailliWmiT","Knightrider92","Dball17"];
+      const CAREER_ACCESS_USERNAMES = ['ghughesy', 'E4U Cricket', 'YOUBEARS', 'HarishM10233161', 'Icefire297', '15tslevin', 'Coby1235', 'sumanth', 'KarunNair123', 'punka', 'Pavillon', 'OrphanX', 'sajju', "MichaelEnglish22","Thomascurphey","Crawh11","SmailliWmiT","knightrider92","Dball17"];
       const hasCareerAccess = AUTH_USER && CAREER_ACCESS_USERNAMES.includes(AUTH_USER.username);
       const careerDevBtn = document.getElementById('career-dev-entry-btn');
       if (careerDevBtn) careerDevBtn.style.display = hasCareerAccess ? 'block' : 'none';
@@ -12740,6 +12787,37 @@
     function simODIInnings(batR,bowlR,oversMax,target,batNames,bowlPool,keeperName,batRatings){
       const q=Math.max(0,Math.min(1,(batR-bowlR+50)/100));
       const wktProbBase=0.032-q*0.017;
+      // Shorter formats bat with more intent throughout the innings, not
+      // just in the powerplay/death windows — proportionally resizing
+      // those windows alone left a 20-over call at the exact same blended
+      // run rate as a 50-over one (measured directly: both landed at 6.5
+      // runs/over), since the phase split ratio (20%/20%/60%) doesn't
+      // change with oversMax, only where those windows fall. formatScoreMult
+      // scales scoring intent up to +50% as oversMax shrinks toward 0 (a
+      // 20-over match sits at +30%, landing T20 in a realistic ~8-9 RPO
+      // band); formatWktMult adds a smaller +25%-max risk premium so that
+      // extra intent isn't free runs with zero added dismissal risk. Both
+      // are 1.0 (no change) at oversMax=50, so tier 1/World Cup are
+      // unaffected.
+      const formatScoreMult=1+Math.max(0,(50-oversMax)/50)*0.75;
+      // formatWktMult has to fight a much bigger headwind than
+      // formatScoreMult does: a 20-over innings only gets 120 balls against
+      // 50-over's 300 (a 0.4x ratio), so a proportionally modest risk bump
+      // was measured to land T20 wickets at barely half a realistic total
+      // (~3 wickets/innings, under 2.5% of innings even bowled out, vs a
+      // real T20 side typically losing ~5-6). 1.3 pushes T20's per-ball
+      // wicket chance to roughly 1.8x the 50-over baseline — audited
+      // (audit_scores.mjs/audit_individual.mjs, scratchpad) to land T20
+      // around 5-5.5 wickets/innings and a believable all-out rate.
+      const formatWktMult=1+Math.max(0,(50-oversMax)/50)*1.3;
+      // Powerplay/death-overs windows scale off oversMax rather than being
+      // fixed to a 50-over shape — the same 20%-of-the-innings-each-way
+      // split as before (10/40 out of 50 is exactly ov<10/ov>=40), just
+      // generalized so a 20-over call (County 2's T20 Cup) gets a
+      // correctly-sized window too, instead of a powerplay that never ends
+      // and a death phase that never starts. Also gates the new-ball
+      // spinner holdback below (pickForEnd) — same reasoning.
+      const ppOvers=Math.round(oversMax*0.2), deathStart=oversMax-Math.round(oversMax*0.2);
       const batters=batNames.slice(0,11).map(n=>({name:n,runs:0,balls:0,out:false,how:'',batting:false,batted:false}));
       batters[0].batting=batters[0].batted=true;
       batters[1].batting=batters[1].batted=true;
@@ -12777,10 +12855,10 @@
       // through full re-scoring once ITS OWN bowler's spell actually ends.
       const ends=[{idx:-1,ovs:0},{idx:-1,ovs:0}];
       function pickForEnd(end,otherEndIdx,ov){
-        if(end.idx>=0){const b=bwlrs[end.idx];if(b.overs<b.maxOvers&&end.ovs<4&&!(ov<10&&b.isSpin))return end.idx;}
+        if(end.idx>=0){const b=bwlrs[end.idx];if(b.overs<b.maxOvers&&end.ovs<4&&!(ov<ppOvers&&b.isSpin))return end.idx;}
         let best=-1,bestScore=-Infinity;
         bwlrs.forEach((b,i)=>{
-          if(i===otherEndIdx||b.overs>=b.maxOvers||(ov<10&&b.isSpin))return;
+          if(i===otherEndIdx||b.overs>=b.maxOvers||(ov<ppOvers&&b.isSpin))return;
           let sc=b.type==='s'?3:b.type==='a'?1.5:0.5;
           sc-=(b.overs/b.maxOvers)*3;
           if(b.overs===0)sc+=0.8;
@@ -12796,7 +12874,7 @@
           }
           if(sc>bestScore){bestScore=sc;best=i;}
         });
-        if(best<0)best=bwlrs.findIndex((b,i)=>i!==otherEndIdx&&b.overs<b.maxOvers&&!(ov<10&&b.isSpin));
+        if(best<0)best=bwlrs.findIndex((b,i)=>i!==otherEndIdx&&b.overs<b.maxOvers&&!(ov<ppOvers&&b.isSpin));
         if(best<0)best=bwlrs.findIndex((b,i)=>i!==otherEndIdx&&b.overs<b.maxOvers);
         if(best<0)best=bwlrs.findIndex(b=>b.overs<b.maxOvers); // last resort: relax the "not both ends the same bowler" rule, never the cap itself
         return best;
@@ -12804,7 +12882,7 @@
       let striker=0,nonStriker=1,nextIn=2,wkts=0,totalRuns=0,ovCount=0,sinceWkt=0;const oversLog=[];
       for(let ov=0;ov<oversMax&&wkts<10;ov++){
         if(target!==undefined&&totalRuns>=target)break;
-        const isPP=ov<10,isDeath=ov>=40;
+        const isPP=ov<ppOvers,isDeath=ov>=deathStart;
         const end=ends[ov%2],otherEnd=ends[1-ov%2];
         const nb=pickForEnd(end,otherEnd.idx,ov);if(nb<0)break;
         if(nb!==end.idx){end.idx=nb;end.ovs=0;}
@@ -12840,22 +12918,41 @@
           if(target!==undefined&&totalRuns>=target)break;if(striker>=batters.length)break;
           // Openers and top order are now much closer in dismissal risk — in reality a
           // side's best batters are just as often at 3/4 as opening, so the position
-          // itself shouldn't be a big built-in safety net over top order.
-          const posM=striker<=1?0.80:striker<=4?0.85:striker<=7?1.5:2.4;
+          // itself shouldn't be a big built-in safety net over top order. Nudged up in
+          // two passes (0.80/0.85 -> 0.90/0.95 -> 1.00/1.05) — with nothing else in
+          // this loop making a set batter *more* likely to get out the longer they've
+          // faced (only wktProbBase's situational multipliers change, not a fatigue/
+          // set-score term), the first nudge alone only pulled the top-scorer-century
+          // rate in 50-over innings down to ~33-44% (real cricket: ~15-25%), barely
+          // moved by trimming the death-overs surge alongside it. Pushed further so
+          // early positions carry essentially no built-in safety over the middle order
+          // — audit_tier1_ratings.mjs re-verified Opener/Top Order's own season quotas
+          // afterward since this directly affects their own survival too.
+          const posM=striker<=1?1.00:striker<=4?1.05:striker<=7?1.5:2.4;
           const settleM=batters[striker].balls<8?1.12:1.0;
           const bRat=batRatings?Math.max(52,Math.min(99,batRatings[striker]||70)):70;
           const batWktMod=1.18-(bRat-52)/47*0.42;
-          const wktP=wktProbBase*posM*settleM*bowler.ratingFactor*bowler.hotFactor*batWktMod*pressureWktMult*chaseWktMult*bowler.wktBoost;
+          const wktP=wktProbBase*posM*settleM*bowler.ratingFactor*bowler.hotFactor*batWktMod*pressureWktMult*chaseWktMult*bowler.wktBoost*formatWktMult;
           batters[striker].balls++;
           if(Math.random()<wktP){batters[striker].out=true;batters[striker].batting=false;batters[striker].how=makeHow(bowler.name);bowler.wickets++;wkts++;wktsThisOver++;striker=nextIn++;if(striker<11){batters[striker].batting=batters[striker].batted=true;}}
           else{
-            const batScMod=0.68+(bRat-52)/47*0.55;const phaseMult=isPP?1.18:isDeath?1.75:1.0;
-            const sc=(0.88+q*0.22)*batScMod*phaseMult*bowler.economyFactor*pressureScMult*chaseScMult;
+            const batScMod=0.68+(bRat-52)/47*0.55;const phaseMult=isPP?1.18:isDeath?1.55:1.0;
+            const sc=(0.88+q*0.22)*batScMod*phaseMult*bowler.economyFactor*pressureScMult*chaseScMult*formatScoreMult;
             // Shot selection itself gets riskier — more fours/sixes, fewer nudged singles —
             // when the situation actually demands it (death overs, a chase under pressure),
             // rather than a flat aggression scale-up that would otherwise inflate every phase.
             const aggressive=isDeath||chaseScMult>1.1;
-            const w1=aggressive?0.20:0.22,w4=aggressive?0.12:0.09,w6=aggressive?0.035:0.025;
+            // Once sc pushes the dot-ball rate down to its 38% floor (below),
+            // further sc increases stop moving runs at all — the raw
+            // boundary/single ratios just get rescaled into whatever's left,
+            // so formatScoreMult alone plateaus in a T20 call (measured:
+            // +45% on sc moved run rate by well under 5%). boundaryBoost
+            // instead raises the boundary *share itself* (4s/6s, not 1s/2s),
+            // so a short format hits more fours and sixes even once the
+            // scoring-ball rate is already saturated. 1.0 (no change) at
+            // oversMax=50.
+            const boundaryBoost=1+Math.max(0,(50-oversMax)/50)*0.6;
+            const w1=aggressive?0.20:0.22,w4=(aggressive?0.12:0.09)*boundaryBoost,w6=(aggressive?0.035:0.025)*boundaryBoost;
             const rawP1=w1*sc,rawP2=0.07*sc,rawP3=0.005*sc,rawP4=w4*sc,rawP6=w6*sc;
             const rawSum=rawP1+rawP2+rawP3+rawP4+rawP6;
             const p0=Math.max(0.38,1-rawSum);
@@ -15025,10 +15122,11 @@
 
     <div id="hub-next-fixture" style="width:100%;background:#0d0d12;border:1px solid #1a1a24;border-radius:10px;padding:10px 14px;margin-bottom:10px;text-align:left"></div>
 
-    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:5px;text-align:left">Standings</div>
+    <div id="hub-table-label" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:5px;text-align:left">Standings</div>
     <div id="hub-table-wrap" style="width:100%;margin-bottom:10px;overflow-x:auto"></div>
 
     <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:6px;text-align:left">Your Season</div>
+    <div id="hub-season-toggle" style="width:100%;display:none;gap:8px;margin-bottom:8px"></div>
     <div id="hub-season-stats" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px"></div>
 
     <button class="btn-start" id="hub-play-btn" style="width:100%" onclick="playNextCareerFixture()">Play Next Match</button>
@@ -15085,6 +15183,8 @@
     <div class="stage-bar" id="profile-goals" style="text-align:left;margin-bottom:20px"></div>
 
     <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Stats</div>
+    <div style="font-size:11px;color:#8080a0;font-weight:700;margin-bottom:8px;text-align:left">Career Totals</div>
+    <div id="profile-career-totals" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px"></div>
     <div id="profile-stats-history" style="width:100%;margin-bottom:20px"></div>
 
     <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px;text-align:left">Trophy Cabinet</div>
@@ -15099,6 +15199,7 @@
       <div style="font-size:24px;font-weight:900;color:#fff">League Leaders</div>
     </div>
     <div id="stats-tabs" style="width:100%;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
+    <div id="stats-competition-toggle" style="width:100%;display:none;gap:8px;margin-bottom:12px"></div>
     <div id="stats-table-wrap" style="width:100%;margin-bottom:12px;overflow-x:auto"></div>
     <div id="stats-my-rank" style="width:100%;margin-bottom:20px"></div>
     <button class="btn-auth-small" onclick="go('s-career-hub')">← Back</button>
@@ -15176,6 +15277,26 @@
     <div id="motm-continue" style="width:100%"></div>
   </div>
 
+  <!-- CAREER COUNTY 2 50-OVER LEAGUE REVIEW (breaking news, same pattern as
+       s-career-motm above, minus the reward-choice widget — this is a pure
+       recap screen bridging the 50-Over League into the T20 Cup) -->
+  <div id="s-career-fiftyover-review" class="screen">
+    <div class="ov-reveal" style="width:100%;text-align:left;margin-bottom:16px">
+      <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">🏆 Breaking News</div>
+      <div id="fiftyover-review-headline" style="font-size:22px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px">—</div>
+      <div id="fiftyover-review-dateline" style="font-size:12px;color:#6060a0">—</div>
+    </div>
+    <div id="fiftyover-review-article" class="ov-reveal ov-pop" style="width:100%;font-size:13px;color:#c0c0d8;line-height:1.7;text-align:left;margin-bottom:16px"></div>
+    <div id="fiftyover-review-table" class="ov-reveal ov-pop" style="width:100%;margin-bottom:24px;overflow-x:auto"></div>
+    <div class="ov-reveal" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9a9ad4;font-weight:800;margin-bottom:8px;text-align:left">Your Season</div>
+    <div id="fiftyover-review-stats" class="ov-reveal ov-stats" style="width:100%;grid-template-columns:1fr 1fr;margin-bottom:10px"></div>
+    <div id="fiftyover-review-batting" style="width:100%;margin-bottom:10px"></div>
+    <div id="fiftyover-review-bowling" style="width:100%;margin-bottom:24px"></div>
+    <div class="ov-reveal" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9a9ad4;font-weight:800;margin-bottom:8px;text-align:left">Division Leaders</div>
+    <div id="fiftyover-review-leaders" class="ov-stagger" style="width:100%;margin-bottom:24px"></div>
+    <button class="ov-reveal btn-sim" style="width:100%" onclick="careerCounty2FiftyOverContinue();">Continue to the T20 Cup</button>
+  </div>
+
   <!-- CAREER RANDOM EVENT SCREEN -->
   <div id="s-career-event" class="screen">
     <div class="ov-reveal" style="width:100%;text-align:left;margin-bottom:16px">
@@ -15197,6 +15318,17 @@
       <button class="btn-auth-small" id="career-chat-skip" style="padding:6px 12px;font-size:11px" onclick="careerChatSkipAll()">Skip</button>
     </div>
     <div id="career-chat-messages" style="width:100%;display:flex;flex-direction:column" onclick="careerChatTapAdvance()"></div>
+  </div>
+
+  <!-- CAREER CONTRACT SCREEN — opened from a document bubble in the agent chat -->
+  <div id="s-career-contract" class="screen">
+    <div class="ov-reveal" style="width:100%;text-align:left;margin-bottom:16px">
+      <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800;margin-bottom:6px">📄 Attachment</div>
+      <div style="font-size:20px;font-weight:900;color:#fff">Playing Contract</div>
+    </div>
+    <div id="career-contract-paper" class="ov-reveal ov-pop" style="width:100%;background:#14141c;border:1px solid #2a2a3a;border-radius:10px;padding:22px 20px;margin-bottom:20px;text-align:left"></div>
+    <button class="btn-sim ov-reveal" id="career-contract-sign-btn" style="width:100%">Sign Here ✍️</button>
+    <button class="btn-start" id="career-contract-close-btn" style="width:100%;display:none">Continue</button>
   </div>
 
   <div id="s-career-season-end" class="screen">
@@ -15273,17 +15405,27 @@
         middleOrder: { technique:41, power:53, temperament:47 },
       },
       battingTypePrimary: {
+        // Only .middleOrder is ever actually reached (finishCareerCreation
+        // forces battingType to middleOrder for every All-Rounder — see
+        // that function) — .opener/.topOrder below are dead, left as-is
+        // rather than touched by this rebalance since they can't affect a
+        // real player either way.
         opener:      { technique:58, power:46, temperament:52 },
         topOrder:    { technique:52, power:46, temperament:58 },
-        middleOrder: { technique:46, power:58, temperament:52 },
+        // +9/stat over the previous 46/58/52, paired with bowlTypeSecondary's
+        // matching -9 below — audited (audit_role.mjs, scratchpad) that the
+        // previous ±6 split left Batting AR and Bowling AR statistically
+        // indistinguishable from each other on BOTH sides (creation ratings
+        // only ~1 point apart each way: 46/58/52+39 vs 45/57/51+40), not just
+        // thin on the bowling side as first suspected. This only touches
+        // Batting AR's own tables — Bowling AR's bowlTypePrimary (40) already
+        // sits a real, audit-confirmed 7 points below specialist Bowler's 47,
+        // so it's left alone; Batting AR's bowling now sits a further 10
+        // points below Bowling AR's, and its batting a further 10 points
+        // above, without touching the specialist-vs-Bowling-AR gap that
+        // already worked.
+        middleOrder: { technique:55, power:67, temperament:61 },
       },
-      // +6/stat over the OVR-neutral values, -6/stat on bowlTypePrimary
-      // below — Bowling-lean All-Rounder was landing 40 wickets too easily
-      // (~47%) and 300 runs too rarely (~28%) at the neutral split; an
-      // all-rounder should be a worse bowler than a specialist and a
-      // better batter than that split gave them credit for. Weights are
-      // symmetric (0.425 bat / 0.425 bowl) so shifting the same amount
-      // both ways moves the bat/bowl balance without moving OVR off 45.
       battingTypeSecondary: {
         opener:      { technique:57, power:45, temperament:51 },
         topOrder:    { technique:51, power:45, temperament:57 },
@@ -15324,11 +15466,15 @@
         leg:    { control:40, threat:40, variation:40 },
         off:    { control:40, threat:40, variation:40 },
       },
+      // -9/stat, paired with battingTypePrimary.middleOrder's +9 above —
+      // see that comment for why. Batting AR's bowling now sits clearly
+      // below Bowling AR's (30 vs 40), same order of magnitude as the gap
+      // that already separates Bowling AR from a specialist (40 vs 47).
       bowlTypeSecondary: {
-        fast:   { control:39, threat:39, variation:39 },
-        medium: { control:39, threat:39, variation:39 },
-        leg:    { control:39, threat:39, variation:39 },
-        off:    { control:39, threat:39, variation:39 },
+        fast:   { control:30, threat:30, variation:30 },
+        medium: { control:30, threat:30, variation:30 },
+        leg:    { control:30, threat:30, variation:30 },
+        off:    { control:30, threat:30, variation:30 },
       },
       keeper: {
         keeperBatsmanFielding: { keeping:60, catching:60, groundFielding:36 },
@@ -15409,9 +15555,18 @@
     // Which of the 9 ratings actually matter for a given role — shared by
     // the creation reveal, the player profile screen, and the pre-match
     // "today's ratings" preview so all three dim the same stats the same way.
+    // Catching/groundFielding are in every role's list, not just Keeper's
+    // — they contribute to every role's OVR too (CAREER_OVR_WEIGHTS' field
+    // weight is nonzero for all four roles) and every role actually rolls
+    // them (CAREER_RATING_TABLES.fielding gives batter/bowler/allrounder
+    // real catching/groundFielding values), so dimming them read as "this
+    // doesn't matter for you" when it always does, just less than for a
+    // Keeper. `keeping` stays Keeper-only — it's genuinely dead for every
+    // other role (never assigned past its base 15, never rolled).
     const CAREER_RELEVANT_STAT_KEYS = {
-      batter: ['technique','power','temperament'], bowler: ['control','threat','variation'],
-      allrounder: ['technique','power','temperament','control','threat','variation'],
+      batter: ['technique','power','temperament','catching','groundFielding'],
+      bowler: ['control','threat','variation','catching','groundFielding'],
+      allrounder: ['technique','power','temperament','control','threat','variation','catching','groundFielding'],
       keeper: ['keeping','catching','groundFielding','technique','power','temperament'],
     };
     const CAREER_BATTING_STAT_KEYS = ['technique', 'power', 'temperament'];
@@ -15486,6 +15641,17 @@
         seasonTrophiesWonThisSeason: [],
         missStreak: 0,
         seasonEndHit: null,
+        tier: 1,
+        competitionPhase: null,
+        county2County: null,
+        county2FiftyOverDivision: null,
+        county2T20Division: null,
+        county2Divisions: null,
+        county2FiftyOverFinalTable: null,
+        seasonStatsByCompetition: null,
+        statsViewToggle: 'fiftyOver',
+        leagueStatsByCompetition: null,
+        t20cup: null,
       };
     }
     const CAREER_SETTINGS = { autoAdvanceAI: true };
@@ -15494,6 +15660,84 @@
     function enterCareerMode() {
       go('s-career-intro');
       checkForSavedCareerGame();
+    }
+
+    // ghughesy-only (see updateWCModeVisibility) — plays out a genuine
+    // tier-1 season (real matches, real MOTM/points/random-event choices,
+    // pity-guaranteed within 4 seasons same as a real player) rather than
+    // spawning a player straight at 45 OVR, so the County 2 season that
+    // follows starts from a realistic promoted player — real season
+    // history, real progression, a real finishing rating, not a blank
+    // slate. Driven the same way this session's own test scripts drive a
+    // season: resolveRoundAIMatches + the tracked player's own match, MOTM
+    // and progression-point choices picked automatically (lowest-rated
+    // eligible stat), any pre-match event auto-resolved via its first
+    // option.
+    function careerDevResolveChatIfActive() {
+      const s = document.getElementById('s-career-agent-chat');
+      if (s && s.classList.contains('on')) { careerChatSkipAll(); document.querySelector('#career-chat-messages button.btn-start')?.click(); return true; }
+      return false;
+    }
+    function careerDevLowestRated(keys) {
+      return keys.filter(k => CAREER.player.ratings[k] < CAREER_RATING_CAP).sort((a, b) => CAREER.player.ratings[a] - CAREER.player.ratings[b])[0];
+    }
+    function careerDevDriveRound(round) {
+      resolveRoundAIMatches(round);
+      const pair = findMyFixtureInRound(round);
+      const oppId = pair[0] === CAREER.myClubId ? pair[1] : pair[0];
+      const isHome = pair[0] === CAREER.myClubId;
+      const eventType = rollCareerRandomEvent();
+      if (eventType) { const cfg = careerEventConfig(eventType); if (cfg.buttons) cfg.buttons[0].effect(); else cfg.effect(); }
+      playCareerMatch(round, oppId, isHome);
+      if (CAREER.pendingBadPerf) { careerEventConfig(CAREER.pendingBadPerf).effect(); CAREER.pendingBadPerf = null; }
+      careerFinishMatch();
+      if (CAREER.pendingMOTM) {
+        if (Math.random() < 0.5) careerMOTMPickMorale();
+        else { const stat = careerDevLowestRated(CAREER_RATING_ORDER); if (stat) careerMOTMPickStat(stat); else careerMOTMPickMorale(); }
+        careerFinishMOTM();
+      }
+      while (CAREER.pendingPoints.length) {
+        const point = CAREER.pendingPoints[0];
+        const eligible = careerPointStatOptions(point.category, CAREER.player.role);
+        const stat = careerDevLowestRated(eligible) || eligible[0];
+        careerSpendPoint(stat);
+        renderCareerPointsStep();
+      }
+      careerDevResolveChatIfActive();
+    }
+    function enterCareerModeDevCounty2() {
+      resetCareerState();
+      CAREER.draft = Object.assign(CAREER.draft, {
+        name: 'Dev Test', role: 'batter', type: 'opener', lean: null,
+        battingType: 'anchor', bowlBroadType: 'seam', bowlType: 'medium',
+        leagueId: 'bradford',
+      });
+      finishCareerCreation();
+      renderCareerTeamReveal();
+      beginCareerSeason();
+
+      // Collapse setTimeout to synchronous just for this simulated run —
+      // the match/chat animation chains are entirely setTimeout-driven, so
+      // this drives whole seasons instantly instead of waiting on real
+      // timers. Restored immediately after, so normal gameplay (chat
+      // typing, match drip-feed) still animates properly once this hands
+      // off to a real play session at County 2.
+      const realSetTimeout = window.setTimeout, realClearTimeout = window.clearTimeout;
+      window.setTimeout = (fn, _d, ...args) => { if (typeof fn === 'function') fn(...args); return 0; };
+      window.clearTimeout = () => {};
+      try {
+        careerDevResolveChatIfActive();
+        let promoted = false;
+        for (let s = 1; s <= 4 && !promoted; s++) {
+          const rounds = CAREER.fixtures.length;
+          for (let round = 0; round < rounds; round++) careerDevDriveRound(round);
+          if (careerSeasonEndGoalInfo().hit) { careerPromoteToCounty2(); promoted = true; }
+          else { careerStartNextSeason(); careerDevResolveChatIfActive(); }
+        }
+      } finally {
+        window.setTimeout = realSetTimeout;
+        window.clearTimeout = realClearTimeout;
+      }
     }
 
     // ── Creation flow: option data ───────────────────────────────────────
@@ -15763,7 +16007,12 @@
     // a realistic club-XI split. Shuffled per squad so it's not always the
     // same rating-rank landing the same role.
     const CAREER_XI_ROLE_TEMPLATE = ['keeper', 'batter', 'batter', 'batter', 'batter', 'allrounder', 'allrounder', 'bowler', 'bowler', 'bowler', 'bowler'];
-    function generateClubXI(targetRating) {
+    // clampMin/clampMax default to tier 1's exact original window (30-60) —
+    // sized with margin around tier 1's 40-50 club band. Tier 2's 50-60
+    // band needs its own window (see career-county2.js) or every player on
+    // the best team gets flattened down to 60, the same value as their
+    // own club's target rating, losing all the natural spread above it.
+    function generateClubXI(targetRating, clampMin = 30, clampMax = 60) {
       const n = 11, used = new Set();
       const raw = Array.from({ length: n }, () => targetRating + (Math.random() - 0.5) * 16);
       const shift = targetRating - raw.reduce((s, v) => s + v, 0) / n;
@@ -15804,7 +16053,7 @@
       // untouched for batter/keeper, and dampened harder for a specialist
       // bowler (real tail-enders) than for an all-rounder's batting.
       const players = raw.map((v, i) => {
-        const rating = Math.max(30, Math.min(60, Math.round(v + shift)));
+        const rating = Math.max(clampMin, Math.min(clampMax, Math.round(v + shift)));
         const role = roles[i];
         let bowlSkill = null, batSkill = rating;
         if (role === 'bowler') { bowlSkill = rating; batSkill = Math.max(20, Math.round(rating - 15 - Math.random() * 8)); }
@@ -16006,7 +16255,16 @@
     // successful chase always ends at (target + a small margin), never
     // independently of what it was chasing — and the live match screen only
     // ever reveals what this already decided, ball by ball.
-    const CAREER_MAX_OVERS = 50;
+    // A function, not a constant — County 2's T20 Cup plays 20-over cricket
+    // interleaved with the 50-Over League within the same season (see
+    // CAREER.competitionPhase, careerPromoteToCounty2 and its neighbours),
+    // so "how many overs is an innings" now depends on which competition is
+    // currently active rather than being fixed for the whole game.
+    function CAREER_MAX_OVERS() { return (CAREER.competitionPhase || '').startsWith('t20cup') ? 20 : 50; }
+    // Bowler over-cap for the currently active competition — 4 for the T20
+    // Cup (the real T20 limit), otherwise unchanged from each caller's own
+    // existing default (10/12/15 depending on context, see call sites).
+    function careerBowlerMaxOv(defaultMaxOv) { return (CAREER.competitionPhase || '').startsWith('t20cup') ? 4 : defaultMaxOv; }
     function careerInningsRunRate(battingRating, bowlingRating) {
       const strengthDiff = battingRating - bowlingRating; // roughly -30..+30
       // The 6.5 cap here used to be decorative: at Local Club tier (clubs
@@ -16036,7 +16294,14 @@
     // keeping the exact same [15,45] range, so a real early capitulation
     // still happens, just far less often.
     function careerCollapseOvers() {
-      return (CAREER_MAX_OVERS - 5) - Math.pow(Math.random(), 3) * (CAREER_MAX_OVERS - 20);
+      // Proportional to the current format's oversMax rather than a fixed
+      // "-5"/"-20" offset — at 50 overs this reduces to exactly the
+      // original 45-down-to-15 range (oversMax*0.9 down to oversMax*0.3,
+      // spread oversMax*0.6). The old fixed offsets would have collapsed
+      // to a single fixed over (15, with zero variance) at T20's 20 overs,
+      // since "oversMax-20" hits zero exactly there.
+      const om = CAREER_MAX_OVERS();
+      return om * 0.9 - Math.pow(Math.random(), 3) * (om * 0.6);
     }
     function careerGenerateFirstInnings(battingRating, bowlingRating) {
       const runRate = careerInningsRunRate(battingRating, bowlingRating);
@@ -16062,7 +16327,8 @@
       // this "didn't collapse" branch — the collapse branch above keeps the
       // wider floor since being bowled out is its own real explanation.
       const safeRunRate = Math.max(3.3, runRate);
-      return { score: Math.round(CAREER_MAX_OVERS * safeRunRate), wickets: 2 + Math.floor(Math.random() * 8), overs: CAREER_MAX_OVERS };
+      const om = CAREER_MAX_OVERS();
+      return { score: Math.round(om * safeRunRate), wickets: 2 + Math.floor(Math.random() * 8), overs: om };
     }
     function careerGenerateChase(battingRating, bowlingRating, target, chaserWins) {
       if (chaserWins) {
@@ -16084,9 +16350,10 @@
         // this particular chase actually went — comfortable wins (a big
         // multiple of the minimum) are more common than nail-biters (barely
         // above it), which a uniform roll on the multiplier naturally gives.
-        const minViableRate = target / (CAREER_MAX_OVERS - 1);
+        const om = CAREER_MAX_OVERS();
+        const minViableRate = target / (om - 1);
         const comfort = 1.02 + Math.random() * 0.88;
-        const overs = Math.max(10, Math.min(CAREER_MAX_OVERS - 1, Math.round(score / (minViableRate * comfort))));
+        const overs = Math.max(10, Math.min(om - 1, Math.round(score / (minViableRate * comfort))));
         // Wickets lost used to be a flat 0-8 roll totally independent of how
         // the chase actually went — a side could "win by 1 wicket" in the
         // 20th over (which isn't really a nail-biter at all, that's a
@@ -16108,20 +16375,21 @@
       // the final score from the overs/run-rate that supposedly produced it —
       // e.g. a target of 65 could clamp an 89-off-50-overs innings down to
       // 64, leaving a nonsense implied run rate of 1.3/over on the scorecard).
-      const requiredRate = target / CAREER_MAX_OVERS;
+      const om = CAREER_MAX_OVERS();
+      const requiredRate = target / om;
       const shortfallRate = Math.max(2.2, requiredRate - (0.4 + Math.random() * 2.0));
-      // Against a low target, "survives all 50 overs but still falls short"
-      // is the unrealistic case — that's a sub-2.2 run rate for a whole
-      // innings against a target that low, something real batting sides
-      // essentially never do (they'd either get there or get bowled out
-      // trying). Force the collapse branch instead once the target itself
-      // can't sustain 50 overs at a believable rate.
-      const canSurvive50 = target - 1 >= CAREER_MAX_OVERS * 2.2;
-      if (!canSurvive50 || Math.random() < 0.55) {
+      // Against a low target, "survives the full innings but still falls
+      // short" is the unrealistic case — that's a sub-2.2 run rate for a
+      // whole innings against a target that low, something real batting
+      // sides essentially never do (they'd either get there or get bowled
+      // out trying). Force the collapse branch instead once the target
+      // itself can't sustain the full innings at a believable rate.
+      const canSurviveFull = target - 1 >= om * 2.2;
+      if (!canSurviveFull || Math.random() < 0.55) {
         const overs = careerCollapseOvers();
         return { score: Math.max(30, Math.min(target - 1, Math.round(overs * shortfallRate))), wickets: 10, overs: Math.round(overs) };
       }
-      return { score: Math.max(30, Math.min(target - 1, Math.round(CAREER_MAX_OVERS * shortfallRate))), wickets: 2 + Math.floor(Math.random() * 8), overs: CAREER_MAX_OVERS };
+      return { score: Math.max(30, Math.min(target - 1, Math.round(om * shortfallRate))), wickets: 2 + Math.floor(Math.random() * 8), overs: om };
     }
     function simCheapClubMatch(clubAId, clubBId) {
       const rA = CAREER.clubs[clubAId].rating, rB = CAREER.clubs[clubBId].rating;
@@ -16411,13 +16679,21 @@
     // AI keepers (who only have a flat `rating`, not the 9-way breakdown)
     // can reuse it too.
     function careerRollFielding(isKeeper, skill) {
-      // Keeper-side rates calibrated against a real Bradford Premier League
-      // keeper-stats sheet: 30 season victims (the intended progression
-      // quota) should land at roughly a 25%-chance mark for a normally-
-      // progressing keeper, matching how every other role's season target
-      // is calibrated. Verified empirically at 25.0% across 60 simulated
-      // seasons with these exact rates — don't retune without re-measuring.
-      const chances = Math.random() < (isKeeper ? 0.88 : 0.4) ? 1 + (Math.random() < (isKeeper ? 0.62 : 0.15) ? 1 : 0) : 0;
+      // Keeper-side rates originally calibrated (flat, skill-independent)
+      // against a real Bradford Premier League keeper-stats sheet: 30
+      // season victims should land at roughly a 25%-chance mark for a
+      // normally-progressing keeper. That calibration only ever touched how
+      // often a CHANCE gets converted (clean, below) — the number of
+      // chances itself was a fixed roll no matter how good the keeper was,
+      // so "a better keeper gets backed to take more of the game's chances"
+      // had no mechanism at all. Anchored at skill=50 (chanceP/secondP land
+      // on the original flat 0.88/0.62 there) and scaled around it so
+      // rating now moves both how many chances a keeper gets AND how many
+      // they convert — re-verify the 25%-at-baseline mark after any change
+      // here (audit_tier1_ratings.mjs, scratchpad).
+      const chanceP = isKeeper ? Math.max(0.7, Math.min(0.97, 0.88 + (skill - 50) / 450)) : 0.4;
+      const secondP = isKeeper ? Math.max(0.4, Math.min(0.85, 0.62 + (skill - 50) / 280)) : 0.15;
+      const chances = Math.random() < chanceP ? 1 + (Math.random() < secondP ? 1 : 0) : 0;
       if (!chances) return { involvements: 0, clean: 0 };
       const baseSuccess = isKeeper ? 0.42 : 0.4;
       const skillDivisor = isKeeper ? 143 : 150;
@@ -16443,9 +16719,19 @@
       const s = CAREER.leagueStats[entry.id] || (CAREER.leagueStats[entry.id] = careerNewPlayerStatLine(entry));
       s.field.involvements += entry.involvements;
       s.field.clean += entry.clean;
+      // Same per-competition split as accumulateLeagueStats — victims
+      // (Most Victims/Player of the Season) would otherwise only ever
+      // show the combined total on the League Stats toggle.
+      if ((CAREER.tier || 1) === 2 && CAREER.leagueStatsByCompetition) {
+        const key = (CAREER.competitionPhase || '').startsWith('t20cup') ? 't20cup' : 'fiftyOver';
+        const pool = CAREER.leagueStatsByCompetition[key];
+        const ps = pool[entry.id] || (pool[entry.id] = careerNewPlayerStatLine(entry));
+        ps.field.involvements += entry.involvements;
+        ps.field.clean += entry.clean;
+      }
     }
-    function accumulateLeagueStats(card) {
-      const touch = line => CAREER.leagueStats[line.id] || (CAREER.leagueStats[line.id] = careerNewPlayerStatLine(line));
+    function accumulateLeagueStatsInto(pool, card) {
+      const touch = line => pool[line.id] || (pool[line.id] = careerNewPlayerStatLine(line));
       [...card.battingA, ...card.battingB].forEach(line => {
         const s = touch(line);
         s.bat.innings++; s.bat.runs += line.runs; s.bat.balls += line.balls;
@@ -16455,6 +16741,20 @@
         const s = touch(line);
         s.bowl.innings++; s.bowl.wickets += line.wickets; s.bowl.runsConceded += line.runsConceded; s.bowl.overs += line.overs;
       });
+    }
+    function accumulateLeagueStats(card) {
+      accumulateLeagueStatsInto(CAREER.leagueStats, card);
+      // Same split as CAREER.seasonStatsByCompetition, for the League
+      // Stats leaderboard's 50-Over/T20 toggle — a genuinely separate pool
+      // per competition matters here specifically because player ids are
+      // clubId-based (see assignSquadIds) and the 50-Over League's and T20
+      // Cup's clubs are two different rosters that reuse the same club-id
+      // range, so merging them into one dictionary risks two unrelated
+      // players silently colliding under the same id.
+      if ((CAREER.tier || 1) === 2 && CAREER.leagueStatsByCompetition) {
+        const key = (CAREER.competitionPhase || '').startsWith('t20cup') ? 't20cup' : 'fiftyOver';
+        accumulateLeagueStatsInto(CAREER.leagueStatsByCompetition[key], card);
+      }
     }
 
     // ── Season loop ─────────────────────────────────────────────────────
@@ -16803,6 +17103,11 @@
         return;
       }
       const step = st.steps[st.idx];
+      // A document attachment (currently only the promotion contract) isn't
+      // typed out like a real message — it just appears, the same way an
+      // attached file would, and taps straight to the follow-on screen
+      // rather than typing/reply-chip machinery.
+      if (step.isContract) { renderCareerContractBubble(); return; }
       const messages = document.getElementById('career-chat-messages');
       const row = document.createElement('div');
       row.className = 'imsg-row in';
@@ -16875,6 +17180,113 @@
       st.idx++;
       st.timer = setTimeout(careerChatPlayStep, careerChatReduceMotion() ? 150 : 650);
     }
+    function careerChatAppendOutBubble(text) {
+      const row = document.createElement('div');
+      row.className = 'imsg-row out';
+      const bubble = document.createElement('div');
+      bubble.className = 'imsg-bubble out';
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      document.getElementById('career-chat-messages').appendChild(row);
+      careerChatScrollBottom();
+    }
+    // Renders the contract as a tappable attachment bubble rather than a
+    // typed message — opening it hands off to the contract screen
+    // (openCareerContract), and the chat only resumes once that's actually
+    // signed. Blocks skip/auto-advance the same way an onPick step does
+    // (see careerChatSkipAll) since this is a real moment, not flavour text.
+    function renderCareerContractBubble() {
+      const st = careerChatState;
+      const row = document.createElement('div');
+      row.className = 'imsg-row in';
+      const doc = document.createElement('div');
+      doc.className = 'imsg-doc-bubble';
+      doc.innerHTML = `<span class="imsg-doc-icon">📄</span><span class="imsg-doc-label">Playing_Contract.pdf</span>`;
+      doc.onclick = () => {
+        if (doc.classList.contains('imsg-doc-opened')) return;
+        doc.classList.add('imsg-doc-opened');
+        openCareerContract(() => {
+          careerChatAppendOutBubble('Signed ✍️');
+          st.idx++;
+          st.timer = setTimeout(careerChatPlayStep, careerChatReduceMotion() ? 150 : 650);
+        });
+      };
+      row.appendChild(doc);
+      document.getElementById('career-chat-messages').appendChild(row);
+      st.awaitingReply = true;
+      careerChatScrollBottom();
+    }
+    function careerContractPaperHTML(player, county) {
+      return `
+        <div style="text-align:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #2a2a3a">
+          <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#f9c846;font-weight:800">${county} County Cricket Club</div>
+          <div style="font-size:16px;font-weight:900;color:#fff;margin-top:4px">PLAYING CONTRACT</div>
+        </div>
+        <div style="font-size:13px;line-height:1.8;color:#c8c8d8">
+          <p style="margin-bottom:12px">This agreement is made between <strong style="color:#fff">${county} County Cricket Club</strong> ("the Club") and <strong style="color:#fff">${player.name}</strong> ("the Player").</p>
+          <p style="margin-bottom:12px">The Club engages the Player as a professional cricketer for the forthcoming season, to represent the Club across all first-team competitions.</p>
+          <p style="margin-bottom:12px">The Player agrees to train, prepare, and perform to the standard expected of a ${county} cricketer, and to uphold the conduct and spirit of the Club at all times.</p>
+          <p>This contract takes effect upon signature below.</p>
+        </div>
+        <div style="margin-top:26px;padding-top:16px;border-top:1px dashed #3a3a4a">
+          <div id="career-contract-sig-area" style="min-height:56px;display:flex;align-items:center;justify-content:center"></div>
+          <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#6060a0;text-align:center;margin-top:6px">${player.name} · Player Signature</div>
+        </div>`;
+    }
+    // A different random cursive-looking squiggle every time, drawn with a
+    // stroke-dashoffset reveal (playCareerSignatureAnimation) rather than a
+    // fixed pre-baked signature graphic — the point is that it's uniquely
+    // "yours" each time you sign, not a real handwriting simulation.
+    function careerRandomSignaturePathD(w, h) {
+      const midY = h * 0.55;
+      const segments = 5 + Math.floor(Math.random() * 3);
+      const segW = w / segments;
+      let d = `M ${(w * 0.04).toFixed(1)} ${(midY + (Math.random() - 0.5) * h * 0.2).toFixed(1)}`;
+      for (let i = 0; i < segments; i++) {
+        const x1 = segW * i + segW * 0.5;
+        const y1 = midY - (h * 0.3 + Math.random() * h * 0.25) * (i % 2 === 0 ? 1 : -1);
+        const x2 = segW * (i + 1);
+        const y2 = midY + (Math.random() - 0.5) * h * 0.25;
+        d += ` Q ${x1.toFixed(1)} ${y1.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+      }
+      d += ` M ${(w * 0.1).toFixed(1)} ${(h * 0.85).toFixed(1)} Q ${(w * 0.5).toFixed(1)} ${(h * 0.95).toFixed(1)}, ${(w * 0.92).toFixed(1)} ${(h * 0.82).toFixed(1)}`;
+      return d;
+    }
+    function playCareerSignatureAnimation(container, onDone) {
+      const w = 220, h = 60;
+      container.innerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible"><path d="${careerRandomSignaturePathD(w, h)}" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      const path = container.querySelector('path');
+      const len = path.getTotalLength();
+      path.style.strokeDasharray = len;
+      path.style.strokeDashoffset = len;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) { path.style.strokeDashoffset = '0'; onDone(); return; }
+      // Force a reflow so the browser registers the starting offset before
+      // the transition to 0 begins — otherwise both style writes can get
+      // batched into one and the "draw-on" never actually animates.
+      path.getBoundingClientRect();
+      const duration = 1.1 + Math.random() * 0.4;
+      path.style.transition = `stroke-dashoffset ${duration}s ease-in-out`;
+      path.style.strokeDashoffset = '0';
+      setTimeout(onDone, duration * 1000 + 150);
+    }
+    function openCareerContract(onSigned) {
+      const player = CAREER.player, county = CAREER.county2County;
+      document.getElementById('career-contract-paper').innerHTML = careerContractPaperHTML(player, county);
+      const signBtn = document.getElementById('career-contract-sign-btn');
+      const closeBtn = document.getElementById('career-contract-close-btn');
+      signBtn.style.display = 'block';
+      closeBtn.style.display = 'none';
+      signBtn.onclick = () => {
+        signBtn.style.display = 'none';
+        playCareerSignatureAnimation(document.getElementById('career-contract-sig-area'), () => {
+          closeBtn.style.display = 'block';
+        });
+      };
+      closeBtn.onclick = () => { go('s-career-agent-chat'); onSigned(); };
+      go('s-career-contract');
+      requestAnimationFrame(() => wireReveals(document.getElementById('s-career-contract')));
+    }
     // Fast-forwards the REST of the conversation straight into the
     // transcript (full text, no typing animation, no interactive replies)
     // rather than abandoning the screen — the player still gets to read
@@ -16908,9 +17320,12 @@
         row.appendChild(bubble);
         messages.appendChild(row);
       };
-      // Some steps' replies aren't just cosmetic flavour (e.g. the winter
-      // nets attribute pick) — onPick still needs to fire with whichever
-      // reply skipping auto-selects, same as a manually tapped chip would.
+      // Most steps' replies are cosmetic flavour, safe to auto-pick the
+      // first option for. A step with onPick (e.g. winter nets' attribute
+      // choice) is a real decision with a lasting effect though — skipping
+      // shouldn't silently lock in whichever option happens to be first, so
+      // those steps halt the fast-forward and surface real, tappable chips
+      // instead.
       const pickFirstReply = step => {
         if (!step.replies || !step.replies.length) return;
         const reply = step.replies[0];
@@ -16923,16 +17338,30 @@
         // finish it in place rather than duplicating it.
         st.currentBubble.textContent = st.steps[st.idx].text;
         st.currentBubble = null;
+        if (st.steps[st.idx].onPick) { careerChatAfterType(st.steps[st.idx]); return; }
         pickFirstReply(st.steps[st.idx]);
         startIdx = st.idx + 1;
       } else if (st.awaitingReply) {
-        // Current step already fully typed, just sitting on its (now
-        // removed) reply chips — auto-pick its first reply too.
+        // Current step already fully typed, sitting on its (now removed)
+        // reply chips — a real-decision step just gets those chips put
+        // straight back; anything else auto-picks its first reply. The
+        // contract's document bubble was never removed above (only
+        // .imsg-replies wraps are), so it's still sitting there untouched —
+        // nothing to do but leave it waiting for a real tap.
+        if (st.steps[st.idx].isContract) return;
+        if (st.steps[st.idx].onPick) { careerChatAfterType(st.steps[st.idx]); return; }
         pickFirstReply(st.steps[st.idx]);
         startIdx = st.idx + 1;
       }
       st.awaitingReply = false;
       for (let i = startIdx; i < st.steps.length; i++) {
+        if (st.steps[i].isContract) { st.idx = i; renderCareerContractBubble(); return; }
+        if (st.steps[i].onPick) {
+          st.idx = i;
+          appendAgentBubble(st.steps[i].text);
+          careerChatAfterType(st.steps[i]);
+          return;
+        }
         appendAgentBubble(st.steps[i].text);
         pickFirstReply(st.steps[i]);
       }
@@ -16969,7 +17398,7 @@
       const goalText = careerGoalText(goals);
       return [
         { text: `Mate! Congrats, ${CAREER.myClubName} have signed you. It's official, you're in the side now.`, replies: ['Buzzing 🙌', "Let's go"] },
-        { text: `Been on the phone this morning about you actually. ${county} 2nd XI's coach already knows your name.`, replies: ['No way', 'Serious?'] },
+        { text: `Been on the phone this morning about you actually. ${county}'s coach already knows your name, he's eyeing you up for the 2's.`, replies: ['No way', 'Serious?'] },
         { text: goalText ? `Yeah, dead serious. He's going to be watching this season closely. Wants to see ${goalText} out of you.` : `Yeah, dead serious. He's going to be watching this season closely.`, replies: ["I've got this", 'No pressure then 😅'] },
         { text: `That's the attitude. Go get him a season worth talking about. Speak soon 👊`, replies: null },
       ];
@@ -16995,26 +17424,27 @@
       };
       const currentText = statParts(current);
       const remainingText = statParts(remaining);
+      if ((CAREER.tier || 1) === 2) return careerAgentCounty2HalfwayScript(bestPct, currentText, remainingText);
       const league = CAREER_LEAGUES[CAREER.leagueId];
       const county = (league && league.county) || 'the county';
       const tone = bestPct >= 0.75 ? 'fire' : bestPct >= 0.5 ? 'onPace' : bestPct >= 0.25 ? 'close' : 'far';
       if (tone === 'fire') {
         return [
-          { text: `Quick one, just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', "What'd he say?"] },
+          { text: `Quick one, just got off the phone with ${county}'s coach.`, replies: ['Go on...', "What'd he say?"] },
           { text: `He couldn't stop talking about you. ${currentText} at halfway, you're not just on pace, you're miles ahead of it.`, replies: ['On fire 🔥', "Let's keep going"] },
           { text: `Keep this up and he'll be signing you before the season's even done.`, replies: null },
         ];
       }
       if (tone === 'onPace') {
         return [
-          { text: `Quick one, just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', "What'd he say?"] },
+          { text: `Quick one, just got off the phone with ${county}'s coach.`, replies: ['Go on...', "What'd he say?"] },
           { text: `He's impressed. You're at ${currentText} with half the season gone, right where he wants you.`, replies: ['Class', 'Not done yet'] },
           { text: `Keep this up and you're in the frame. ${remainingText} more and it's basically job done.`, replies: null },
         ];
       }
       if (tone === 'close') {
         return [
-          { text: `Quick one, just got off the phone with ${county} 2nd XI's coach.`, replies: ['Go on...', 'Good or bad?'] },
+          { text: `Quick one, just got off the phone with ${county}'s coach.`, replies: ['Go on...', 'Good or bad?'] },
           { text: `He reckons you're not far off. ${currentText} at the halfway mark, a bit behind where he wants you, but nothing drastic.`, replies: ['Good to know', "I'll push on"] },
           { text: `${remainingText} more in the second half and you're right back in it.`, replies: null },
         ];
@@ -17024,6 +17454,72 @@
         { text: `Not gonna lie, he's not blown away. ${currentText} at the halfway mark is a long way off what he wanted.`, replies: ["I'll turn it around", 'Tough season'] },
         { text: `Big ask now. ${remainingText} more in the second half. Not impossible, but you need a big finish.`, replies: null },
       ];
+    }
+    // Tier 2's halfway check-in fires at the 50-Over League's own halfway
+    // point (index.html:17734's gate — Math.floor(fixtures.length/2),
+    // whatever that competition's currently-active fixture list is), but
+    // the season quota covers the WHOLE season, 50-Over League plus the
+    // entire T20 Cup still to come. Being literally on pace for the full
+    // target at 50-over-halfway would mean you're actually miles ahead —
+    // you're only through a quarter of the season's real output
+    // opportunity at that point, not half of it. So every tone threshold
+    // here is quartered relative to tier 1's halfway script (0.75/0.5/0.25
+    // -> 0.375/0.25/0.125), and every tier explicitly names the T20 Cup
+    // still to come so a low raw number doesn't read as doom on its own.
+    function careerAgentCounty2HalfwayScript(bestPct, currentText, remainingText) {
+      const county = CAREER.county2County;
+      const sender = { name: `${county} Coach`, avatar: '📣' };
+      const tone = bestPct >= 0.375 ? 'fire' : bestPct >= 0.25 ? 'onPace' : bestPct >= 0.125 ? 'close' : 'far';
+      if (tone === 'fire') {
+        return { sender, steps: [
+          { text: `Quick word, halfway through the One Dayers.`, replies: ['Go on...', "What's up?"] },
+          { text: `${currentText} already, before our T20 Campaign. That's the kind of season I like watching.`, replies: ['On fire 🔥', "Let's keep going"] },
+          { text: `Keep this up through the rest of the One Dayers and then carry it into the Cup.`, replies: null },
+        ]};
+      }
+      if (tone === 'onPace') {
+        return { sender, steps: [
+          { text: `Quick word, halfway through the One Dayers.`, replies: ['Go on...', "What's up?"] },
+          { text: `${currentText} at the halfway mark. Right on track once you factor in the T20 Cup still to come.`, replies: ['Class', 'Not done yet'] },
+          { text: `Keep ticking along and ${remainingText} more between now and the end of the Cup does it.`, replies: null },
+        ]};
+      }
+      if (tone === 'close') {
+        return { sender, steps: [
+          { text: `Quick word, halfway through the One Dayers.`, replies: ['Go on...', 'Good or bad?'] },
+          { text: `${currentText} so far. A bit behind, but you've still got the second half of the One Dayers plus the whole T20 Cup left.`, replies: ['Good to know', "I'll push on"] },
+          { text: `${remainingText} more across both and you're right back in the frame.`, replies: null },
+        ]};
+      }
+      return { sender, steps: [
+        { text: `Quick word, halfway through the One Dayers.`, replies: ['Go on...', 'Good or bad?'] },
+        { text: `${currentText} at the halfway mark is miles off, T20 Cup or not.`, replies: ['I know', 'Tough spell'] },
+        { text: `You're at real risk of being dropped if this continues. ${remainingText} more needed, starting now.`, replies: null },
+      ]};
+    }
+    // Fires once the 50-Over League ends and the season moves into the T20
+    // Cup — the second of the season's four check-ins (50-over halfway,
+    // this one, T20 halfway, end-of-season verdict). Sits on the review
+    // screen's "Continue to the T20 Cup" button rather than the usual
+    // playNextCareerFixture gate, since that transition already has its own
+    // dedicated breaking-news screen.
+    function careerAgentCounty2FiftyOverDoneScript() {
+      const { current, goals } = careerSeasonGoalProgress();
+      const keys = Object.keys(goals);
+      const county = CAREER.county2County;
+      return {
+        sender: { name: `${county} Coach`, avatar: '📣' },
+        steps: [
+          { text: `One Day campaign's done. ${careerStatSummary(current, keys)} banked so far.`, replies: ['Good start', 'More to come'] },
+          { text: `T20 Cup's up next. Different game, but I'm still watching the same number across the whole season.`, replies: ["I'm ready", 'Bring it on'] },
+          { text: `Go prove you should be with the 1's next year.`, replies: null },
+        ],
+      };
+    }
+    function careerCounty2FiftyOverContinue() {
+      const script = careerAgentCounty2FiftyOverDoneScript();
+      go('s-career-agent-chat');
+      showCareerAgentChat(script.steps, () => { go('s-career-hub'); buildCareerHub(); }, script.sender);
     }
     // End-of-season verdict — the coach calls direct if the target was hit
     // (a different sender to the usual agent, see the sender override on
@@ -17036,30 +17532,38 @@
     function careerSeasonEndGoalInfo() {
       const { goals, current } = careerSeasonGoalProgress();
       const keys = Object.keys(goals);
-      // Multi-stat roles (Keeper, All-Rounder) only need to clear ONE of
-      // their two targets, not both — requiring both compounds two
-      // independent ~10-35% chances into a near-impossible combined bar
-      // (this session's audit measured All-Rounder batting-lean hitting
-      // 0/40 seasons under the old AND requirement). Single-stat roles
-      // (Opener/Top Order/Bowler) have exactly one key, so `some` and
-      // `every` are equivalent for them — no special-casing needed.
-      const rawHit = keys.length > 0 && keys.some(k => current[k] >= goals[k]);
-      // Pity rule — three missed seasons in a row guarantees the fourth
-      // clears, regardless of the roll. Without this, the quota's own
-      // ~20-30% per-season odds mean a real (unlucky) minority of players
-      // can run 6-9 seasons without ever progressing (verified via a
-      // 480-career simulation this session) — nobody should be stuck at
-      // the bottom tier past their fourth attempt.
-      //
+      // Both multi-stat roles (Keeper, All-Rounder) now require ALL of
+      // their targets, not just one — genuinely being good at both halves
+      // of the job (bat+field for Keeper, bat+bowl for All-Rounder) is the
+      // point of a dual-discipline role, and OR let both clear quota easier
+      // than any single-stat role purely from having two independent paths
+      // to the same bar (audited: Batting AR under OR hit 53-97% at 45-70
+      // OVR vs Opener's 30-68% on one stat; Keeper under OR hit 100% by
+      // OVR65 while every other role was still 70-90%). An earlier attempt
+      // at AND for All-Rounder measured 0/40 seasons clearing it, but that
+      // was before this session's rating-table/position fixes existed —
+      // re-verify with a fresh audit (audit_role.mjs, scratchpad) before
+      // assuming either AND requirement still holds.
+      const rawHit = keys.length > 0 && keys.every(k => current[k] >= goals[k]);
+      // Pity rule — N missed seasons in a row guarantees the next one
+      // clears, regardless of the roll. Tier 1's quota sits around 20-30%
+      // per season, so its pity threshold is 3 (guaranteed by attempt 4).
+      // Tier 2's quota is tuned to ~50% per season instead (see
+      // CAREER_COUNTY2_SEASON_GOALS) — two 50% swings landing badly is
+      // still plausible enough to want a floor, but a much shorter one:
+      // pity threshold 2, guaranteed by attempt 3, matching "ideally 2
+      // years, pity on the 3rd" directly.
+      const pityThreshold = (CAREER.tier || 1) === 2 ? 2 : 3;
       // Frozen the first time it's computed each season (via
       // CAREER.seasonEndHit, reset to null in careerStartNextSeason/
       // resetCareerState) rather than re-derived from missStreak on every
       // call — this function gets read multiple times per season-end
       // screen (the coach script, the trophy/continue-button check), and
-      // missStreak itself gets bumped to 3 by the *first* of those reads
-      // (see the season-end "computed once" site), which let the second
-      // read see missStreak>=3 and award pity a season early.
-      if (CAREER.seasonEndHit === null) CAREER.seasonEndHit = rawHit || CAREER.missStreak >= 3;
+      // missStreak itself gets bumped up to the threshold by the *first*
+      // of those reads (see the season-end "computed once" site), which
+      // let the second read see it already there and award pity a season
+      // early.
+      if (CAREER.seasonEndHit === null) CAREER.seasonEndHit = rawHit || CAREER.missStreak >= pityThreshold;
       const hit = CAREER.seasonEndHit;
       // bestPct (not worst) — with an OR quota, "how close did you come"
       // should read off whichever target you very nearly cleared, not
@@ -17077,6 +17581,7 @@
     }
     function careerAgentEndOfSeasonScript() {
       const info = careerSeasonEndGoalInfo();
+      if ((CAREER.tier || 1) === 2) return careerAgentCounty2EndOfSeasonScript(info);
       const league = CAREER_LEAGUES[CAREER.leagueId];
       const county = (league && league.county) || 'the county';
       const player = CAREER.player;
@@ -17123,6 +17628,58 @@
         ],
       };
     }
+    // Tier 2's own verdict — a straight yes/no on the Yorkshire squad,
+    // called by the same coach who's been texting all season (halfway,
+    // T20 halfway, winter nets), so there's no "your agent passed on your
+    // number" opener here — he already has it. No tier-3 flow exists yet,
+    // so a "yes" ends the career loop at the home screen either way; this
+    // is the moment that ending's framed as a promotion, not a dead end.
+    function careerAgentCounty2EndOfSeasonScript(info) {
+      const county = CAREER.county2County;
+      const player = CAREER.player;
+      const sender = { name: `${county} Coach`, avatar: '📣' };
+      if (info.hit && info.rawHit) {
+        return {
+          sender,
+          steps: [
+            { text: `${player.name}, got a minute?`, replies: ['For you, always', "What's up?"] },
+            { text: `${careerStatSummary(info.current, info.keys)} this year. That's first-team numbers, not 2nd XI ones.`, replies: ['Feels good', 'Been working for it'] },
+            { text: `I've spoken to the gaffer. You're in the Yorkshire squad next season. Congratulations — can't wait to have you in the setup.`, replies: ['Buzzing 🙌', "Let's go"] },
+            { text: `Right, one more thing before you go.`, replies: ['Go on...', "What's that?"] },
+            { isContract: true },
+            { text: `Brilliant. Welcome to the club, ${player.name} — properly, this time. Speak soon.`, replies: null },
+          ],
+        };
+      }
+      if (info.hit) {
+        return {
+          sender,
+          steps: [
+            { text: `${player.name}, got a minute?`, replies: ['For you, always', "What's up?"] },
+            { text: `${careerStatSummary(info.current, info.keys)} isn't quite the number we talked about, but you've grafted for this every year.`, replies: ['Cheers', 'Appreciate that'] },
+            { text: `I'm putting your name forward for the Yorkshire squad anyway. Congratulations — can't wait to have you in the setup.`, replies: ['Buzzing 🙌', "Won't let you down"] },
+            { text: `Right, one more thing before you go.`, replies: ['Go on...', "What's that?"] },
+            { isContract: true },
+            { text: `Brilliant. Welcome to the club, ${player.name} — go and enjoy this one.`, replies: null },
+          ],
+        };
+      }
+      const tone = info.bestPct >= 0.85 ? 'close' : info.bestPct >= 0.5 ? 'mid' : 'far';
+      const missLine = tone === 'close'
+        ? `So close. ${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)}, that one hurts.`
+        : tone === 'mid'
+        ? `${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} wasn't enough. Not a disaster, but not there either.`
+        : `${careerStatSummary(info.current, info.keys)} against ${careerGoalText(info.goals)} is a long way off. Needs a proper look at your game.`;
+      const missReplies = tone === 'close' ? ['Gutted', 'So close'] : tone === 'mid' ? ['Fair enough', "I'll be better"] : ["I'll turn it around", 'Tough season'];
+      return {
+        sender,
+        steps: [
+          { text: `${player.name}, got a minute?`, replies: ['Course', "What's up?"] },
+          { text: missLine, replies: missReplies },
+          { text: `You're staying with the 2's next year. Same target again, ${careerGoalText(info.goals)}. Let's go get it.`, replies: null },
+        ],
+      };
+    }
 
     // Only fires when the season target was missed (careerFinishMatch's
     // season-end branch decides that, via the button buildCareerSeasonEnd
@@ -17137,27 +17694,36 @@
       const isPrimaryBowler = player.role === 'bowler' || (player.role === 'allrounder' && player.lean === 'bowlingAR');
       const statKeys = isPrimaryBowler ? CAREER_BOWLING_STAT_KEYS : CAREER_BATTING_STAT_KEYS;
       const goals = careerScaledSeasonGoals();
-      const applyBoost = key => {
-        player.ratings[key] = Math.min(CAREER_RATING_CAP, player.ratings[key] + 5);
+      // County 2's a step up in standard — winter nets there sharpen one
+      // thing rather than fix it wholesale, so the gain is smaller than
+      // tier 1's (+5).
+      const boostAmount = (CAREER.tier || 1) === 2 ? 3 : 5;
+      const steps = [
+        { text: `Winter nets are back open. What are you planning to work on before next season?`, replies: ['Good shout', "Let's do it"] },
+        {
+          text: `What'll it be?`,
+          replies: statKeys.map(key => ({ label: CAREER_RATING_LABELS[key], value: key })),
+          onPick: applyBoost,
+        },
+        { text: `Nice one, that'll go in over the break. Good luck next year, same target as before: ${careerGoalText(goals)}. Go get it.`, replies: null },
+      ];
+      function applyBoost(key) {
+        const before = player.ratings[key];
+        const after = Math.min(CAREER_RATING_CAP, before + boostAmount);
+        player.ratings[key] = after;
         player.ovr = computeOVR(player.ratings, player.role);
-      };
+        steps[2].text = `Nice one, ${CAREER_RATING_LABELS[key]} up ${before} → ${after}. That'll go in over the break. Good luck next year, same target as before: ${careerGoalText(goals)}. Go get it.`;
+      }
       return {
-        sender: { name: 'Your Agent', avatar: '🕴️' },
-        steps: [
-          { text: `Winter nets are back open. Coach wants to know what you're planning to work on before next season.`, replies: ['Good shout', "Let's do it"] },
-          {
-            text: `What'll it be?`,
-            replies: statKeys.map(key => ({ label: CAREER_RATING_LABELS[key], value: key })),
-            onPick: applyBoost,
-          },
-          { text: `Nice one, that'll go in over the break. Good luck next year, same target as before: ${careerGoalText(goals)}. Go get it.`, replies: null },
-        ],
+        sender: { name: (CAREER.tier || 1) === 2 ? `${CAREER.county2County} Coach` : `${CAREER.myClubName} Coach`, avatar: '📣' },
+        steps,
       };
     }
     function careerStartWinterNets() {
       const script = careerAgentWinterNetsScript();
+      const onDone = (CAREER.tier || 1) === 2 ? careerStartNextCounty2Season : careerStartNextSeason;
       go('s-career-agent-chat');
-      showCareerAgentChat(script.steps, careerStartNextSeason, script.sender);
+      showCareerAgentChat(script.steps, onDone, script.sender);
     }
     // Replays the same club/league construction beginCareerSeason uses for a
     // brand new career — a fresh AI-generated 12-team field every year (no
@@ -17196,11 +17762,9 @@
       CAREER.seasonComplete = false;
       CAREER.seasonStartOvr = CAREER.player.ovr;
 
-      CAREER.seasonStats = {
-        bat: { innings: 0, runs: 0, outs: 0, balls: 0, fifties: 0, hundreds: 0, fours: 0, sixes: 0 },
-        bowl: { innings: 0, wickets: 0, runsConceded: 0, overs: 0, fiveFors: 0 },
-        field: { involvements: 0, clean: 0 },
-      };
+      CAREER.seasonStats = careerEmptySeasonStats();
+      CAREER.seasonStatsByCompetition = null;
+      CAREER.leagueStatsByCompetition = null;
       CAREER.matchLog = [];
       CAREER.leagueStats = {};
       CAREER.pendingPoints = [];
@@ -17221,6 +17785,531 @@
 
       go('s-career-hub');
       buildCareerHub();
+    }
+
+    // Table row zone marker (see the .leader-row/.relegation-row/
+    // .promotion-row/.qualify-row CSS) — leader always marked; everything
+    // else is competition-specific. The 50-Over League has
+    // relegation/promotion zones; the T20 Cup group stage has no
+    // relegation/promotion (it's a cup) but marks its own top-4
+    // qualification cutoff instead.
+    function careerTableRowZoneClass(i, total) {
+      if (i === 0) return 'leader-row';
+      if ((CAREER.tier || 1) === 2) {
+        if (CAREER.competitionPhase === 'fiftyOver') {
+          if (CAREER.county2FiftyOverDivision === 'division1' && i >= total - 2) return 'relegation-row';
+          if (CAREER.county2FiftyOverDivision === 'division2' && i <= 1) return 'promotion-row';
+        }
+        if (CAREER.competitionPhase === 't20cupGroup' && i <= 3) return 'qualify-row';
+      }
+      return '';
+    }
+
+    // Populates the 50-Over League breaking-news review (#s-career-fiftyover-review),
+    // shown once between the 50-Over League finishing and the T20 Cup
+    // starting (see careerAdvanceCounty2Competition/careerFinishMatch). By
+    // the time this runs, careerStartCounty2T20Cup has already rebuilt
+    // CAREER.clubs/table for the T20 Cup, so this reads the frozen
+    // CAREER.county2FiftyOverFinalTable snapshot instead — and
+    // CAREER.seasonStats, which at this exact point still only holds the
+    // 50-Over League's own numbers (the T20 Cup hasn't played a ball yet).
+    function buildCareerFiftyOverReview() {
+      // Same fix as buildCareerSeasonEnd's own — this screen rebuilds fresh
+      // every season a tier-2 career reaches it, but wireReveals only ever
+      // wires a given element once (data-ov-wired). Left uncleared, the
+      // second season's freshly-regenerated Division Leaders rows
+      // (#fiftyover-review-leaders, an .ov-stagger container) never get
+      // observed again — the container was already marked wired in season
+      // 1, so its brand-new season-2 children never receive .ov-in and stay
+      // invisible. Confirmed via a driven 2-season test: season 1 got 5/5
+      // leader rows revealed, season 2 got 0/5, before this fix.
+      document.querySelectorAll('#s-career-fiftyover-review [data-ov-wired]').forEach(n => delete n.dataset.ovWired);
+      const player = CAREER.player;
+      const table = CAREER.county2FiftyOverFinalTable;
+      const myPos = table.findIndex(c => c.isMine) + 1;
+      const divisionLabel = CAREER.county2FiftyOverDivision === 'division1' ? 'Division 1' : 'Division 2';
+      const isChampion = myPos === 1;
+      const relegated = CAREER.county2FiftyOverDivision === 'division1' && myPos > table.length - 2;
+      const promoted = CAREER.county2FiftyOverDivision === 'division2' && myPos <= 2;
+
+      const headline = isChampion ? `${CAREER.myClubName} Crowned ${divisionLabel} Champions`
+        : promoted ? `${CAREER.myClubName} Promoted From ${divisionLabel}`
+        : relegated ? `${CAREER.myClubName} Relegated From ${divisionLabel}`
+        : `${CAREER.myClubName} Finish ${ordinal(myPos)} in ${divisionLabel}`;
+      document.getElementById('fiftyover-review-headline').textContent = headline;
+      document.getElementById('fiftyover-review-dateline').textContent = `${divisionLabel} · ${CAREER.year}`;
+
+      const bat = CAREER.seasonStats.bat, bowl = CAREER.seasonStats.bowl;
+      const paras = [];
+      paras.push(`${CAREER.myClubName} wrap up their 50-Over League campaign ${ordinal(myPos)} of ${table.length} in ${divisionLabel}${isChampion ? ', taking the title' : promoted ? ', good enough for promotion' : relegated ? ', a finish that means relegation' : ''}.`);
+      if (bat.innings && careerPlaysBatting(player.role)) {
+        const avg = bat.outs ? (bat.runs / bat.outs).toFixed(1) : bat.runs.toFixed(1);
+        paras.push(`${player.name} contributed ${bat.runs} runs at ${avg} across the competition, with ${bat.hundreds} hundred${bat.hundreds === 1 ? '' : 's'} and ${bat.fifties} fifty${bat.fifties === 1 ? '' : 'ies'}.`);
+      }
+      if (bowl.innings && careerPlaysBowling(player.role)) {
+        const bowlAvg = bowl.wickets ? (bowl.runsConceded / bowl.wickets).toFixed(1) : '—';
+        paras.push(`With the ball, ${bowl.wickets} wickets came at ${bowlAvg}, including ${bowl.fiveFors ?? 0} five-wicket haul${(bowl.fiveFors ?? 0) === 1 ? '' : 's'}.`);
+      }
+      paras.push(`Attention turns to the T20 Cup now — ${CAREER.county2T20Division === 'north' ? 'North' : 'South'} group games start straight away.`);
+      document.getElementById('fiftyover-review-article').innerHTML = paras.map(p => `<p style="margin-bottom:10px">${p}</p>`).join('');
+
+      document.getElementById('fiftyover-review-table').innerHTML = `<table class="tbl">
+        <colgroup><col style="width:6%"><col style="width:44%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:10%"><col style="width:16%"></colgroup>
+        <thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead>
+        <tbody>${table.map((c, i) => {
+          const zone = i === 0 ? 'leader-row'
+            : CAREER.county2FiftyOverDivision === 'division1' && i >= table.length - 2 ? 'relegation-row'
+            : CAREER.county2FiftyOverDivision === 'division2' && i <= 1 ? 'promotion-row' : '';
+          return `<tr class="${c.isMine ? 'myrow' : ''} ${zone}">
+            <td>${i + 1}</td>
+            <td style="text-align:left">${c.name}</td>
+            <td>${c.p}</td><td>${c.w}</td><td>${c.l}</td>
+            <td style="color:#e0e0f0;font-weight:800">${c.pts}</td>
+            <td>${c.nrr.toFixed(2)}</td>
+          </tr>`;
+        }).join('')}</tbody></table>`;
+
+      const compStats = CAREER.seasonStatsByCompetition ? CAREER.seasonStatsByCompetition.fiftyOver : CAREER.seasonStats;
+      const cbat = compStats.bat, cbowl = compStats.bowl;
+      document.getElementById('fiftyover-review-stats').innerHTML = `
+        <div class="ov-box"><div class="ov-n ov-count" data-count="${cbat.runs}" style="color:#f9c846">0</div><div class="ov-l">Runs</div></div>
+        <div class="ov-box"><div class="ov-n ov-count" data-count="${cbowl.wickets}" style="color:#f9c846">0</div><div class="ov-l">Wickets</div></div>`;
+      if (cbat.innings > 0 && careerPlaysBatting(player.role)) {
+        const avg = cbat.outs ? (cbat.runs / cbat.outs).toFixed(1) : cbat.runs.toFixed(1);
+        const sr = cbat.balls ? ((cbat.runs / cbat.balls) * 100).toFixed(1) : '0.0';
+        document.getElementById('fiftyover-review-batting').innerHTML = `
+          <div class="perf-card perf-met">
+            <div class="perf-eyebrow" style="color:#9a9ad4">Batting</div>
+            <div class="perf-row"><span class="perf-label">Runs</span><span class="perf-val" style="color:#e0e0f0">${cbat.runs}</span></div>
+            <div class="perf-row"><span class="perf-label">Average</span><span class="perf-val" style="color:#e0e0f0">${avg}</span></div>
+            <div class="perf-row"><span class="perf-label">Strike Rate</span><span class="perf-val" style="color:#e0e0f0">${sr}</span></div>
+            <div class="perf-row"><span class="perf-label">4s</span><span class="perf-val" style="color:#e0e0f0">${cbat.fours ?? 0}</span></div>
+            <div class="perf-row"><span class="perf-label">6s</span><span class="perf-val" style="color:#e0e0f0">${cbat.sixes ?? 0}</span></div>
+          </div>`;
+      } else {
+        document.getElementById('fiftyover-review-batting').innerHTML = '';
+      }
+      if (cbowl.innings > 0 && careerPlaysBowling(player.role)) {
+        const bowlAvg = cbowl.wickets ? (cbowl.runsConceded / cbowl.wickets).toFixed(1) : '—';
+        const econ = cbowl.overs ? (cbowl.runsConceded / cbowl.overs).toFixed(1) : '0.0';
+        document.getElementById('fiftyover-review-bowling').innerHTML = `
+          <div class="perf-card perf-met">
+            <div class="perf-eyebrow" style="color:#9a9ad4">Bowling</div>
+            <div class="perf-row"><span class="perf-label">Wickets</span><span class="perf-val" style="color:#e0e0f0">${cbowl.wickets}</span></div>
+            <div class="perf-row"><span class="perf-label">Average</span><span class="perf-val" style="color:#e0e0f0">${bowlAvg}</span></div>
+            <div class="perf-row"><span class="perf-label">Economy</span><span class="perf-val" style="color:#e0e0f0">${econ}</span></div>
+          </div>`;
+      } else {
+        document.getElementById('fiftyover-review-bowling').innerHTML = '';
+      }
+
+      // Division-specific leaders — CAREER.fixtures/table have already been
+      // rebuilt for the T20 Cup by the time this runs (careerStartCounty2T20Cup
+      // ran first), but CAREER.leagueStatsByCompetition.fiftyOver keeps the
+      // 50-Over League's own player pool intact, so leaders here reflect who
+      // actually led the division, not the T20 group that's about to start.
+      const leaderPool = CAREER.leagueStatsByCompetition ? CAREER.leagueStatsByCompetition.fiftyOver : CAREER.leagueStats;
+      document.getElementById('fiftyover-review-leaders').innerHTML =
+        ['runs', 'wickets', 'avg', 'bowlAvg', 'victims'].map(key => careerLeagueLeaderCardHTML(key, leaderPool)).join('');
+
+      requestAnimationFrame(() => wireReveals(document.getElementById('s-career-fiftyover-review')));
+    }
+
+    // Builds one tier-2 club entry (own or AI) from a county name — shared
+    // by careerPromoteToCounty2 and the tier-2 season-transition logic so
+    // both always build squads the exact same way.
+    function careerBuildCounty2Club(county, id, isMine) {
+      const { min: clampMin, max: clampMax } = CAREER_COUNTY2_CLAMP;
+      const rating = CAREER_COUNTY2_RATINGS[county];
+      const squad = generateClubXI(rating, clampMin, clampMax);
+      if (isMine) {
+        const sameRoleIdx = squad.findIndex(p => p.role === CAREER.player.role);
+        const idx = sameRoleIdx !== -1 ? sameRoleIdx : Math.floor(Math.random() * squad.length);
+        squad[idx] = { name: CAREER.player.name, rating: CAREER.player.ovr, isTrackedPlayer: true, role: CAREER.player.role, bowlType: CAREER.player.bowlBroadType || 'seam', age: CAREER.player.age };
+      }
+      assignSquadIds(squad, id);
+      return { id, name: careerCounty2TeamName(county), county, isMine, rating: isMine ? careerSquadRating(squad) : careerSquadRating(squad), squad };
+    }
+
+    // Tier 2 promotion — fires once from the season-end screen when a
+    // tier-1 quota is hit (see the continueBtn wiring further down). The
+    // tracked player's own ratings/ovr are read here (for their squad slot's
+    // display rating) but never rewritten — carrying over exactly as
+    // progression left them is a deliberate design call, not an oversight.
+    // County comes from the tier-1 league they were playing in
+    // (career-clubs.js's `county` field), so a player tipped for
+    // "Yorkshire's 2nd XI coach" during tier 1's Agent chat actually ends
+    // up turning out for Yorkshire 2nd XI here.
+    //
+    // The 50-Over League and the T20 Cup group the same 18 counties two
+    // different, independent ways (see career-county2.js) — Division 1/2
+    // for the league (CAREER.county2Divisions, mutable via
+    // promotion/relegation), North/South for the cup (fixed, from
+    // index.html's own NORTH/SOUTH arrays, never changes).
+    // Bigger fanfare than the tier-1 signing script (careerAgentSigningScript)
+    // deliberately — this is a genuine step up, not just joining a club.
+    // Called after CAREER.tier is already set to 2, so careerScaledSeasonGoals
+    // correctly resolves the tier-2 target.
+    function careerAgentCountyCapScript() {
+      const p = CAREER.player;
+      const county = CAREER.county2County;
+      const goalText = careerGoalText(careerScaledSeasonGoals());
+      return {
+        sender: { name: `${county} Coach`, avatar: '📣' },
+        steps: [
+          { text: `${p.name}. Wanted to tell you this one myself.`, replies: ['Go on...', "I'm listening"] },
+          { text: `You've done everything we asked at club level. We're moving you up, ${county} 2nd XI, starting now.`, replies: ["Can't believe it", 'Been working for this'] },
+          { text: `Two competitions this year. The 50-Over League first, then the T20 Cup once that's done.`, replies: ["I'm ready", 'No pressure then 😅'] },
+          { text: goalText ? `Congrats on making the 2's, mind. To get a look at the first team, I need to see ${goalText} out of you across the season.` : `Congrats on making the 2's, mind. Keep performing and the first team's the next step.`, replies: ["I've got this", 'Understood'] },
+          { text: `See you at the ground, ${p.name}.`, replies: null },
+        ],
+      };
+    }
+
+    function careerPromoteToCounty2() {
+      CAREER.year += 1;
+      CAREER.player.age += 1;
+
+      const tier1League = CAREER_LEAGUES[CAREER.leagueId];
+      const county = (tier1League && CAREER_COUNTY2_RATINGS[tier1League.county]) ? tier1League.county : CAREER_COUNTY2_DIVISIONS_INITIAL.division1[0];
+      CAREER.county2County = county;
+      CAREER.county2T20Division = NORTH.includes(county) ? 'north' : 'south';
+      CAREER.county2Divisions = JSON.parse(JSON.stringify(CAREER_COUNTY2_DIVISIONS_INITIAL));
+      const fiftyOverDivision = CAREER.county2Divisions.division1.includes(county) ? 'division1' : 'division2';
+      CAREER.county2FiftyOverDivision = fiftyOverDivision;
+
+      const divisionCounties = CAREER.county2Divisions[fiftyOverDivision];
+      const others = divisionCounties.filter(c => c !== county);
+      CAREER.clubs = [
+        careerBuildCounty2Club(county, 0, true),
+        ...others.map((c, i) => careerBuildCounty2Club(c, i + 1, false)),
+      ];
+      CAREER.myClubRating = CAREER.clubs[0].rating;
+      CAREER.myClubName = CAREER.clubs[0].name;
+
+      CAREER.tier = 2;
+      CAREER.competitionPhase = 'fiftyOver';
+      CAREER.t20cup = null;
+      CAREER.fixtures = generateRoundRobin(CAREER.clubs.map(c => c.id));
+      CAREER.table = {};
+      CAREER.clubs.forEach(c => { CAREER.table[c.id] = { id: c.id, p: 0, w: 0, l: 0, pts: 0, nrr: 0 }; });
+      CAREER.currentRound = 0;
+      CAREER.seasonComplete = false;
+      CAREER.seasonStartOvr = CAREER.player.ovr;
+
+      CAREER.seasonStats = careerEmptySeasonStats();
+      CAREER.seasonStatsByCompetition = { fiftyOver: careerEmptySeasonStats(), t20cup: careerEmptySeasonStats() };
+      CAREER.leagueStatsByCompetition = { fiftyOver: {}, t20cup: {} };
+      CAREER.matchLog = [];
+      CAREER.leagueStats = {};
+      CAREER.pendingPoints = [];
+      CAREER.pendingEvent = null;
+      CAREER.pendingEventContinue = null;
+      CAREER.pendingFreeTimeStat = null;
+      CAREER.pendingBadPerf = null;
+      CAREER.pendingBadPerfStat = null;
+      CAREER.pendingMOTM = null;
+      CAREER.usedEvents = new Set();
+      CAREER.resultStreak = 0;
+      CAREER.lastResultWon = null;
+      CAREER.halfwayChatShown = false;
+      CAREER.seasonEndChatShown = false;
+      CAREER.seasonTrophiesComputed = false;
+      CAREER.seasonTrophiesWonThisSeason = [];
+      CAREER.seasonEndHit = null;
+      CAREER.missStreak = 0;
+
+      const script = careerAgentCountyCapScript();
+      go('s-career-agent-chat');
+      showCareerAgentChat(script.steps, () => { go('s-career-hub'); buildCareerHub(); }, script.sender);
+    }
+
+    // 50-Over League promotion/relegation for County 2 — bottom 2 of
+    // Division 1 drop to Division 2, top 2 of Division 2 rise to Division
+    // 1, ready for next season. A cup competition (the T20 Cup) never has
+    // this — North/South membership there is fixed for good.
+    //
+    // Only ever touches the player's OWN division's real, simulated bottom
+    // 2/top 2 — the other division is never simulated ("we only need to sim
+    // the teams in our comp," matches the 50-Over League's own visibility
+    // rule), so its 2 counterparts are picked at random from it rather than
+    // ranked, since there's no simulated table to rank them by. Division
+    // sizes (10/8) stay constant either way.
+    //
+    // sortedClubs: the season's final league table, best to worst (same
+    // club objects CAREER.clubs holds, each carrying its own `county`).
+    function careerApplyCounty2PromotionRelegation(sortedClubs) {
+      const divs = CAREER.county2Divisions;
+      if (CAREER.county2FiftyOverDivision === 'division1') {
+        const relegated = sortedClubs.slice(-2).map(c => c.county);
+        const promoted = careerShuffle(divs.division2.slice()).slice(0, 2);
+        divs.division1 = divs.division1.filter(c => !relegated.includes(c)).concat(promoted);
+        divs.division2 = divs.division2.filter(c => !promoted.includes(c)).concat(relegated);
+      } else {
+        const promoted = sortedClubs.slice(0, 2).map(c => c.county);
+        const relegated = careerShuffle(divs.division1.slice()).slice(0, 2);
+        divs.division2 = divs.division2.filter(c => !promoted.includes(c)).concat(relegated);
+        divs.division1 = divs.division1.filter(c => !relegated.includes(c)).concat(promoted);
+      }
+    }
+
+    // Continues a tier-2 career into another County 2 season, after a
+    // missed quota (mirrors careerStartNextSeason's tier-1 role, called
+    // the same way from careerStartWinterNets). Applies promotion/
+    // relegation from the season that just finished before rebuilding the
+    // 50-Over League field — the player's own county moves divisions too,
+    // if they were themselves promoted or relegated.
+    function careerStartNextCounty2Season() {
+      CAREER.year += 1;
+      CAREER.player.age += 1;
+
+      if (CAREER.county2FiftyOverFinalTable) {
+        careerApplyCounty2PromotionRelegation(CAREER.county2FiftyOverFinalTable);
+      }
+      CAREER.county2FiftyOverDivision = CAREER.county2Divisions.division1.includes(CAREER.county2County) ? 'division1' : 'division2';
+
+      const divisionCounties = CAREER.county2Divisions[CAREER.county2FiftyOverDivision];
+      const others = divisionCounties.filter(c => c !== CAREER.county2County);
+      CAREER.clubs = [
+        careerBuildCounty2Club(CAREER.county2County, 0, true),
+        ...others.map((c, i) => careerBuildCounty2Club(c, i + 1, false)),
+      ];
+      CAREER.myClubRating = CAREER.clubs[0].rating;
+      CAREER.myClubName = CAREER.clubs[0].name;
+
+      CAREER.competitionPhase = 'fiftyOver';
+      CAREER.t20cup = null;
+      CAREER.county2FiftyOverFinalTable = null;
+      CAREER.fixtures = generateRoundRobin(CAREER.clubs.map(c => c.id));
+      CAREER.table = {};
+      CAREER.clubs.forEach(c => { CAREER.table[c.id] = { id: c.id, p: 0, w: 0, l: 0, pts: 0, nrr: 0 }; });
+      CAREER.currentRound = 0;
+      CAREER.seasonComplete = false;
+      CAREER.seasonStartOvr = CAREER.player.ovr;
+
+      CAREER.seasonStats = careerEmptySeasonStats();
+      CAREER.seasonStatsByCompetition = { fiftyOver: careerEmptySeasonStats(), t20cup: careerEmptySeasonStats() };
+      CAREER.leagueStatsByCompetition = { fiftyOver: {}, t20cup: {} };
+      CAREER.matchLog = [];
+      CAREER.leagueStats = {};
+      CAREER.pendingPoints = [];
+      CAREER.pendingEvent = null;
+      CAREER.pendingEventContinue = null;
+      CAREER.pendingFreeTimeStat = null;
+      CAREER.pendingBadPerf = null;
+      CAREER.pendingBadPerfStat = null;
+      CAREER.pendingMOTM = null;
+      CAREER.usedEvents = new Set();
+      CAREER.resultStreak = 0;
+      CAREER.lastResultWon = null;
+      CAREER.halfwayChatShown = false;
+      CAREER.seasonEndChatShown = false;
+      CAREER.seasonTrophiesComputed = false;
+      CAREER.seasonTrophiesWonThisSeason = [];
+      CAREER.seasonEndHit = null;
+
+      go('s-career-hub');
+      buildCareerHub();
+    }
+
+    // Resolves an entire round-robin instantly with no scorecards — used
+    // only for the T20 Cup's other division, which the player never has
+    // visibility of (matches the 50-Over League's own "only sim the teams
+    // in our comp" rule). Same win-probability model simCheapClubMatch
+    // already uses for AI-vs-AI league matches, just without generating a
+    // score line, since nothing here is ever shown. "Each team twice" per
+    // the T20 Cup's own rule.
+    function careerBulkSimRoundRobin(clubs) {
+      const pts = {}, nrr = {};
+      clubs.forEach(c => { pts[c.id] = 0; nrr[c.id] = 0; });
+      for (let i = 0; i < clubs.length; i++) {
+        for (let j = i + 1; j < clubs.length; j++) {
+          for (let leg = 0; leg < 2; leg++) {
+            const a = clubs[i], b = clubs[j];
+            const pA = 1 / (1 + Math.exp(-0.08 * (a.rating - b.rating)));
+            const winner = Math.random() < pA ? a : b, loser = winner === a ? b : a;
+            pts[winner.id] += 2;
+            const nrrDelta = 0.05 + Math.random() * 0.15;
+            nrr[winner.id] += nrrDelta; nrr[loser.id] -= nrrDelta;
+          }
+        }
+      }
+      return clubs.map(c => ({ ...c, pts: pts[c.id], nrr: nrr[c.id] })).sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
+    }
+
+    // Sets up the T20 Cup group stage once the 50-Over League (Division
+    // 1/2) finishes — a fresh set of 9 clubs from the player's North/South
+    // T20 grouping (career-county2.js), NOT the same 10/8 Division
+    // opponents the 50-Over League just used, even though both draw from
+    // the same 18 counties. seasonStats/matchLog/etc are deliberately left
+    // untouched — this is still the same season, and the season quota is
+    // one combined total across both competitions.
+    function careerStartCounty2T20Cup() {
+      // Captured now, before CAREER.clubs/table get overwritten for the
+      // T20 Cup — this is the only point in the season where the 50-Over
+      // League's final table still exists, and promotion/relegation
+      // (careerApplyCounty2PromotionRelegation) needs it later, once the
+      // whole season (including the T20 Cup) is actually over.
+      CAREER.county2FiftyOverFinalTable = Object.values(CAREER.table)
+        .map(row => ({ ...CAREER.clubs.find(c => c.id === row.id), p: row.p, w: row.w, l: row.l, pts: row.pts, nrr: row.nrr }))
+        .sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
+      const division = CAREER.county2T20Division;
+      const divisionCounties = (division === 'north' ? NORTH : SOUTH).filter(c => c !== CAREER.county2County);
+      CAREER.clubs = [
+        careerBuildCounty2Club(CAREER.county2County, 0, true),
+        ...divisionCounties.map((c, i) => careerBuildCounty2Club(c, i + 1, false)),
+      ];
+      CAREER.myClubRating = CAREER.clubs[0].rating;
+      CAREER.competitionPhase = 't20cupGroup';
+      // Stats screens' 50-Over/T20 toggle should open on T20 the moment
+      // there's actually T20 Cup data to show — the user can still flip
+      // back to 50-Over manually, this just picks the useful default
+      // instead of always reopening on the now-finished competition.
+      CAREER.statsViewToggle = 't20cup';
+      CAREER.t20cup = { division, qfWon: null, sfWon: null, finalWon: null };
+      // Single leg only — the T20 Cup plays each team once, not home and
+      // away like the 50-Over League. generateRoundRobin's return is
+      // [...leg1, ...leg2]; leg1 alone (n-1 rounds for n teams) is already
+      // a complete single round-robin on its own.
+      const clubIds = CAREER.clubs.map(c => c.id);
+      CAREER.fixtures = generateRoundRobin(clubIds).slice(0, clubIds.length - 1);
+      CAREER.table = {};
+      CAREER.clubs.forEach(c => { CAREER.table[c.id] = { id: c.id, p: 0, w: 0, l: 0, pts: 0, nrr: 0 }; });
+      CAREER.currentRound = 0;
+    }
+
+    // Sets up a single-match knockout stage (QF/SF/Final) by temporarily
+    // shrinking CAREER.clubs to just the two teams involved — the exact
+    // same generic match-driving code (playNextCareerFixtureContinue,
+    // resolveRoundAIMatches, playCareerMatch, careerFinishMatch) that
+    // drives every league round already handles "1 fixture, 1 round" with
+    // no changes needed, since there are simply no other matches to
+    // resolve alongside it that round.
+    function careerCounty2KnockoutMatch(oppClub) {
+      const me = { ...CAREER.clubs.find(c => c.isMine), id: 0 };
+      const opp = { ...oppClub, id: 1 };
+      assignSquadIds(me.squad, 0);
+      assignSquadIds(opp.squad, 1);
+      CAREER.clubs = [me, opp];
+      CAREER.myClubRating = me.rating;
+      CAREER.fixtures = [[[0, 1]]];
+      CAREER.table = { 0: { id: 0, p: 0, w: 0, l: 0, pts: 0, nrr: 0 }, 1: { id: 1, p: 0, w: 0, l: 0, pts: 0, nrr: 0 } };
+      CAREER.currentRound = 0;
+    }
+
+    // Bulk-resolves everything on the OTHER side of an 8-team knockout
+    // bracket the moment qualifiers are known — none of it depends on the
+    // player's own result, so "who would I face in the Final if I get
+    // there" can be (and is) fully decided upfront rather than
+    // recalculated reactively at each stage. Standard bracket pairing:
+    // QF0 vs QF3's winners meet in SF-A, QF1 vs QF2's winners meet in SF-B.
+    function careerStartCounty2Knockout(stage) {
+      if (stage === 'qf') {
+        const ownTop4 = Object.values(CAREER.table)
+          .map(row => ({ ...CAREER.clubs.find(c => c.id === row.id), pts: row.pts, nrr: row.nrr }))
+          .sort((a, b) => b.pts - a.pts || b.nrr - a.nrr)
+          .slice(0, 4);
+        // Didn't finish top 4 in the group — no knockout match for the
+        // player this T20 Cup. Record it and let the caller treat this the
+        // same as any other knockout exit (season complete from here).
+        if (!ownTop4.some(c => c.isMine)) {
+          CAREER.t20cup.qualified = false;
+          return false;
+        }
+        CAREER.t20cup.qualified = true;
+        const otherDivision = CAREER.t20cup.division === 'north' ? 'south' : 'north';
+        const otherClubs = (otherDivision === 'north' ? NORTH : SOUTH).map((c, i) => careerBuildCounty2Club(c, 100 + i, false));
+        const otherTop4 = careerBulkSimRoundRobin(otherClubs).slice(0, 4);
+
+        const qualifiers = [...ownTop4, ...otherTop4].sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
+        const qfPairs = [[0, 7], [1, 6], [2, 5], [3, 4]];
+        const myQFIdx = qfPairs.findIndex(([a, b]) => qualifiers[a].isMine || qualifiers[b].isMine);
+        const myQFPair = qfPairs[myQFIdx];
+        const myOpponent = qualifiers[qualifiers[myQFPair[0]].isMine ? myQFPair[1] : myQFPair[0]];
+
+        // Every QF I'm not in gets resolved right now, invisibly.
+        const qfWinners = qfPairs.map((pair, i) => {
+          if (i === myQFIdx) return null; // decided by the player's own match
+          const [a, b] = pair;
+          const pA = 1 / (1 + Math.exp(-0.08 * (qualifiers[a].rating - qualifiers[b].rating)));
+          return Math.random() < pA ? qualifiers[a] : qualifiers[b];
+        });
+        // Standard bracket: QF0<->QF3 feed SF-A, QF1<->QF2 feed SF-B.
+        const sfPartnerIdx = [3, 2, 1, 0][myQFIdx];
+        const sfPartnerWinner = qfWinners[sfPartnerIdx];
+        // The far side of the bracket (the SF not touching my half) is
+        // also fully resolvable right now — both its semi-finalists are
+        // already known from the bulk QF results above.
+        const farPairIdxs = [0, 1, 2, 3].filter(i => i !== myQFIdx && i !== sfPartnerIdx);
+        const [farA, farB] = farPairIdxs.map(i => qfWinners[i]);
+        const pFar = 1 / (1 + Math.exp(-0.08 * (farA.rating - farB.rating)));
+        const finalOpponentIfIReachIt = Math.random() < pFar ? farA : farB;
+
+        CAREER.t20cup.qualifiers = qualifiers;
+        CAREER.t20cup.myQFOpponent = myOpponent;
+        CAREER.t20cup.mySFOpponentIfWon = sfPartnerWinner;
+        CAREER.t20cup.myFinalOpponentIfWon = finalOpponentIfIReachIt;
+        // Full 4-tie bracket for the hub's QF screen — the other 3 ties are
+        // already decided above, only the player's own (winner: null) is
+        // still to play. farSFPairing is stashed here too since the 'sf'
+        // branch below needs it to build its own 2-tie bracket, but it's
+        // only ever computed once, right here at QF time.
+        CAREER.t20cup.qfBracket = qfPairs.map((pair, i) => ({
+          a: qualifiers[pair[0]], b: qualifiers[pair[1]],
+          winner: i === myQFIdx ? null : qfWinners[i],
+          isMine: i === myQFIdx,
+        }));
+        CAREER.t20cup.farSFPairing = { a: farA, b: farB, winner: finalOpponentIfIReachIt };
+        CAREER.competitionPhase = 't20cupQF';
+        careerCounty2KnockoutMatch(myOpponent);
+        return true;
+      } else if (stage === 'sf') {
+        const me = CAREER.t20cup.qualifiers.find(c => c.isMine);
+        CAREER.t20cup.sfBracket = [
+          { a: me, b: CAREER.t20cup.mySFOpponentIfWon, winner: null, isMine: true },
+          { a: CAREER.t20cup.farSFPairing.a, b: CAREER.t20cup.farSFPairing.b, winner: CAREER.t20cup.farSFPairing.winner, isMine: false },
+        ];
+        CAREER.competitionPhase = 't20cupSF';
+        careerCounty2KnockoutMatch(CAREER.t20cup.mySFOpponentIfWon);
+        return true;
+      } else {
+        CAREER.competitionPhase = 't20cupFinal';
+        careerCounty2KnockoutMatch(CAREER.t20cup.myFinalOpponentIfWon);
+        return true;
+      }
+    }
+
+    // Advances County 2's season through its competition phases —
+    // 50-Over League -> T20 Cup group -> QF -> SF -> Final — called the
+    // moment a round of fixtures runs out (see careerFinishMatch). Returns
+    // true if it moved to the next phase (caller should NOT treat this as
+    // the season being over yet); false once the whole season, including
+    // any knockout exit, is genuinely complete.
+    function careerAdvanceCounty2Competition() {
+      if ((CAREER.tier || 1) !== 2) return false;
+      // 'fiftyOverDone' rather than plain true — this specific transition
+      // gets its own breaking-news review screen (careerFinishMatch), not
+      // a silent drop straight back into the hub like every other phase
+      // change.
+      if (CAREER.competitionPhase === 'fiftyOver') { careerStartCounty2T20Cup(); return 'fiftyOverDone'; }
+      if (CAREER.competitionPhase === 't20cupGroup') { return careerStartCounty2Knockout('qf'); }
+      if (CAREER.competitionPhase === 't20cupQF') {
+        const won = CAREER.table[0].w > 0;
+        CAREER.t20cup.qfWon = won;
+        if (won) { careerStartCounty2Knockout('sf'); return true; }
+        return false;
+      }
+      if (CAREER.competitionPhase === 't20cupSF') {
+        const won = CAREER.table[0].w > 0;
+        CAREER.t20cup.sfWon = won;
+        if (won) { careerStartCounty2Knockout('final'); return true; }
+        return false;
+      }
+      if (CAREER.competitionPhase === 't20cupFinal') {
+        CAREER.t20cup.finalWon = CAREER.table[0].w > 0;
+        return false;
+      }
+      return false;
     }
 
     function playNextCareerFixtureContinue() {
@@ -17250,10 +18339,12 @@
     // flow so the chat always lands between two matches, never mid-match.
     function playNextCareerFixture() {
       const halfwayRound = Math.floor(CAREER.fixtures.length / 2);
-      if (CAREER.currentRound === halfwayRound && !CAREER.halfwayChatShown) {
+      const inT20CupGroup = (CAREER.tier || 1) === 2 && CAREER.competitionPhase === 't20cupGroup';
+      if (CAREER.currentRound === halfwayRound && !inT20CupGroup && !CAREER.halfwayChatShown) {
         CAREER.halfwayChatShown = true;
+        const script = careerAgentHalfwayScript();
         go('s-career-agent-chat');
-        showCareerAgentChat(careerAgentHalfwayScript(), playNextCareerFixtureContinue);
+        showCareerAgentChat(script.steps || script, playNextCareerFixtureContinue, script.sender);
         return;
       }
       playNextCareerFixtureContinue();
@@ -17264,7 +18355,14 @@
     // Opener always opens — no more chance of "the top order did the job"
     // commentary firing for a player whose whole identity is batting first.
     const CAREER_BAT_POSITION = {
-      'batter.opener': 1, 'batter.topOrder': 4, 'batter.middleOrder': 6,
+      // Top Order moved 4 -> 3: at 4, they only got the ball once 3 wickets
+      // had already fallen, leaving them 14% fewer balls per innings than
+      // an equally-rated Opener despite an almost identical strike rate
+      // (audited: 39.8 vs 46.1 balls/innings at the same OVR) — a real
+      // structural disadvantage the old 1100-vs-900 quota gap only partly
+      // accounted for. One slot earlier gives them a genuine "first drop"
+      // batting spot instead.
+      'batter.opener': 1, 'batter.topOrder': 3, 'batter.middleOrder': 6,
       'allrounder.battingAR': 5, 'allrounder.bowlingAR': 7,
       'keeper.keeperBatsman': 6,
       'bowler': 10,
@@ -17297,12 +18395,31 @@
     // nothing in the match/progression engine itself reads these, this is
     // purely the number told to the player.
     const CAREER_SEASON_GOALS = {
-      'batter.opener': { runs: 1100 },
-      'batter.topOrder': { runs: 900 },
-      'keeper.keeperBatsman': { runs: 500, victims: 30 },
-      'allrounder.battingAR': { runs: 700, wickets: 35 },
-      'allrounder.bowlingAR': { runs: 500, wickets: 40 },
+      'batter.opener': { runs: 950 },
+      'batter.topOrder': { runs: 800 },
+      'keeper.keeperBatsman': { runs: 350, victims: 30 },
+      'allrounder.battingAR': { runs: 700, wickets: 30 },
+      'allrounder.bowlingAR': { runs: 300, wickets: 40 },
       'bowler': { wickets: 50 },
+    };
+    // Tier 2 (County 2nd XI) targets a 50%-per-season chance, not tier 1's
+    // ~25% — drafted from the actual output distribution of a full tier-2
+    // season (50-Over League + T20 Cup, measured via a 60-per-role
+    // simulation this session) rather than guessed, same as every quota
+    // this session. Re-measured and re-tuned once already, when the T20
+    // Cup moved from a double to a single round-robin (~26.7 matches/season
+    // now, down from ~35) — that alone roughly halved every role's hit
+    // rate, since output scales with matches played. Flat, unscaled
+    // numbers (see careerScaledSeasonGoals) — a County 2 season is always
+    // the same shape regardless of which county a player's at, unlike
+    // tier 1's varying league sizes.
+    const CAREER_COUNTY2_SEASON_GOALS = {
+      'batter.opener': { runs: 1050 },
+      'batter.topOrder': { runs: 900 },
+      'keeper.keeperBatsman': { runs: 400, victims: 40 },
+      'allrounder.battingAR': { runs: 800, wickets: 35 },
+      'allrounder.bowlingAR': { runs: 350, wickets: 45 },
+      'bowler': { wickets: 65 },
     };
     // In-season progression milestones — how many runs/wickets/clean-catches
     // it takes to earn one attribute point (playCareerMatch reads this).
@@ -17347,6 +18464,14 @@
     // the same raw target is proportionally harder to reach — scale it down
     // by the league's actual round count and round to a clean number.
     function careerScaledSeasonGoals() {
+      // Tier 2 has its own flat, unscaled targets (CAREER_COUNTY2_SEASON_GOALS)
+      // — a County 2 season always has the same shape (50-Over League then
+      // the T20 Cup) regardless of which club a player's at, unlike tier
+      // 1's varying league sizes, so there's nothing to scale against. Using
+      // the tier-1 scaling below here would actively break things anyway:
+      // CAREER.fixtures briefly means "1 fixture" during a knockout stage,
+      // which would shrink the target to almost nothing.
+      if ((CAREER.tier || 1) === 2) return { ...(CAREER_COUNTY2_SEASON_GOALS[careerPosKey(CAREER.player)] || {}) };
       const base = CAREER_SEASON_GOALS[careerPosKey(CAREER.player)] || {};
       const scale = (CAREER.fixtures ? CAREER.fixtures.length : 22) / 22;
       const out = {};
@@ -18185,9 +19310,6 @@
     const CAREER_RATING_INPUT_FLOOR = 15, CAREER_RATING_INPUT_CEIL = 99;
     const CAREER_SIM_RATING_FLOOR = 53, CAREER_SIM_RATING_CEIL = 98;
     const CAREER_RATING_CURVE_POWER = 1.7;
-    // Per-position correction (keyed by CAREER_BAT_POSITION's pos numbers)
-    // — see the comment where this is applied in careerBuildXIForSim.
-    const CAREER_POS_SIM_DELTA = { 1: -6, 4: -4, 5: -14, 6: 2, 7: -7 };
     // simODIInnings' own rating->wicket-probability curve has a narrow
     // built-in ceiling (bowler rating clamps at 97, and the formula's own
     // spread between a 55-rated and a 97-rated bowler is only ~1.4x) —
@@ -18231,7 +19353,7 @@
       // above the ODI-regulation 10 for the same local-club-isn't-regulated
       // reason generateTeamBowling already documents.
       const bowlPool = others.filter(p => p.bowlSkill != null).sort((a, b) => b.bowlSkill - a.bowlSkill).slice(0, 6)
-        .map(p => ({ n: p.name, t: 's', sp: p.bowlType === 'spin', maxOv: 12, rating: careerRatingToSim(p.bowlSkill) }));
+        .map(p => ({ n: p.name, t: 's', sp: p.bowlType === 'spin', maxOv: careerBowlerMaxOv(12), rating: careerRatingToSim(p.bowlSkill) }));
       if (isMyClub) {
         const player = CAREER.player;
         const r = careerEffectiveRatings(player);
@@ -18239,15 +19361,16 @@
         const pos = CAREER_BAT_POSITION[careerPosKey(player)] ?? 6;
         const idx = Math.max(0, Math.min(names.length, pos - 1));
         names.splice(idx, 0, player.name);
-        // simODIInnings' own position-based dismissal risk (posM) doesn't
-        // line up evenly with Career's position→target-runs table (e.g. a
-        // Keeper's forced slot sits in a much riskier posM band than an
-        // AR-Bat's, despite a lower target) — a small per-position sim-scale
-        // correction closes that gap. Tuned against the season-long Monte
-        // Carlo harness against the established 25%-chance targets, same as
-        // every other position-based constant this session.
-        const simDelta = CAREER_POS_SIM_DELTA[pos] ?? 0;
-        ratings.splice(idx, 0, Math.max(52, Math.min(99, careerRatingToSim(batSkill) + simDelta)));
+        // Used to also subtract a flat per-position penalty here
+        // (CAREER_POS_SIM_DELTA) meant to correct a mismatch between
+        // simODIInnings' own position-based dismissal risk (posM) and
+        // Career's position→target-runs table. Removed: the penalty was
+        // large enough for some positions (Batting AR: -14) that it pushed
+        // the result below this same clamp's floor across almost the whole
+        // realistic OVR range, making rating have no effect on batting
+        // output at all for those roles — confirmed by audit
+        // (audit_tier1_ratings.mjs, scratchpad) rather than assumed.
+        ratings.splice(idx, 0, Math.max(52, Math.min(99, careerRatingToSim(batSkill))));
 
         const bowlSkill = (r.control + r.threat + r.variation) / 3;
         const slot = careerBowlSlot(player);
@@ -18257,17 +19380,20 @@
           // ceiling) — a genuinely elite strike bowler getting trusted with
           // more of the innings is exactly how a real 50+ wicket season
           // happens, not a higher per-over strike rate.
-          // The elite wicket-taking boost only applies when bowling is your
-          // PRIMARY discipline (specialist bowler, or a bowling-lean
-          // all-rounder) — careerBowlSlot gives every all-rounder a slot
-          // regardless of lean (matches the legacy engine's own "any
-          // all-rounder can be handed the ball" simplification), but a
-          // batting all-rounder's bowling is a real secondary skill, not a
-          // second specialist attack — applying the same boost there let a
-          // batting-primary all-rounder rack up specialist-level wicket
-          // hauls, which isn't what "primary discipline" is supposed to mean.
-          const isPrimaryBowler = player.role === 'bowler' || (player.role === 'allrounder' && player.lean === 'bowlingAR');
-          const entry = { n: player.name, t: 's', sp: player.bowlBroadType === 'spin', maxOv: 15, rating: careerRatingToSim(bowlSkill), wktBoost: isPrimaryBowler ? careerBowlEliteBoost(bowlSkill) : 1 };
+          // Deliberately no role/lean branching here — this used to gate the
+          // elite wktBoost behind "is bowling your primary discipline"
+          // (specialist Bowler and Bowling AR full boost, Batting AR none),
+          // then later a damped/shortened version for Bowling AR
+          // specifically. Both were patches working around the real lever:
+          // bowlSkill itself (control/threat/variation) already comes out
+          // lower for a Batting AR than a Bowling AR than a specialist
+          // Bowler, because that's how each build actually spends its
+          // points — the wicket formula reading rating alone already
+          // produces the right ordering without being told which role it's
+          // looking at. A same-OVR uniform-rating audit can't show this
+          // (it forces every discipline equal on purpose); it only shows up
+          // once each role is given its own realistic rating spread.
+          const entry = { n: player.name, t: 's', sp: player.bowlBroadType === 'spin', maxOv: careerBowlerMaxOv(15), rating: careerRatingToSim(bowlSkill), wktBoost: careerBowlEliteBoost(bowlSkill) };
           if (slot === 'opening') bowlPool.unshift(entry);
           else bowlPool.splice(Math.min(1, bowlPool.length), 0, entry);
         }
@@ -18332,10 +19458,10 @@
       const ib = isA => isA ? batRA : batRB, iw = isA => isA ? batRB : batRA;
       const ownXi = isA => isA ? xiA : xiB, oppXi = isA => isA ? xiB : xiA;
 
-      const inn1 = simODIInnings(ib(battingFirstIsA), iw(battingFirstIsA), CAREER_MAX_OVERS, undefined,
+      const inn1 = simODIInnings(ib(battingFirstIsA), iw(battingFirstIsA), CAREER_MAX_OVERS(), undefined,
         ownXi(battingFirstIsA).names, oppXi(battingFirstIsA).bowlPool, oppXi(battingFirstIsA).keeperName, ownXi(battingFirstIsA).ratings);
       const target = inn1.runs + 1;
-      const inn2 = simODIInnings(ib(!battingFirstIsA), iw(!battingFirstIsA), CAREER_MAX_OVERS, target,
+      const inn2 = simODIInnings(ib(!battingFirstIsA), iw(!battingFirstIsA), CAREER_MAX_OVERS(), target,
         ownXi(!battingFirstIsA).names, oppXi(!battingFirstIsA).bowlPool, oppXi(!battingFirstIsA).keeperName, ownXi(!battingFirstIsA).ratings);
 
       // Exact tie: same break World Cup mode uses (simWCMatch) — coin flip,
@@ -18361,6 +19487,53 @@
       const bowl = myBowlRow ? { overs: myBowlRow.overs, runsConceded: myBowlRow.runsConceded, wickets: myBowlRow.wickets } : null;
 
       return { teamResult, scorecard, bat, bowl };
+    }
+
+    // Folds one match's bat/bowl/field result into any stats pool of the
+    // same {bat,bowl,field} shape CAREER.seasonStats itself uses — shared
+    // so CAREER.seasonStats (the combined season total) and
+    // CAREER.seasonStatsByCompetition's two buckets (County 2's 50-Over/T20
+    // split) can never drift out of sync with each other.
+    function careerAccumulateMatchStats(pool, bat, bowl, field) {
+      if (bat) {
+        const s = pool.bat;
+        s.innings++; s.runs += bat.runs; s.balls += bat.balls;
+        s.fours = (s.fours ?? 0) + bat.fours; s.sixes = (s.sixes ?? 0) + bat.sixes;
+        if (bat.out) s.outs++;
+        if (bat.runs >= 100) s.hundreds++; else if (bat.runs >= 50) s.fifties++;
+      }
+      if (bowl) {
+        const s = pool.bowl;
+        s.innings++; s.wickets += bowl.wickets; s.runsConceded += bowl.runsConceded; s.overs += bowl.overs;
+        if (bowl.wickets >= 5) s.fiveFors = (s.fiveFors ?? 0) + 1;
+      }
+      { const s = pool.field; s.involvements += field.involvements; s.clean += field.clean; }
+    }
+    function careerEmptySeasonStats() {
+      return {
+        bat: { innings: 0, runs: 0, outs: 0, balls: 0, fifties: 0, hundreds: 0, fours: 0, sixes: 0 },
+        bowl: { innings: 0, wickets: 0, runsConceded: 0, overs: 0, fiveFors: 0 },
+        field: { involvements: 0, clean: 0 },
+      };
+    }
+    // The 50-Over/T20 toggle only makes sense once there's a second
+    // competition's worth of data to toggle into — before the T20 Cup
+    // starts, "50-over so far" and "the season so far" are the same
+    // number, so showing a toggle there would just be a no-op control.
+    function careerStatsToggleVisible() {
+      return (CAREER.tier || 1) === 2 && !!CAREER.seasonStatsByCompetition && (CAREER.competitionPhase || '').startsWith('t20cup');
+    }
+    function careerActiveStatsPool() {
+      if (careerStatsToggleVisible()) return CAREER.seasonStatsByCompetition[CAREER.statsViewToggle || 'fiftyOver'];
+      return CAREER.seasonStats;
+    }
+    // rerenderFnName is called by name (not passed as a function) since
+    // this HTML gets assigned via innerHTML — inline onclick handlers can
+    // only reference global function names, not closures.
+    function careerStatsToggleHTML(rerenderFnName) {
+      const active = CAREER.statsViewToggle || 'fiftyOver';
+      const tab = (key, label) => `<button class="stats-tab ${active === key ? 'stats-tab-active' : 'stats-tab-inactive'}" style="flex:1" onclick="CAREER.statsViewToggle='${key}'; ${rerenderFnName}();">${label}</button>`;
+      return tab('fiftyOver', '50-Over') + tab('t20cup', 'T20');
     }
 
     function playCareerMatch(round, oppId, isHome) {
@@ -18427,23 +19600,17 @@
       const prevSeasonRuns = CAREER.seasonStats.bat.runs;
       const prevSeasonWkts = CAREER.seasonStats.bowl.wickets;
       const prevSeasonClean = CAREER.seasonStats.field.clean;
-      if (bat) {
-        const s = CAREER.seasonStats.bat;
-        s.innings++; s.runs += bat.runs; s.balls += bat.balls;
-        // ?? 0 guards a save from before boundary tracking existed, same
-        // pattern as morale/tempBoost's old-save fallback elsewhere.
-        s.fours = (s.fours ?? 0) + bat.fours; s.sixes = (s.sixes ?? 0) + bat.sixes;
-        if (bat.out) s.outs++;
-        if (bat.runs >= 100) s.hundreds++; else if (bat.runs >= 50) s.fifties++;
+      careerAccumulateMatchStats(CAREER.seasonStats, bat, bowl, field);
+      // County 2 also tracks the exact same numbers split by which
+      // competition the match belonged to (CAREER.seasonStatsByCompetition),
+      // so the hub/League Stats/history screens can offer a 50-Over/T20
+      // toggle once there's a second competition's worth of data to toggle
+      // between — CAREER.seasonStats itself stays the combined total,
+      // unchanged, since that's what the season quota checks against.
+      if ((CAREER.tier || 1) === 2 && CAREER.seasonStatsByCompetition) {
+        const key = (CAREER.competitionPhase || '').startsWith('t20cup') ? 't20cup' : 'fiftyOver';
+        careerAccumulateMatchStats(CAREER.seasonStatsByCompetition[key], bat, bowl, field);
       }
-      if (bowl) {
-        const s = CAREER.seasonStats.bowl;
-        s.innings++; s.wickets += bowl.wickets; s.runsConceded += bowl.runsConceded; s.overs += bowl.overs;
-        // ?? 0 guards a save from before five-for tracking existed, same
-        // pattern as fours/sixes' old-save fallback above.
-        if (bowl.wickets >= 5) s.fiveFors = (s.fiveFors ?? 0) + 1;
-      }
-      { const s = CAREER.seasonStats.field; s.involvements += field.involvements; s.clean += field.clean; }
 
       // Progression: cumulative career milestones — every 100 runs and every
       // 5 wickets banked *across the season*, not gated behind a single big
@@ -19092,6 +20259,9 @@
       }
       if (CAREER.pendingPoints.length) { go('s-career-points'); renderCareerPointsStep(); return; }
       if (CAREER.currentRound >= CAREER.fixtures.length) {
+        const advance = careerAdvanceCounty2Competition();
+        if (advance === 'fiftyOverDone') { buildCareerFiftyOverReview(); go('s-career-fiftyover-review'); return; }
+        if (advance) { buildCareerHub(); go('s-career-hub'); return; }
         CAREER.seasonComplete = true;
         // One more agent/coach chat before the review itself — whether you
         // hit the season target or not. Guarded so revisiting the season
@@ -19447,8 +20617,49 @@
       invokeScript.src = 'https://www.highperformanceformat.com/9c03898f0880ee706938fa3b6f8cf1f0/invoke.js';
       inner.appendChild(invokeScript);
     }
+    // Renders a knockout stage as its real bracket (all 4 QF ties, or both
+    // SF ties) rather than a single 2-row league table — the player's own
+    // (still-to-play) tie is marked isMine and has no winner yet; every
+    // other tie in the bracket is already decided (see
+    // careerStartCounty2Knockout, which resolves the whole far side of the
+    // bracket the moment qualifiers are known).
+    function careerKnockoutBracketHTML(bracket) {
+      // Winner (once decided) goes green, same "cleared it" green as every
+      // other positive indicator in the app (promotion/qualify rows, ▲ form)
+      // — not gold, which this app reserves for the scoreboard accent and
+      // was reading as an unexplained highlight here, not a result. Both
+      // sides stay the same neutral colour until there's an actual winner
+      // to mark; the still-to-play tie (YOUR TIE) never colours either side
+      // since neither's won yet. No score is shown for the other 3 ties —
+      // they're resolved by a rating-based coin flip (careerStartCounty2Knockout),
+      // not a real simulated match, so there's no real scoreline to show.
+      // The player's own tie gets the same subtle background + gold label
+      // tint as .myrow in every league table, so it reads as "yours" at a
+      // glance among 3 other already-decided ties, not just via smaller text.
+      return `<div style="width:100%;display:flex;flex-direction:column;gap:8px">
+        ${bracket.map(m => {
+          const aWon = m.winner && m.winner.name === m.a.name;
+          const bWon = m.winner && m.winner.name === m.b.name;
+          return `
+          <div class="perf-card" style="display:flex;align-items:center;gap:10px;${m.isMine ? 'background:#141420;border:1px solid #2a2a40' : ''}">
+            <div style="flex:1;min-width:0;text-align:right;font-size:12px;font-weight:${aWon ? 800 : 400};color:${aWon ? '#4ade80' : '#c0c0d8'}">${m.a.name}</div>
+            <div style="font-size:9px;letter-spacing:1px;color:${m.isMine ? '#fbbf24' : '#6060a0'};font-weight:${m.isMine ? 800 : 400};flex-shrink:0">${m.isMine ? 'YOUR TIE' : 'vs'}</div>
+            <div style="flex:1;min-width:0;text-align:left;font-size:12px;font-weight:${bWon ? 800 : 400};color:${bWon ? '#4ade80' : '#c0c0d8'}">${m.b.name}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
     function buildCareerHub() {
-      document.getElementById('hub-league-name').textContent = `${CAREER_LEAGUES[CAREER.leagueId].name} · ${CAREER.year}`;
+      // Phase-aware for tier 2 — the hub's up throughout both competitions,
+      // so it should say which one's actually live, not always "Division
+      // X" once the T20 Cup's started. Same division-label conversion the
+      // season-end screen already uses (careerBuildCounty2Club-adjacent).
+      const hubCompetitionName = (CAREER.tier || 1) === 2
+        ? ((CAREER.competitionPhase || '').startsWith('t20cup')
+          ? `${CAREER.county2T20Division === 'north' ? 'North' : 'South'} T20 Cup`
+          : `2nd XI ${CAREER.county2FiftyOverDivision === 'division1' ? 'Division 1' : 'Division 2'}`)
+        : CAREER_LEAGUES[CAREER.leagueId].name;
+      document.getElementById('hub-league-name').textContent = `${hubCompetitionName} · ${CAREER.year}`;
       document.getElementById('hub-club-name').textContent = CAREER.myClubName;
       const hubOvrEl = document.getElementById('hub-player-ovr');
       hubOvrEl.textContent = CAREER.player.ovr;
@@ -19479,28 +20690,51 @@
         playBtn.onclick = playNextCareerFixture;
       }
 
-      const sorted = Object.values(CAREER.table).sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
-      const rows = sorted.map((row, i) => {
-        const club = CAREER.clubs[row.id];
-        return `<tr class="${club.isMine ? 'myrow' : ''}">
-          <td>${i + 1}</td>
-          <td style="text-align:left">${club.name}</td>
-          <td>${row.p}</td><td>${row.w}</td><td>${row.l}</td>
-          <td style="color:#e0e0f0;font-weight:800">${row.pts}</td>
-          <td>${row.nrr.toFixed(2)}</td>
-        </tr>`;
-      }).join('');
-      document.getElementById('hub-table-wrap').innerHTML = `<table class="tbl">
-        <colgroup><col style="width:6%"><col style="width:44%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:10%"><col style="width:16%"></colgroup>
-        <thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead><tbody>${rows}</tbody></table>`;
+      // QF/SF are decided as a full bracket the moment qualifiers are known
+      // (careerStartCounty2Knockout) — a plain 2-row P/W/L table for the
+      // player's own tie alone buried that context, so these two phases get
+      // the real bracket instead. The Final is genuinely just 2 teams, so
+      // the normal table below already suits it fine.
+      const bracketPhase = (CAREER.tier || 1) === 2 && (CAREER.competitionPhase === 't20cupQF' || CAREER.competitionPhase === 't20cupSF');
+      const tableLabelEl = document.getElementById('hub-table-label');
+      const knockoutLabels = { t20cupQF: 'Quarter-Finals', t20cupSF: 'Semi-Finals', t20cupFinal: 'Final' };
+      tableLabelEl.textContent = knockoutLabels[CAREER.competitionPhase] || 'Standings';
+      if (bracketPhase) {
+        const bracket = CAREER.competitionPhase === 't20cupQF' ? CAREER.t20cup.qfBracket : CAREER.t20cup.sfBracket;
+        document.getElementById('hub-table-wrap').innerHTML = careerKnockoutBracketHTML(bracket);
+      } else {
+        const sorted = Object.values(CAREER.table).sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
+        const rows = sorted.map((row, i) => {
+          const club = CAREER.clubs[row.id];
+          return `<tr class="${club.isMine ? 'myrow' : ''} ${careerTableRowZoneClass(i, sorted.length)}">
+            <td>${i + 1}</td>
+            <td style="text-align:left">${club.name}</td>
+            <td>${row.p}</td><td>${row.w}</td><td>${row.l}</td>
+            <td style="color:#e0e0f0;font-weight:800">${row.pts}</td>
+            <td>${row.nrr.toFixed(2)}</td>
+          </tr>`;
+        }).join('');
+        document.getElementById('hub-table-wrap').innerHTML = `<table class="tbl">
+          <colgroup><col style="width:6%"><col style="width:44%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:10%"><col style="width:16%"></colgroup>
+          <thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
 
-      const bs = CAREER.seasonStats.bat, bw = CAREER.seasonStats.bowl;
+      const toggleEl = document.getElementById('hub-season-toggle');
+      if (careerStatsToggleVisible()) {
+        toggleEl.style.display = 'flex';
+        toggleEl.innerHTML = careerStatsToggleHTML('buildCareerHub');
+      } else {
+        toggleEl.style.display = 'none';
+        toggleEl.innerHTML = '';
+      }
+      const activePool = careerActiveStatsPool();
+      const bs = activePool.bat, bw = activePool.bowl;
       const avg = bs.outs ? (bs.runs / bs.outs).toFixed(1) : bs.runs.toFixed(1);
       const bowlAvg = bw.wickets ? (bw.runsConceded / bw.wickets).toFixed(1) : '—';
       document.getElementById('hub-season-stats').innerHTML = `
         <div class="stat-card"><div class="stat-card-label">Runs</div><div class="stat-card-val">${bs.runs}</div><div class="stat-card-sub">Avg ${avg}</div></div>
         <div class="stat-card"><div class="stat-card-label">Wickets</div><div class="stat-card-val">${bw.wickets}</div><div class="stat-card-sub">Avg ${bowlAvg}</div></div>
-        <div class="stat-card"><div class="stat-card-label">Fielding</div><div class="stat-card-val">${CAREER.seasonStats.field.clean}</div><div class="stat-card-sub">of ${CAREER.seasonStats.field.involvements} chances</div></div>`;
+        <div class="stat-card"><div class="stat-card-label">Fielding</div><div class="stat-card-val">${activePool.field.clean}</div><div class="stat-card-sub">of ${activePool.field.involvements} chances</div></div>`;
 
       buildCareerMatchHistory();
       checkForSavedCareerGame();
@@ -19627,20 +20861,64 @@
         }
         return lines.join('<br>') || 'No stats yet';
       };
+      // Group-stage exit shows the position already in the header line
+      // above (position/teamCount is the T20 Cup group table in that
+      // case); reaching the knockouts replaces that with the stage
+      // actually reached — see careerArchiveSeason for how cupStage is
+      // derived and why position isn't reused for a knockout run.
+      const CAREER_CUP_STAGE_LABELS = { won: 'Won 🏆', final: 'Runners-Up', sf: 'Semi-Final', qf: 'Quarter-Final' };
+      const cupLine = r => r.tier === 2
+        ? `T20 Cup: ${r.cupStage ? CAREER_CUP_STAGE_LABELS[r.cupStage] : `${ordinal(r.position)} of ${r.teamCount}`}`
+        : '';
+      // Card background tier matches the rating badge on the right — same
+      // bronze/silver/gold/ruby scale as ratingBadgeClass, just applied to
+      // the whole row instead of only the badge.
+      const historyCardClass = ovr => ovr == null ? 'perf-met'
+        : ovr >= 85 ? 'perf-ruby' : ovr >= 75 ? 'perf-gold' : ovr >= 65 ? 'perf-silver' : 'perf-bronze';
       const yearRows = CAREER.seasonHistory.slice().reverse();
       const statsHistoryEl = document.getElementById('profile-stats-history');
       if (!yearRows.length) {
         statsHistoryEl.innerHTML = `<div style="font-size:12px;color:#606070;text-align:center;padding:10px 0">No completed seasons yet.</div>`;
       } else {
         statsHistoryEl.innerHTML = yearRows.map(r => `
-          <div class="perf-card perf-met" style="text-align:left;margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <span style="font-size:13px;font-weight:800;color:#fff">${r.year} · ${r.club} · ${ordinal(r.position)} of ${r.teamCount}</span>
-              ${r.trophies.length ? `<span style="font-size:13px">${r.trophies.map(t => t.icon).join(' ')}</span>` : ''}
+          <div class="perf-card ${historyCardClass(r.ovr)}" style="text-align:left;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span style="font-size:13px;font-weight:800;color:#fff">${r.year} · ${r.club} · ${ordinal(r.position)} of ${r.teamCount}</span>
+                  ${r.trophies.length ? `<span style="font-size:13px">${r.trophies.map(t => t.icon).join(' ')}</span>` : ''}
+                </div>
+                <div style="font-size:12px;color:#9a9ad4;margin-top:4px;line-height:1.6">${yearLine(r.stats)}</div>
+                ${r.tier === 2 ? `<div style="font-size:11px;color:#8080a0;margin-top:4px">${cupLine(r)}</div>` : ''}
+              </div>
+              ${r.ovr != null ? `<div class="rating-badge ${ratingBadgeClass(r.ovr)}" style="width:32px;height:32px;font-size:13px;border-radius:6px">${r.ovr}</div>` : ''}
             </div>
-            <div style="font-size:12px;color:#9a9ad4;margin-top:4px;line-height:1.6">${yearLine(r.stats)}</div>
           </div>`).join('');
       }
+
+      // Career Totals — summed across every completed season (seasonHistory),
+      // same exclusion of the current in-progress season as the history
+      // list itself just below (see that list's own note on why).
+      const totals = careerEmptySeasonStats();
+      CAREER.seasonHistory.forEach(r => {
+        const s = r.stats;
+        totals.bat.innings += s.bat.innings; totals.bat.runs += s.bat.runs; totals.bat.outs += s.bat.outs;
+        totals.bat.balls += s.bat.balls; totals.bat.fifties += s.bat.fifties; totals.bat.hundreds += s.bat.hundreds;
+        totals.bat.fours += s.bat.fours ?? 0; totals.bat.sixes += s.bat.sixes ?? 0;
+        totals.bowl.innings += s.bowl.innings; totals.bowl.wickets += s.bowl.wickets; totals.bowl.runsConceded += s.bowl.runsConceded;
+        totals.bowl.overs += s.bowl.overs; totals.bowl.fiveFors += s.bowl.fiveFors ?? 0;
+        totals.field.involvements += s.field.involvements; totals.field.clean += s.field.clean;
+      });
+      const tBat = totals.bat, tBowl = totals.bowl, tField = totals.field;
+      const tAvg = tBat.outs ? (tBat.runs / tBat.outs).toFixed(1) : tBat.runs.toFixed(1);
+      const tSr = tBat.balls ? ((tBat.runs / tBat.balls) * 100).toFixed(1) : '0.0';
+      const tBowlAvg = tBowl.wickets ? (tBowl.runsConceded / tBowl.wickets).toFixed(1) : '—';
+      const tEcon = tBowl.overs ? (tBowl.runsConceded / tBowl.overs).toFixed(1) : '0.0';
+      const tFieldPct = tField.involvements ? Math.round((tField.clean / tField.involvements) * 100) : 0;
+      document.getElementById('profile-career-totals').innerHTML = `
+        <div class="stat-card"><div class="stat-card-label">Runs</div><div class="stat-card-val">${tBat.runs}</div><div class="stat-card-sub">Avg ${tAvg}</div><div class="stat-card-sub">SR ${tSr}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Wickets</div><div class="stat-card-val">${tBowl.wickets}</div><div class="stat-card-sub">Avg ${tBowlAvg}</div><div class="stat-card-sub">Econ ${tEcon}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Fielding</div><div class="stat-card-val">${tField.clean}</div><div class="stat-card-sub">${tFieldPct}%</div><div class="stat-card-sub">of ${tField.involvements} chances</div></div>`;
 
       document.getElementById('profile-trophies').innerHTML = careerTrophiesGridHTML(p.trophies || [], 'No trophies yet.');
     }
@@ -19749,16 +21027,27 @@
       return { pots: pickWinner(potsPool), young: pickWinner(youngPool) };
     }
     // Shared by the season-end trophies section and the player profile's
-    // permanent trophy cabinet — same card, different trophy list.
+    // permanent trophy cabinet — same row, different trophy list. Stacked
+    // one below each other (same shape as the profile's season-by-season
+    // stats history rows), icon then trophy name then team/league/year, so
+    // a cabinet full of trophies reads as a scannable list rather than a
+    // grid of icons you have to tap to identify. Falls back to the older
+    // {value} shape (team/league/year missing) for trophies awarded before
+    // this format existed, so an existing save's cabinet doesn't go blank.
     function careerTrophiesGridHTML(trophies, emptyText) {
       if (!trophies.length) return `<div style="font-size:12px;color:#606070;text-align:center;padding:10px 0">${emptyText}</div>`;
-      return `<div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        ${trophies.map(t => `
-          <div class="perf-card perf-met" style="text-align:center">
-            <div style="font-size:26px;margin-bottom:6px">${t.icon}</div>
-            <div style="font-size:12px;font-weight:800;color:#fff;line-height:1.3">${t.label}</div>
-            <div style="font-size:11px;color:#9a9ad4;margin-top:4px">${t.value}</div>
-          </div>`).join('')}
+      return `<div style="width:100%;display:flex;flex-direction:column;gap:8px">
+        ${trophies.map(t => {
+          const sub = [t.team, t.league, t.year].filter(Boolean).join(' · ') || t.value || '';
+          return `
+          <div class="perf-card perf-trophy" style="text-align:left;display:flex;align-items:center;gap:12px">
+            <div style="font-size:26px;flex-shrink:0">${t.icon}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:800;color:#f9c846">${t.label}</div>
+              ${sub ? `<div style="font-size:11px;color:#c8a44a;margin-top:2px">${sub}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
       </div>`;
     }
     // Snapshots the season that's about to end into permanent history before
@@ -19767,22 +21056,50 @@
     // award itself uses, so it can never double-record a season either.
     function careerArchiveSeason() {
       const finalTable = Object.values(CAREER.table).sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
+      // For tier 2, CAREER.table at this point is whichever T20 Cup table
+      // last existed — the group table if the season ended there, or a
+      // 2-row knockout table if the player reached the QF/SF/Final (see
+      // buildCareerSeasonEnd's own note on this same table). position/
+      // teamCount below are only meaningful as "group standing" for a
+      // group-stage exit — cupStage covers the knockout case instead, so
+      // the profile's history row knows which one to show.
       const position = finalTable.findIndex(r => r.id === CAREER.myClubId) + 1;
+      const cup = CAREER.t20cup;
+      const cupStage = (CAREER.tier || 1) === 2 && cup
+        ? (cup.finalWon ? 'won' : cup.finalWon === false ? 'final' : cup.sfWon === false ? 'sf' : cup.qfWon === false ? 'qf' : null)
+        : null;
       CAREER.seasonHistory.push({
         year: CAREER.year,
         club: CAREER.myClubName,
         leagueName: CAREER_LEAGUES[CAREER.leagueId].name,
         position,
         teamCount: finalTable.length,
+        tier: CAREER.tier || 1,
+        cupStage,
         stats: JSON.parse(JSON.stringify(CAREER.seasonStats)),
+        statsByCompetition: CAREER.seasonStatsByCompetition ? JSON.parse(JSON.stringify(CAREER.seasonStatsByCompetition)) : null,
         trophies: CAREER.seasonTrophiesWonThisSeason.slice(),
+        ovr: CAREER.player.ovr,
       });
     }
     function buildCareerStats() {
-      document.getElementById('stats-league-name').textContent = CAREER_LEAGUES[CAREER.leagueId].name + ' · Season Stats';
+      const competitionName = (CAREER.tier || 1) === 2
+        ? ((CAREER.competitionPhase || '').startsWith('t20cup')
+          ? `${CAREER.county2T20Division === 'north' ? 'North' : 'South'} T20 Cup`
+          : `2nd XI ${CAREER.county2FiftyOverDivision === 'division1' ? 'Division 1' : 'Division 2'}`)
+        : CAREER_LEAGUES[CAREER.leagueId].name;
+      document.getElementById('stats-league-name').textContent = competitionName + ' · Season Stats';
       document.getElementById('stats-tabs').innerHTML = CAREER_STAT_CATEGORIES.map(c =>
         `<button class="stats-tab" data-key="${c.key}" onclick="renderCareerStatCategory('${c.key}')" style="flex-basis:calc(33.33% - 6px)">${c.label}</button>`
       ).join('');
+      const toggleEl = document.getElementById('stats-competition-toggle');
+      if (careerStatsToggleVisible()) {
+        toggleEl.style.display = 'flex';
+        toggleEl.innerHTML = careerStatsToggleHTML('buildCareerStats');
+      } else {
+        toggleEl.style.display = 'none';
+        toggleEl.innerHTML = '';
+      }
       renderCareerStatCategory(CAREER.statsActiveCategory || 'runs');
     }
     function renderCareerStatCategory(key) {
@@ -19792,7 +21109,8 @@
       });
       const cat = CAREER_STAT_CATEGORIES.find(c => c.key === key);
       const icon = CAREER_STAT_ICONS[key];
-      const all = Object.values(CAREER.leagueStats).filter(cat.qualify).map(s => ({ ...s, val: cat.value(s) }));
+      const activeLeagueStats = careerStatsToggleVisible() ? CAREER.leagueStatsByCompetition[CAREER.statsViewToggle || 'fiftyOver'] : CAREER.leagueStats;
+      const all = Object.values(activeLeagueStats).filter(cat.qualify).map(s => ({ ...s, val: cat.value(s) }));
       all.sort((a, b) => cat.sortDesc ? b.val - a.val : a.val - b.val);
       const top = all.slice(0, 10);
       const myIdx = all.findIndex(s => s.isTrackedPlayer);
@@ -19962,9 +21280,9 @@
         `"Every match added something. On to the next one."`,
       ],
     };
-    function careerLeagueLeaderCardHTML(key) {
+    function careerLeagueLeaderCardHTML(key, pool) {
       const cat = CAREER_STAT_CATEGORIES.find(c => c.key === key);
-      const all = Object.values(CAREER.leagueStats).filter(cat.qualify).map(s => ({ ...s, val: cat.value(s) }));
+      const all = Object.values(pool || CAREER.leagueStats).filter(cat.qualify).map(s => ({ ...s, val: cat.value(s) }));
       all.sort((a, b) => cat.sortDesc ? b.val - a.val : a.val - b.val);
       const top3 = all.slice(0, 3);
       const myIdx = all.findIndex(s => s.isTrackedPlayer);
@@ -19993,10 +21311,18 @@
       // rebuilding makes every rebuild replay the reveal fresh.
       document.querySelectorAll('#s-career-season-end [data-ov-wired]').forEach(n => delete n.dataset.ovWired);
       const player = CAREER.player, stats = CAREER.seasonStats;
+      // CAREER.table at this point reflects whichever competition last ran
+      // this season — for tier 1 that's the only league there is; for tier
+      // 2 the season always ends after the T20 Cup, so it's the T20 Cup's
+      // group table (or a 2-row knockout table, if this screen is somehow
+      // reached mid-knockout). County 2's own league standing is a
+      // separate trophy (t20cup/leagueTitle below), not this table.
       const finalTable = Object.values(CAREER.table).sort((a, b) => b.pts - a.pts || b.nrr - a.nrr);
       const myPos = finalTable.findIndex(r => r.id === CAREER.myClubId) + 1;
-      const leagueName = CAREER_LEAGUES[CAREER.leagueId].name;
-      const isChampion = myPos === 1;
+      const leagueName = (CAREER.tier || 1) === 2
+        ? `${CAREER.county2T20Division === 'north' ? 'North' : 'South'} T20 Cup`
+        : CAREER_LEAGUES[CAREER.leagueId].name;
+      const isChampion = (CAREER.tier || 1) === 1 && myPos === 1;
 
       // Header — only distinguishes finishing top of the table (a plain
       // fact about the season) from everything else. No promotion gate, no
@@ -20012,6 +21338,43 @@
           <div class="ov-sub">${sub}</div>
         </div>`;
       document.getElementById('career-end-quote').textContent = careerPick(CAREER_SEASON_END_QUOTES[isChampion ? 'champion' : 'complete']);
+
+      // Tier 2 plays two competitions, so the headline result needs to
+      // report both — the generic single-league header above (built off
+      // whichever table CAREER.table happens to be at this point, the T20
+      // Cup's) doesn't cover the 50-Over League half at all. Overwrites the
+      // header just set above rather than folding into it, since the two
+      // shapes (one league vs two competitions) don't share much structure.
+      if ((CAREER.tier || 1) === 2) {
+        const fiftyTable = CAREER.county2FiftyOverFinalTable || [];
+        const my50Pos = fiftyTable.findIndex(r => r.isMine) + 1;
+        const is50Champion = my50Pos === 1;
+        const divisionLabel = CAREER.county2FiftyOverDivision === 'division1' ? 'Division 1' : 'Division 2';
+        const fiftyLine = `50-Over League: Finished ${ordinal(my50Pos)} of ${fiftyTable.length} in ${divisionLabel}.`;
+
+        const cup = CAREER.t20cup;
+        const cupWon = !!(cup && cup.finalWon);
+        const cupLine = !cup ? ''
+          : cup.finalWon ? 'T20 Cup: Won the final.'
+          : cup.finalWon === false ? 'T20 Cup: Runners-up.'
+          : cup.sfWon === false ? 'T20 Cup: Lost in the semi-final.'
+          : cup.qfWon === false ? 'T20 Cup: Lost in the quarter-final.'
+          : cup.qualified === false ? 'T20 Cup: Missed the knockouts.' : '';
+
+        const anyChampion = is50Champion || cupWon;
+        const t2HeaderClass = anyChampion ? 'ov-header ovh-perfect' : 'ov-header ovh-early';
+        const t2Icon = cupWon && is50Champion ? '👑' : cupWon ? '🏆' : is50Champion ? '👑' : '📋';
+        const t2Headline = cupWon && is50Champion ? 'Double Champions!' : cupWon ? 'T20 Cup Champions!' : is50Champion ? `${divisionLabel} Champions` : 'Season Complete';
+        document.getElementById('career-end-header').innerHTML = `
+          <div class="${t2HeaderClass}">
+            <span class="ov-icon" aria-hidden="true">${t2Icon}</span>
+            <div class="ov-result">${t2Headline}</div>
+            <div class="ov-sub">${fiftyLine}</div>
+            <div class="ov-sub">${cupLine}</div>
+          </div>`;
+        document.getElementById('career-end-quote').textContent = careerPick(CAREER_SEASON_END_QUOTES[anyChampion ? 'champion' : 'complete']);
+        if (anyChampion) launchConfetti();
+      }
 
       // Same animated-count-up treatment World Cup's end screen gives its
       // headline Wins/Losses — the detailed breakdown cards below repeat
@@ -20069,13 +21432,40 @@
         // exactly once per season, right alongside the other "computed
         // once" season-end state below.
         CAREER.missStreak = careerSeasonEndGoalInfo().hit ? 0 : CAREER.missStreak + 1;
-        const won = careerComputeSeasonTrophies();
+        // team/league/year travel with every trophy into the permanent
+        // cabinet (careerTrophiesGridHTML) — individual/combined-season
+        // Individual awards (Player of the Season etc) span both
+        // competitions, so they don't belong to either one specifically —
+        // using the county name here duplicated the team name right next to
+        // it on the card (both read "Yorkshire 2nd XI"), so this uses a
+        // generic tier label instead. Team-honour trophies below use
+        // whichever competition they actually came from.
+        const trophyLeagueLabel = (CAREER.tier || 1) === 2 ? 'County 2nd XI' : leagueName;
+        const won = careerComputeSeasonTrophies().map(t => ({ ...t, team: CAREER.myClubName, league: trophyLeagueLabel, year: CAREER.year }));
         // A team honour, not an individual stat leaderboard one — doesn't
         // come from careerComputeSeasonTrophies (that only ever looks at
         // CAREER.leagueStats), so it's added here where isChampion is
-        // already known. Cup competitions don't exist yet; when they do,
-        // their trophy slots in the same way right alongside this one.
-        if (isChampion) won.unshift({ key: 'league', label: 'League Champions', icon: '🏆', value: leagueName });
+        // already known.
+        if (isChampion) won.unshift({ key: 'league', label: 'League Champions', icon: '🏆', value: leagueName, team: CAREER.myClubName, league: leagueName, year: CAREER.year });
+        // County 2's own two team honours — the 50-Over League table
+        // (captured before it got overwritten for the T20 Cup, see
+        // careerStartCounty2T20Cup) and the T20 Cup's own knockout result.
+        if ((CAREER.tier || 1) === 2) {
+          const fiftyOverTable = CAREER.county2FiftyOverFinalTable;
+          if (fiftyOverTable && fiftyOverTable[0] && fiftyOverTable[0].isMine) {
+            const divisionLabel = CAREER.county2FiftyOverDivision === 'division1' ? 'Division 1' : 'Division 2';
+            won.unshift({ key: 'county2League', label: `${divisionLabel} Champions`, icon: '🏆', value: CAREER.myClubName, team: CAREER.myClubName, league: divisionLabel, year: CAREER.year });
+          }
+          // Only the final's two outcomes are trophy-worthy — reaching the
+          // semis or quarters is a genuine achievement but isn't a cabinet
+          // piece, same standard the 50-Over League side above only awards
+          // for an outright Division title, not just a top-half finish.
+          const cup = CAREER.t20cup;
+          if (cup) {
+            if (cup.finalWon) won.unshift({ key: 'county2Cup', label: 'T20 Cup Winners', icon: '🏆', value: CAREER.myClubName, team: CAREER.myClubName, league: leagueName, year: CAREER.year });
+            else if (cup.finalWon === false) won.unshift({ key: 'county2Cup', label: 'T20 Cup Runners-Up', icon: '🥈', value: CAREER.myClubName, team: CAREER.myClubName, league: leagueName, year: CAREER.year });
+          }
+        }
         CAREER.seasonTrophiesWonThisSeason = won;
         player.trophies = (player.trophies || []).concat(won);
         careerArchiveSeason();
@@ -20098,34 +21488,104 @@
           : `<div style="font-size:12px;color:#606070;text-align:center;padding:10px 0">No trophies this season — come back next year.</div>`;
       }
 
-      // Quota decides what happens next: hit it and the career stops here
-      // for now (no next-season flow exists past this point); miss it and
-      // the loop continues — winter nets, then straight into next year.
+      // Quota decides what happens next. Tier 1 hit -> promoted to County 2
+      // (careerPromoteToCounty2). Tier 2 hit -> career stops here for now
+      // (no tier-3 flow exists yet). Either way, missing it means the loop
+      // continues — winter nets, then straight into next year.
       const continueBtn = document.getElementById('career-end-continue-btn');
       if (careerSeasonEndGoalInfo().hit) {
-        continueBtn.textContent = 'Back to Home';
-        continueBtn.onclick = () => go('s-home');
+        if ((CAREER.tier || 1) === 1) {
+          continueBtn.textContent = 'Report to County 2nd XI';
+          continueBtn.onclick = () => careerPromoteToCounty2();
+        } else {
+          continueBtn.textContent = 'Back to Home';
+          continueBtn.onclick = () => go('s-home');
+        }
       } else {
         continueBtn.textContent = 'Continue';
         continueBtn.onclick = () => careerStartWinterNets();
       }
 
-      document.getElementById('career-end-table').innerHTML = `<table class="tbl">
+      // A standings table body from a normalized row shape
+      // ({name,isMine,p,w,l,pts,nrr}) — shared by both of tier 2's stacked
+      // tables below and tier 1's single one, since the two source tables
+      // (county2FiftyOverFinalTable vs live CAREER.table/clubs) don't carry
+      // isMine/name in quite the same shape.
+      const standingsTableHTML = (rows, zoneClassFn) => `<table class="tbl">
         <colgroup><col style="width:6%"><col style="width:44%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:10%"><col style="width:16%"></colgroup>
         <thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead>
-        <tbody>${finalTable.map((row, i) => {
-          const club = CAREER.clubs[row.id];
-          return `<tr class="${club.isMine ? 'myrow' : ''}">
+        <tbody>${rows.map((r, i) => `<tr class="${r.isMine ? 'myrow' : ''} ${zoneClassFn(i, rows.length)}">
             <td>${i + 1}</td>
-            <td style="text-align:left">${club.name}</td>
-            <td>${row.p}</td><td>${row.w}</td><td>${row.l}</td>
-            <td style="color:#e0e0f0;font-weight:800">${row.pts}</td>
-            <td>${row.nrr.toFixed(2)}</td>
-          </tr>`;
-        }).join('')}</tbody></table>`;
+            <td style="text-align:left">${r.name}</td>
+            <td>${r.p}</td><td>${r.w}</td><td>${r.l}</td>
+            <td style="color:#e0e0f0;font-weight:800">${r.pts}</td>
+            <td>${r.nrr.toFixed(2)}</td>
+          </tr>`).join('')}</tbody></table>`;
+
+      if ((CAREER.tier || 1) === 2) {
+        // Two competitions, stacked in the order they were played — the
+        // 50-Over League's own final table (frozen before the T20 Cup
+        // overwrote CAREER.table/clubs, see careerStartCounty2T20Cup)
+        // first, then the T20 Cup's.
+        const fiftyRows = CAREER.county2FiftyOverFinalTable;
+        const fiftyZone = (i, total) => i === 0 ? 'leader-row'
+          : CAREER.county2FiftyOverDivision === 'division1' && i >= total - 2 ? 'relegation-row'
+          : CAREER.county2FiftyOverDivision === 'division2' && i <= 1 ? 'promotion-row' : '';
+        const t20Zone = (i, total) => i === 0 ? 'leader-row' : i <= 3 && i > 0 ? 'qualify-row' : '';
+        const cupResultLine = CAREER.t20cup.finalWon ? 'Won the final.'
+          : CAREER.t20cup.finalWon === false ? 'Runners-up.'
+          : CAREER.t20cup.sfWon === false ? 'Lost in the semi-final.'
+          : CAREER.t20cup.qfWon === false ? 'Lost in the quarter-final.'
+          : CAREER.t20cup.qualified === false ? 'Missed out on the knockouts.' : '';
+        // Once through to the knockouts, CAREER.table is just whatever
+        // single knockout tie was last set up (careerCounty2KnockoutMatch),
+        // not a real group table anymore — showing it as a "Group" standings
+        // table read as nonsense (2 rows, one of them always Yorkshire).
+        // The actual knockout run (each stage played, in order) is what's
+        // worth showing instead; the real group table only still applies if
+        // the group stage is genuinely how the season ended.
+        const knockoutStageRow = (label, opp, won) => {
+          if (!opp) return '';
+          const resultText = won === true ? 'Won' : won === false ? 'Lost' : '';
+          const color = won === true ? '#4ade80' : won === false ? '#f87171' : '#c0c0d8';
+          return `<div class="perf-card" style="display:flex;align-items:center;justify-content:space-between;text-align:left;margin-bottom:8px">
+            <div>
+              <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#6060a0;margin-bottom:2px">${label}</div>
+              <div style="font-size:13px;color:#e0e0f0">vs ${opp.name}</div>
+            </div>
+            <div style="font-size:13px;font-weight:800;color:${color}">${resultText}</div>
+          </div>`;
+        };
+        // mySFOpponentIfWon / myFinalOpponentIfWon are stashed at QF time
+        // for the WHOLE bracket, win or lose (see careerStartCounty2Knockout)
+        // — only actually show those rows once the player has genuinely
+        // won their way into that stage, or a QF/SF exit reads as having
+        // played rounds that never happened.
+        const cupBodyHTML = CAREER.t20cup.qualified
+          ? knockoutStageRow('Quarter-Final', CAREER.t20cup.myQFOpponent, CAREER.t20cup.qfWon)
+            + (CAREER.t20cup.qfWon ? knockoutStageRow('Semi-Final', CAREER.t20cup.mySFOpponentIfWon, CAREER.t20cup.sfWon) : '')
+            + (CAREER.t20cup.sfWon ? knockoutStageRow('Final', CAREER.t20cup.myFinalOpponentIfWon, CAREER.t20cup.finalWon) : '')
+          : standingsTableHTML(
+              finalTable.map(row => ({ ...CAREER.clubs[row.id], p: row.p, w: row.w, l: row.l, pts: row.pts, nrr: row.nrr })),
+              t20Zone
+            );
+        const cupSectionTitle = CAREER.t20cup.qualified
+          ? `T20 Cup — Knockout Stage${cupResultLine ? ` · ${cupResultLine}` : ''}`
+          : `T20 Cup — ${CAREER.county2T20Division === 'north' ? 'North' : 'South'} Group${cupResultLine ? ` · ${cupResultLine}` : ''}`;
+        document.getElementById('career-end-table').innerHTML = `
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9a9ad4;font-weight:800;margin-bottom:8px;text-align:left">50-Over League — ${CAREER.county2FiftyOverDivision === 'division1' ? 'Division 1' : 'Division 2'}</div>
+          ${standingsTableHTML(fiftyRows, fiftyZone)}
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9a9ad4;font-weight:800;margin:20px 0 8px;text-align:left">${cupSectionTitle}</div>
+          ${cupBodyHTML}`;
+      } else {
+        document.getElementById('career-end-table').innerHTML = standingsTableHTML(
+          finalTable.map(row => ({ ...CAREER.clubs[row.id], p: row.p, w: row.w, l: row.l, pts: row.pts, nrr: row.nrr })),
+          careerTableRowZoneClass
+        );
+      }
 
       document.getElementById('career-end-leaders').innerHTML =
-        ['runs', 'wickets', 'avg', 'bowlAvg', 'victims'].map(careerLeagueLeaderCardHTML).join('');
+        ['runs', 'wickets', 'avg', 'bowlAvg', 'victims'].map(key => careerLeagueLeaderCardHTML(key)).join('');
 
       requestAnimationFrame(() => wireReveals(document.getElementById('s-career-season-end')));
       if (isChampion) { launchConfetti(320, true); setTimeout(() => launchConfetti(200, true), 900); }
@@ -20152,6 +21612,16 @@
       if (error || !data) { alert('No saved game found.'); return; }
       try {
         Object.assign(CAREER, data.state);
+        // A Set has no own enumerable properties, so JSON.stringify (what
+        // saveCareerGame uses) silently turns it into "{}" — same failure
+        // mode WC mode's and T20 mode's own save/load already had to guard
+        // against (see WCS.usedEvents/TS.usedEvents right after their own
+        // loads). Without this, the very next random-event roll that
+        // happens to fire (rollCareerRandomEvent, ~15% per round) throws
+        // "CAREER.usedEvents.has is not a function" the moment it calls
+        // .has() on what's now a plain object, not a Set.
+        if (Array.isArray(CAREER.usedEvents)) CAREER.usedEvents = new Set(CAREER.usedEvents);
+        else if (!(CAREER.usedEvents instanceof Set)) CAREER.usedEvents = new Set();
         if (CAREER.pendingPoints && CAREER.pendingPoints.length) { go('s-career-points'); renderCareerPointsStep(); }
         else if (CAREER.seasonComplete) { buildCareerSeasonEnd(); go('s-career-season-end'); }
         else { go('s-career-hub'); buildCareerHub(); }
