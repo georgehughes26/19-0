@@ -4194,16 +4194,6 @@
     <div class="ov-season-stats ov-stagger" id="ov-season-stats"></div>
     <div id="ov-mvp" style="width:100%"></div>
     <button class="btn-share-season" onclick="openShareModal()" style="margin-top:4px;margin-bottom:16px">📸 Share your season</button>
-    <!-- Mediavine test placement — replacing the OddBalls affiliate banner in this
-         one spot (t20 season review). The hint divs must exist at page load for
-         Mediavine's wrapper to fill them; Mediavine also needs its dashboard
-         content selector pointed at the visible screen (see Settings > In-Content
-         Ads). If this fills reliably, roll the same swap out to the other
-         renderOddBallsBanner() call sites. -->
-    <div id="ov-oddballs" style="width:100%;margin-bottom:16px">
-      <div class="content_desktop_hint"></div>
-      <div class="content_mobile_hint"></div>
-    </div>
     <div id="ov-table" style="width:100%"></div>
     <div id="ov-matches" style="width:100%"></div>
     <div class="section-lbl">Your XI</div>
@@ -6600,8 +6590,6 @@
       const prompt = document.getElementById('ov-signup-prompt');
       if (prompt) prompt.style.display = AUTH_USER ? 'none' : 'flex';
       if (AUTH_USER) setTimeout(openCoffeeModal, 2000);
-      // t20-review OddBalls banner replaced by a static Mediavine hint slot in the
-      // markup (see #ov-oddballs). renderOddBallsBanner still runs on the other screens.
 
       // Reveal each section as the user scrolls through their season, with staggered
       // rows for lists and a count-up for the headline numbers — same treatment as
@@ -6727,18 +6715,6 @@
     </div>
   </div>
 
-  <!-- ── ODDBALLS PARTNERSHIP ──────────────────────────────────────────── -->
-  <script>
-    const ODDBALLS_AFFILIATE_URL = 'https://oddballsapparel.sjv.io/qWkZxq';
-    // Sized to match the WC hub's "Next Up" match card (.wch-hero — ~4.95:1, 16px padding)
-    function renderOddBallsBanner(source) {
-      return `<a href="${ODDBALLS_AFFILIATE_URL}" target="_blank" rel="noopener" onclick="pingEvent('OddBalls_Click',{source:'${source}'})" style="position:relative;display:block;width:100%;aspect-ratio:4.95/1;box-sizing:border-box;border-radius:14px;overflow:hidden;text-decoration:none">
-        <img src="banner-sale.png" alt="19-0 x OddBalls — get your OddBalls gear" style="width:100%;height:100%;object-fit:cover;display:block">
-        <span style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);color:#fff;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:4px">Ad</span>
-      </a>`;
-    }
-  </script>
-
   <!-- ── FOOTER (appended to body, visible on home screen) ─── -->
   <script>
     // Append footer to home screen
@@ -6764,7 +6740,6 @@
             '<a href="https://www.buymeacoffee.com/19_0" target="_blank" rel="noopener" onclick="pingEvent(\'Coffee_Click\',{source:\'footer\'})" style="flex:1;display:block;background:linear-gradient(135deg,#f9c846,#f97316);color:#0f0f13;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:800;text-decoration:none;">☕ Enjoying 19-0?</a>' +
             '<a href="mailto:george.19-0@outlook.com" style="flex:1;display:block;background:#16161f;border:1px solid #252535;color:#c0c0d8;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Contact Us</a>' +
           '</div>' +
-          '<div style="margin-bottom:8px">' + renderOddBallsBanner('footer') + '</div>' +
           '<a href="partners.html" onclick="pingEvent(\'Partner_Click\',{source:\'footer\'})" style="width:100%;display:block;background:#16161f;border:1px solid #2a2a3a;color:#f9c846;text-align:center;padding:11px 8px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:16px;cursor:pointer;font-family:inherit;text-decoration:none;box-sizing:border-box">🤝 Advertise on 19-0 — Partner With Us</a>' +
           '<p>19-0 is an unofficial fan project, not affiliated with or endorsed by the ECB, Vitality T20 Blast, the ICC, any county cricket club, national cricket board, or any international cricket board. Player names, country names, team names, pundit quotes, and match simulations are used for entertainment purposes only and do not represent real individuals or organisations. T20 Blast is a registered trademark of the England and Wales Cricket Board. The Ashes and the Cricket World Cup are used as descriptive terms only.</p>' +
           '<p style="margin-top:8px">&copy; 2026 19-0 &nbsp;·&nbsp; <a href="about.html">About</a> &nbsp;·&nbsp; <a href="how-to-play.html">How to Play</a> &nbsp;·&nbsp; <a href="faq.html">FAQ</a> &nbsp;·&nbsp; <a href="strategy-guide.html">Strategy Guide</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy policy</a> &nbsp;·&nbsp; <a onclick="showCookieBanner()">Cookie settings</a></p>';
@@ -11424,7 +11399,6 @@
         </table>
 
         <button class="btn-share-season" onclick="openTestShareModal()" style="margin-top:4px;margin-bottom:16px">📸 Share your season</button>
-        <div style="width:100%;margin-bottom:16px">${renderOddBallsBanner('test-review')}</div>
 
         <div class="section-lbl">Your Squad</div>
         <div class="squad-list" style="margin-bottom:24px">${xi.map(p=>{const rk={batsman:'bat',wicketkeeper:'wk',allrounder:'all',bowler:'bowl'}[p.role]||p.role;return`<div class="squad-item si-${rk}"><div><div class="si-name">${p.name}</div><div class="si-meta">${p.year}</div></div><div class="si-right"><span class="rp-badge rpb-${rk}">${RL[rk]||rk.toUpperCase()}</span><div class="rating-badge ${ratingBadgeClass(p.rating)}" style="width:40px;height:40px;font-size:16px">${p.rating}</div></div></div>`}).join('')}</div>
@@ -12551,7 +12525,6 @@
           ${heroCard(WCS.knockoutOpp?.flag||'🏏',WCS.knockoutOpp?.name||'TBC',phase==='semi'?'Semi-Final · ODI':'World Cup Final · ODI',phase==='semi'?'Semi-Final':'The Final','startWCKnockout()')}
         `;
       }
-      el.innerHTML+=renderOddBallsBanner('wc-hub');
       requestAnimationFrame(()=>wireReveals(el));
     }
 
@@ -14059,7 +14032,6 @@
         ${topMVP?`<div class="ov-reveal ov-pop stat-card mvp-card mvp-shine chip-boost" style="margin-bottom:16px"><div class="stat-card-label"><span aria-hidden="true">⭐</span> MVP</div><div class="stat-card-name">${topMVP[0]}</div><div class="stat-card-val">${mvpValueStr}</div><div class="stat-card-sub">${mvpSubStr}</div></div>`:''}
 
         <button class="btn-share-season" onclick="openWCShareModal()" style="margin-bottom:8px">📸 Share your season</button>
-        <div style="width:100%;margin-bottom:16px">${renderOddBallsBanner('wc-review')}</div>
 
         ${matchRecapHTML?`<div>
         <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#606070;font-weight:800;margin-bottom:8px">Match Results</div>
