@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/ads.txt",
+      "destination": "https://adstxt.journeymv.com/sites/db33b470-04cc-4fc0-a12f-05a0891073ea/ads.txt",
+      "statusCode": 301
+    }
+  ]
+}
