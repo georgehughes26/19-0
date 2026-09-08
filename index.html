@@ -4194,7 +4194,16 @@
     <div class="ov-season-stats ov-stagger" id="ov-season-stats"></div>
     <div id="ov-mvp" style="width:100%"></div>
     <button class="btn-share-season" onclick="openShareModal()" style="margin-top:4px;margin-bottom:16px">📸 Share your season</button>
-    <div id="ov-oddballs" style="width:100%;margin-bottom:16px"></div>
+    <!-- Mediavine test placement — replacing the OddBalls affiliate banner in this
+         one spot (t20 season review). The hint divs must exist at page load for
+         Mediavine's wrapper to fill them; Mediavine also needs its dashboard
+         content selector pointed at the visible screen (see Settings > In-Content
+         Ads). If this fills reliably, roll the same swap out to the other
+         renderOddBallsBanner() call sites. -->
+    <div id="ov-oddballs" style="width:100%;margin-bottom:16px">
+      <div class="content_desktop_hint"></div>
+      <div class="content_mobile_hint"></div>
+    </div>
     <div id="ov-table" style="width:100%"></div>
     <div id="ov-matches" style="width:100%"></div>
     <div class="section-lbl">Your XI</div>
@@ -6591,8 +6600,8 @@
       const prompt = document.getElementById('ov-signup-prompt');
       if (prompt) prompt.style.display = AUTH_USER ? 'none' : 'flex';
       if (AUTH_USER) setTimeout(openCoffeeModal, 2000);
-      const ovOddBallsEl = document.getElementById('ov-oddballs');
-      if (ovOddBallsEl) ovOddBallsEl.innerHTML = renderOddBallsBanner('t20-review');
+      // t20-review OddBalls banner replaced by a static Mediavine hint slot in the
+      // markup (see #ov-oddballs). renderOddBallsBanner still runs on the other screens.
 
       // Reveal each section as the user scrolls through their season, with staggered
       // rows for lists and a count-up for the headline numbers — same treatment as
