@@ -2,12 +2,11 @@
 <html lang="en-GB">
 
 <head>
-  <!-- Mediavine Universal Script Wrapper — must load as early in <head> as possible.
-       Handles its own CMP/consent; do not gate behind the cookie-consent logic below. -->
-  <script type="text/javascript" async="async" data-noptimize="1" data-cfasync="false" src="//scripts.scriptwrapper.com/tags/db33b470-04cc-4fc0-a12f-05a0891073ea.js"></script>
+  <!-- Mediavine ads paused — to restore, put the Universal Script Wrapper back here
+       (as early in <head> as possible, not gated behind the cookie-consent logic below):
+       <script type="text/javascript" async="async" data-noptimize="1" data-cfasync="false" src="//scripts.scriptwrapper.com/tags/db33b470-04cc-4fc0-a12f-05a0891073ea.js"></script> -->
   <meta name='impact-site-verification' value='04456982-13b0-478c-a782-0b5758d84269'>
-  <!-- Google Analytics — loads only after cookie consent. Display ads are served
-       by Mediavine (script wrapper above), which runs its own CMP. -->
+  <!-- Google Analytics — loads only after cookie consent. -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
@@ -3814,7 +3813,7 @@
       </button>
     </div>
 
-    <button id="career-dev-entry-btn" onclick="enterCareerMode()" style="display:none;width:100%;margin-bottom:20px;padding:12px;background:#1a1400;border:1px solid #f9c846;border-radius:10px;color:#f9c846;font-size:13px;font-weight:700;cursor:pointer">⚡ Career Mode (Dev)</button>
+    <button id="career-dev-entry-btn" onclick="enterCareerMode()" style="display:block;width:100%;margin-bottom:20px;padding:12px;background:#1a1400;border:1px solid #f9c846;border-radius:10px;color:#f9c846;font-size:13px;font-weight:700;cursor:pointer">⚡ Career Mode (Beta)</button>
     <button id="career-dev-county2-btn" onclick="enterCareerModeDevCounty2()" style="display:none;width:100%;margin-bottom:20px;padding:12px;background:#1a1400;border:1px solid #f9c846;border-radius:10px;color:#f9c846;font-size:13px;font-weight:700;cursor:pointer">⚡ Skip to County 2 (Dev)</button>
 
     <!-- T20 content -->
@@ -6706,8 +6705,7 @@
   <!-- ── COOKIE BANNER ─────────────────────────────────────── -->
   <div id="cookie-banner" style="display:none">
     <p>19-0 uses Google Analytics cookies to see how the game is played — accept or
-      decline below, the game works the same either way. Ads on 19-0 are served by
-      Mediavine, which asks for advertising-cookie consent separately.
+      decline below, the game works the same either way.
       <a href="privacy.html">Privacy policy</a>
     </p>
     <div class="cookie-btns">
@@ -7149,8 +7147,9 @@
       if (typeof GAME_MODE !== 'undefined' && GAME_MODE === 'wc' && typeof selectMode === 'function') selectMode('t20');
     }
 
-    // World Cup mode is open to everyone now — this just keeps the dev-only
-    // auto-draft buttons (WC and T20) restricted, re-checked on every sign-in/sign-out.
+    // World Cup and Career Mode are open to everyone now — this just keeps the
+    // dev-only buttons (WC/T20 auto-draft, Career skip-to-County-2) restricted,
+    // re-checked on every sign-in/sign-out.
     function updateWCModeVisibility() {
       const wcBtn = document.getElementById('mode-btn-wc');
       if (wcBtn) wcBtn.style.display = '';
@@ -7161,13 +7160,6 @@
       if (t20DevBtn) t20DevBtn.style.display = isDev ? '' : 'none';
       const careerDevCounty2Btn = document.getElementById('career-dev-county2-btn');
       if (careerDevCounty2Btn) careerDevCounty2Btn.style.display = isDev ? 'block' : 'none';
-      // Career Mode access is its own, slightly wider allowlist — these
-      // usernames get Career Mode without also picking up the WC/T20
-      // auto-draft dev tools above, which stay 'ghughesy'-only.
-      const CAREER_ACCESS_USERNAMES = ['ghughesy', 'E4U Cricket', 'YOUBEARS', 'HarishM10233161', 'Icefire297', '15tslevin', 'Coby1235', 'sumanth', 'KarunNair123', 'punka', 'Pavillon', 'OrphanX', 'sajju', "MichaelEnglish22","Thomascurphey","Crawh11","SmailliWmiT","knightrider92","Dball17","krishtx","tgowd","Sami","Matthew","soliver150998","chsmaxson"];
-      const hasCareerAccess = AUTH_USER && CAREER_ACCESS_USERNAMES.includes(AUTH_USER.username);
-      const careerDevBtn = document.getElementById('career-dev-entry-btn');
-      if (careerDevBtn) careerDevBtn.style.display = hasCareerAccess ? 'block' : 'none';
     }
 
     function renderAuthBar() {
@@ -14919,7 +14911,7 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       CAREER MODE — dev-only for now, see enterCareerMode()/updateWCModeVisibility()
+       CAREER MODE — open to everyone (beta), see enterCareerMode()
        ═══════════════════════════════════════════════════════════════════ -->
 
   <div id="s-career-intro" class="screen">
@@ -15585,7 +15577,7 @@
     }
     const CAREER_SETTINGS = { autoAdvanceAI: true };
 
-    // ── Dev-only entry point ────────────────────────────────────────────
+    // ── Entry point (open to everyone) ──────────────────────────────────
     function enterCareerMode() {
       go('s-career-intro');
       checkForSavedCareerGame();
@@ -16621,8 +16613,33 @@
       // they convert — re-verify the 25%-at-baseline mark after any change
       // here (audit_tier1_ratings.mjs, scratchpad).
       const chanceP = isKeeper ? Math.max(0.7, Math.min(0.97, 0.88 + (skill - 50) / 450)) : 0.4;
-      const secondP = isKeeper ? Math.max(0.4, Math.min(0.85, 0.62 + (skill - 50) / 280)) : 0.15;
-      const chances = Math.random() < chanceP ? 1 + (Math.random() < secondP ? 1 : 0) : 0;
+      // secondPTarget is the ORIGINAL "gets a 2nd chance" rate (unchanged
+      // formula) — the flat 2-chance hard cap this used to imply is gone
+      // (see thirdP/fourthP below), but the season-long average chance
+      // count must land in exactly the same place it always did, so
+      // secondPTarget's own contribution to that average gets divided back
+      // out below rather than just adding a tail on top of it uncompensated.
+      const secondPTarget = isKeeper ? Math.max(0.4, Math.min(0.85, 0.62 + (skill - 50) / 280)) : 0.15;
+      // A real keeper/fielder occasionally has a big day — 3, rarely 4,
+      // chances in one match — that a hard 2-chance cap could never
+      // produce no matter how sharp they were. Each extra step is rarer
+      // than the last so a 4-chance match stays a genuine outlier, not a
+      // routine redraw of the same coinflip.
+      const thirdP = isKeeper ? Math.max(0.08, Math.min(0.3, 0.14 + (skill - 50) / 400)) : 0.1;
+      const fourthP = isKeeper ? Math.max(0.05, Math.min(0.2, 0.1 + (skill - 50) / 600)) : 0.08;
+      const tailFactor = 1 + thirdP * (1 + fourthP);
+      const secondP = secondPTarget / tailFactor;
+      let chances = 0;
+      if (Math.random() < chanceP) {
+        chances = 1;
+        if (Math.random() < secondP) {
+          chances = 2;
+          if (Math.random() < thirdP) {
+            chances = 3;
+            if (Math.random() < fourthP) chances = 4;
+          }
+        }
+      }
       if (!chances) return { involvements: 0, clean: 0 };
       const baseSuccess = isKeeper ? 0.42 : 0.4;
       const skillDivisor = isKeeper ? 143 : 150;
@@ -17557,7 +17574,7 @@
         ],
       };
     }
-    // Tier 2's own verdict — a straight yes/no on the Yorkshire squad,
+    // Tier 2's own verdict — a straight yes/no on the county's first-team squad,
     // called by the same coach who's been texting all season (halfway,
     // T20 halfway, winter nets), so there's no "your agent passed on your
     // number" opener here — he already has it. No tier-3 flow exists yet,
@@ -17573,7 +17590,7 @@
           steps: [
             { text: `${player.name}, got a minute?`, replies: ['For you, always', "What's up?"] },
             { text: `${careerStatSummary(info.current, info.keys)} this year. That's first-team numbers, not 2nd XI ones.`, replies: ['Feels good', 'Been working for it'] },
-            { text: `I've spoken to the gaffer. You're in the Yorkshire squad next season. Congratulations — can't wait to have you in the setup.`, replies: ['Buzzing 🙌', "Let's go"] },
+            { text: `I've spoken to the gaffer. You're in the ${county} squad next season. Congratulations — can't wait to have you in the setup.`, replies: ['Buzzing 🙌', "Let's go"] },
             { text: `Right, one more thing before you go.`, replies: ['Go on...', "What's that?"] },
             { isContract: true },
             { text: `Brilliant. Welcome to the club, ${player.name} — properly, this time. Speak soon.`, replies: null },
@@ -17586,7 +17603,7 @@
           steps: [
             { text: `${player.name}, got a minute?`, replies: ['For you, always', "What's up?"] },
             { text: `${careerStatSummary(info.current, info.keys)} isn't quite the number we talked about, but you've grafted for this every year.`, replies: ['Cheers', 'Appreciate that'] },
-            { text: `I'm putting your name forward for the Yorkshire squad anyway. Congratulations — can't wait to have you in the setup.`, replies: ['Buzzing 🙌', "Won't let you down"] },
+            { text: `I'm putting your name forward for the ${county} squad anyway. Congratulations — can't wait to have you in the setup.`, replies: ['Buzzing 🙌', "Won't let you down"] },
             { text: `Right, one more thing before you go.`, replies: ['Go on...', "What's that?"] },
             { isContract: true },
             { text: `Brilliant. Welcome to the club, ${player.name} — go and enjoy this one.`, replies: null },
@@ -18938,7 +18955,7 @@
       ],
       threeFor: [
         (p,w,o,rc) => `${p} is amongst the wickets in a big way: ${w}/${rc} off ${o} overs.`,
-        (p,w,o,rc) => `A career-best-shaped spell from ${p}: ${w} for just ${rc} off ${o}.`,
+        (p,w,o,rc) => `A high-class spell from ${p}: ${w} for just ${rc} off ${o}.`,
         (p,w,o,rc) => `${p} rips through the order, ${w}/${rc} from ${o} overs.`,
       ],
       fieldingClean: [
